@@ -50,31 +50,41 @@ The core idea is to create a `.macp/` directory in your research project and use
 
 **Example: Researching "AI Alignment"**
 
-**Step 1:** Discover papers (using Manus AI, Claude, or Perplexity)
-
-**Step 2:** Update `research_papers.json`:
-```json
-{
-  "papers": [
-    {
-      "id": "arxiv:2026.01234",
-      "title": "New Approaches to AI Alignment",
-      "discovered_by": "manus-ai",
-      "discovered_date": "2026-02-09",
-      "status": "discovered"
-    }
-  ]
-}
-```
-
-**Step 3:** Commit to GitHub:
+**Step 1:** Discover papers
 ```bash
-git add .macp/
-git commit -m "MACP: Discovered paper on AI alignment"
-git push
+# Discover today's papers from Hugging Face
+python3 tools/macp_cli.py discover --date 2026-02-09
+
+# Search for specific topics
+python3 tools/macp_cli.py discover --query "AI alignment" --limit 10
+
+# Fetch a specific paper by arXiv ID
+python3 tools/macp_cli.py discover --arxiv-id 2404.11672
 ```
 
-**Done!** You've started tracking your research with complete provenance.
+**Step 2:** Record what you learned
+```bash
+python3 tools/macp_cli.py learn "Key insight from the paper" \
+  --papers "2404.11672" --agent "manus-ai" --tags "alignment,safety"
+```
+
+**Step 3:** Cite in your projects
+```bash
+python3 tools/macp_cli.py cite "2404.11672" \
+  --project "GODELAI" --context "Informs our approach to alignment"
+```
+
+**Step 4:** Recall what you've learned
+```bash
+python3 tools/macp_cli.py recall "AI alignment"
+```
+
+**Step 5:** Check your knowledge base
+```bash
+python3 tools/macp_cli.py status
+```
+
+**Done!** Full C-S-P research workflow with complete provenance.
 
 ---
 
@@ -277,22 +287,24 @@ Track what you've learned over time.
 
 ---
 
-### Phase 2: Semi-Automated (Future)
+### Phase 2: Semi-Automated (Implemented)
 
-**Effort:** 1-2 weeks development  
+**Effort:** CLI-ready  
 **Automation:** 50% (scripts handle metadata)  
 **Benefit:** 50% time savings  
 
-**What you'll build:**
-- Paper metadata fetcher (Hugging Face API, arXiv API)
-- Learning log CLI
-- Citation tracker
-- Knowledge graph generator
+**What's built:**
+- `macp discover` — Paper fetcher with 3 pipelines (HF Daily Papers, HF MCP Search, arXiv API)
+- `macp learn` — Learning log CLI with paper linking
+- `macp cite` — Citation tracker with project linking
+- `macp recall` — "What have I learned?" query engine
+- `macp status` — Knowledge base dashboard
+- Knowledge graph generator with provenance tracing
 
 **Time per session:** 2-3 minutes  
 **ROI:** Positive after 10-15 research sessions  
 
-**Status:** 🔄 Planned (Q2 2026)
+**Status:** ✅ Implemented (Feb 2026)
 
 ---
 
@@ -336,6 +348,12 @@ macp-research-assistant/
 │   ├── X_AGENT_VALIDATION_GEMINI.md
 │   ├── Z_AGENT_VALIDATION_ANTHROPIC.md
 │   └── CS_AGENT_VALIDATION_MANUS.md
+│
+├── tools/                    # Automation tools (Phase 2) ✅
+│   ├── __init__.py           # Package init
+│   ├── paper_fetcher.py      # 3-pipeline paper discovery engine
+│   ├── macp_cli.py           # CLI orchestrator (discover/learn/cite/recall/status)
+│   └── knowledge_graph.py    # Knowledge graph + provenance tracer
 │
 ├── templates/                # JSON templates for the conceptual workflow
 │   ├── ... (template files)
@@ -470,13 +488,16 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 - ✅ Real-world examples (GODELAI)
 - 🔄 Community feedback and iteration
 
-### Q2 2026
+### Q1 2026 (Phase 2 — Completed)
 
-- 📋 Phase 2: Semi-automated tools
-- 📋 Paper metadata fetcher
-- 📋 Learning log CLI
-- 📋 Citation tracker
-- 📋 Knowledge graph generator
+- ✅ Phase 2: Semi-automated tools
+- ✅ Paper metadata fetcher (3 pipelines)
+- ✅ CLI orchestrator with C-S-P workflow
+- ✅ Citation tracker with project linking
+- ✅ Knowledge graph generator with provenance tracing
+- ✅ JSON schemas for all data files
+- ✅ Ethical use guidelines
+- ✅ Ecosystem alignment documentation
 
 ### Q3-Q4 2026
 
