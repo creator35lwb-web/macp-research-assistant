@@ -3,19 +3,33 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.py[cod]
+*.egg-info/
 .Python
+dist/
+build/
+.eggs/
+
+# Environment
+.env
+.venv/
 env/
 venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# IDEs
-.idea/
-.vscode/
-
 # Secrets - Never commit secrets
+*.pem
+*.key
 *.env
 secrets.json
 api_keys.json
+tokens.json
