@@ -1,5 +1,9 @@
 # MACP-Powered AI Research Assistant
 
+> [!WARNING]
+> **Project Status: Pre-Alpha & Conceptual**
+> This repository currently serves as a **conceptual blueprint** and public-facing documentation for the MACP Research Assistant. The core protocol is well-defined, but the implementation is in a **pre-alpha, non-functional state**. The tools and examples described are part of the development roadmap and do not exist yet. For the operational command hub of the YSenseAI ecosystem, please see the [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp) repository.
+
 **Track, trace, and recall your AI-powered research with complete citation provenance**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -36,28 +40,11 @@ When conducting research using multiple AI assistants (ChatGPT, Claude, Perplexi
 
 ---
 
-## Quick Start (5 Minutes)
+## Conceptual Workflow (Phase 1 - Manual)
 
-### 1. Clone this repository
+### 1. Understand the Core Idea
 
-```bash
-git clone https://github.com/creator35lwb-web/macp-research-assistant.git
-cd macp-research-assistant
-```
-
-### 2. Copy templates to your research project
-
-```bash
-cp -r .macp /path/to/your/research/project/
-cd /path/to/your/research/project
-```
-
-### 3. Initialize MACP files
-
-```bash
-cd .macp
-cp ../macp-research-assistant/templates/* .
-```
+The core idea is to create a `.macp/` directory in your research project and use a set of structured JSON files to manually log your research activities. This creates a traceable, auditable history of your work.
 
 ### 4. Start your first research session
 
@@ -220,6 +207,15 @@ Visualize relationships:
 
 ---
 
+## Ecosystem Alignment
+
+This project is a foundational protocol within the broader **YSenseAI Ecosystem**. It serves as a specific, public-facing application of the core principles defined in the central command hub.
+
+- **Command Central Hub:** [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp)
+- **Unified Ecosystem Roadmap:** [YSenseAIEcosystemMap&UnifiedRoadmap(Feb2026).md](https://github.com/creator35lwb-web/verifimind-genesis-mcp/blob/main/ecosystem/YSenseAIEcosystemMap%26UnifiedRoadmap(Feb2026).md)
+
+This repository's MACP specification is a simplified version intended for broad adoption. The authoritative, internal MACP v2.0 specification that governs the entire ecosystem resides in the `verifimind-genesis-mcp` repository.
+
 ## Use Cases
 
 ### 1. **Academic Research**
@@ -322,41 +318,29 @@ Track what you've learned over time.
 
 ## Repository Structure
 
-```
 macp-research-assistant/
-├── .macp/                    # Example MACP directory
-│   ├── research_papers.json  # Papers tracked
-│   ├── learning_log.json     # Learning sessions
-│   ├── citations.json        # Citation network
-│   ├── knowledge_graph.json  # Topic relationships
-│   └── handoffs.json         # Multi-AI coordination
-│
-├── docs/                     # Documentation
-│   ├── QUICK_START.md        # 5-minute quick start
-│   ├── MACP_SPECIFICATION.md # MACP v2.0 protocol
-│   ├── ARCHITECTURE.md       # System architecture
-│   ├── BEST_PRACTICES.md     # Best practices
-│   └── FAQ.md                # Frequently asked questions
-│
-├── templates/                # JSON templates
+├── .macp/                    # Example MACP directory (conceptual)
 │   ├── research_papers.json
 │   ├── learning_log.json
 │   ├── citations.json
 │   ├── knowledge_graph.json
 │   └── handoffs.json
 │
-├── examples/                 # Real-world examples
-│   ├── godelai-conflict-data/  # GODELAI research example
-│   ├── ai-alignment-survey/    # AI alignment survey example
-│   └── daily-papers-tracking/  # Daily paper tracking example
+├── docs/                     # Core Documentation
+│   ├── QUICK_START.md
+│   ├── MACP_SPECIFICATION.md
+│   └── ARCHITECTURE.md
 │
-├── tools/                    # Automation tools (Phase 2)
-│   ├── paper_fetcher.py      # Fetch paper metadata
-│   ├── learning_log_cli.py   # CLI for learning log
-│   ├── citation_tracker.py   # Track citations
-│   └── knowledge_graph.py    # Generate knowledge graph
+├── peas/                     # VerifiMind-PEAS Trinity Validation reports
+│   ├── TRINITY_VALIDATION_REPORT.md
+│   ├── X_AGENT_VALIDATION_GEMINI.md
+│   ├── Z_AGENT_VALIDATION_ANTHROPIC.md
+│   └── CS_AGENT_VALIDATION_MANUS.md
 │
-├── README.md                 # This file
+├── templates/                # JSON templates for the conceptual workflow
+│   ├── ... (template files)
+│
+└── README.md                 # This file                 # This file
 ├── LICENSE                   # MIT License
 └── CONTRIBUTING.md           # Contribution guidelines
 ```

@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MACP Research Papers Schema",
+  "description": "Schema for the research_papers.json file in the MACP protocol.",
+  "type": "object",
+  "properties": {
+    "papers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the paper, preferably using a standard like DOI or arXiv ID."
+          },
+          "title": {
+            "type": "string",
+            "description": "The full title of the research paper."
+          },
+          "authors": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "A list of the paper's authors."
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "A direct URL to the paper's abstract or PDF."
+          },
+          "discovered_by": {
+            "type": "string",
+            "description": "The ID of the agent or person who discovered the paper."
+          },
+          "discovered_date": {
+            "type": "string",
+            "format": "date",
+            "description": "The date the paper was discovered (YYYY-MM-DD)."
+          },
+          "status": {
+            "type": "string",
+            "enum": ["discovered", "analyzing", "analyzed", "validated", "rejected"],
+            "description": "The current status of the paper in the research workflow."
+          },
+          "insights": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": { "type": "string" },
+                "extracted_by": { "type": "string" },
+                "date": { "type": "string", "format": "date" }
+              },
+              "required": ["text", "extracted_by", "date"]
+            }
+          }
+        },
+        "required": ["id", "title", "discovered_by", "discovered_date", "status"]
+      }
+    }
+  },
+  "required": ["papers"]
+}

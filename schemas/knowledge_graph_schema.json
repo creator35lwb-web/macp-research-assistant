@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MACP Knowledge Graph Schema",
+  "description": "Schema for the knowledge_graph.json file in the MACP protocol.",
+  "type": "object",
+  "properties": {
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "type": { "type": "string", "enum": ["paper", "concept", "author", "project"] }
+        },
+        "required": ["id", "label", "type"]
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "label": { "type": "string" }
+        },
+        "required": ["from", "to", "label"]
+      }
+    }
+  },
+  "required": ["nodes", "edges"]
+}

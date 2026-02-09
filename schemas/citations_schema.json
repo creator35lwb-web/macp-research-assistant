@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MACP Citations Schema",
+  "description": "Schema for the citations.json file in the MACP protocol.",
+  "type": "object",
+  "properties": {
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "citation_id": {
+            "type": "string",
+            "description": "Unique identifier for the citation record."
+          },
+          "paper_id": {
+            "type": "string",
+            "description": "The ID of the paper being cited."
+          },
+          "cited_in": {
+            "type": "string",
+            "description": "The project, document, or context where the citation is used."
+          },
+          "cited_by_agent": {
+            "type": "string",
+            "description": "The ID of the agent who made the citation."
+          },
+          "handoff_id": {
+            "type": "string",
+            "description": "The handoff ID related to this citation action."
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "The date the citation was made (YYYY-MM-DD)."
+          },
+          "context": {
+            "type": "string",
+            "description": "The specific context or reason for the citation."
+          }
+        },
+        "required": ["citation_id", "paper_id", "cited_in", "cited_by_agent", "date"]
+      }
+    }
+  },
+  "required": ["citations"]
+}

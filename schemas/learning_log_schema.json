@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MACP Learning Log Schema",
+  "description": "Schema for the learning_log.json file in the MACP protocol.",
+  "type": "object",
+  "properties": {
+    "learning_sessions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "description": "Unique identifier for the learning session."
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "The date of the learning session (YYYY-MM-DD)."
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "The ID of the agent conducting the learning session."
+          },
+          "topic": {
+            "type": "string",
+            "description": "The main topic or question of the session."
+          },
+          "summary": {
+            "type": "string",
+            "description": "A summary of the key insights and takeaways from the session."
+          },
+          "paper_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "A list of paper IDs referenced during the session."
+          }
+        },
+        "required": ["session_id", "date", "agent_id", "topic", "summary"]
+      }
+    }
+  },
+  "required": ["learning_sessions"]
+}

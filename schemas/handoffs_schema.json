@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MACP Handoffs Schema",
+  "description": "Schema for the handoffs.json file in the MACP protocol.",
+  "type": "object",
+  "properties": {
+    "handoffs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "handoff_id": {
+            "type": "string",
+            "description": "Unique identifier for the handoff."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The ISO 8601 timestamp of the handoff."
+          },
+          "from_agent_id": {
+            "type": "string",
+            "description": "The ID of the agent initiating the handoff."
+          },
+          "to_agent_id": {
+            "type": "string",
+            "description": "The ID of the agent receiving the handoff."
+          },
+          "commit_hash": {
+            "type": "string",
+            "description": "The Git commit hash at the time of the handoff."
+          },
+          "task_summary": {
+            "type": "string",
+            "description": "A brief summary of the task being handed off."
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": { "type": "string" },
+                "description": { "type": "string" }
+              },
+              "required": ["path", "description"]
+            }
+          }
+        },
+        "required": ["handoff_id", "timestamp", "from_agent_id", "to_agent_id", "commit_hash", "task_summary"]
+      }
+    }
+  },
+  "required": ["handoffs"]
+}

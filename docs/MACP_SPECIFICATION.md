@@ -116,4 +116,22 @@ A Markdown file containing the ethical operating framework of the **primary orch
 
 ## 5. Versioning
 
-This document specifies MACP v2.0. Future versions will be backward-compatible where possible.md possible, but the presence of `ethical_framework.md` is the defining feature of v2.0.
+This document specifies MACP v2.0. Future versions will be backward-compatible where possible, but the presence of `ethical_framework.md` is the defining feature of v2.0.
+
+---
+
+## 6. Data Integrity and Schema Validation
+
+To ensure the integrity and consistency of the data stored in the `.macp/` directory, this project now includes formal JSON Schemas for all core data files. These schemas serve as the canonical definition of the data structure and are used to validate the JSON files against a known-good format.
+
+**This addresses a mandatory condition from the VerifiMind-PEAS Trinity Validation (X-Agent & CS-Agent).**
+
+### Schema Location
+
+All schemas are located in the `/schemas` directory of this repository. For example, the schema for `research_papers.json` is located at `/schemas/research_papers_schema.json`.
+
+### Validation (Phase 2)
+
+In Phase 2 (Semi-Automated), tools that generate or modify the MACP JSON files **must** validate their output against these schemas before writing to disk. This prevents data corruption and ensures interoperability between different tools and agents.
+
+Libraries such as `jsonschema` in Python can be used for this purpose.
