@@ -7,6 +7,7 @@
 **Track, trace, and recall your AI-powered research with complete citation provenance**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18651799.svg)](https://doi.org/10.5281/zenodo.18651799)
 [![GitHub stars](https://img.shields.io/github/stars/creator35lwb-web/macp-research-assistant)](https://github.com/creator35lwb-web/macp-research-assistant/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/creator35lwb-web/macp-research-assistant)](https://github.com/creator35lwb-web/macp-research-assistant/issues)
 

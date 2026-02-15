@@ -49,6 +49,7 @@
   "access_right": "open",
   "language": "eng",
   "version": "0.1.0-alpha",
+  "doi": "10.5281/zenodo.18651799",
   "related_identifiers": [
     {
       "identifier": "https://github.com/creator35lwb-web/macp-research-assistant",
