@@ -1,0 +1,116 @@
+{
+  "title": "MACP Research Assistant: Multi-Agent Communication Protocol for Traceable AI-Powered Research",
+  "description": "MACP Research Assistant is an open-source tool for tracking, tracing, and recalling AI-powered research with complete citation provenance across multiple AI assistants. This is a defensive publication establishing prior art for the following innovations: (1) MACP-based research tracking — using the Multi-Agent Communication Protocol v2.0 to create full provenance chains across multi-AI research workflows, (2) C-S-P Research Methodology — applying the GodelAI Conflict-Synthesis-Propagation framework to research paper discovery, insight extraction, and knowledge application, (3) Knowledge Recall System — enabling natural language queries across structured research history (papers, learning sessions, citations), (4) Agent-Attributed Citation Networks — linking every citation to the specific AI agent that produced it, with handoff traceability, (5) AI Agent Discoverability Standards — adopting llms.txt and skill.md standards to make research tools natively discoverable and usable by other AI agents, positioning MACP as proto-A2A infrastructure for the agentic web.",
+  "upload_type": "software",
+  "publication_type": "workingpaper",
+  "publication_date": "2026-02-16",
+  "creators": [
+    {
+      "name": "Lee, Alton",
+      "affiliation": "YSenseAI",
+      "orcid": ""
+    },
+    {
+      "name": "Godel (Manus AI)",
+      "affiliation": "GodelAI / YSenseAI Ecosystem"
+    },
+    {
+      "name": "Claude Code (Anthropic)",
+      "affiliation": "YSenseAI Ecosystem — Implementation Agent"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "YSenseAI FLYWHEEL TEAM",
+      "type": "Other",
+      "affiliation": "YSenseAI Ecosystem"
+    }
+  ],
+  "keywords": [
+    "multi-agent communication protocol",
+    "research tracking",
+    "citation provenance",
+    "AI-powered research",
+    "knowledge management",
+    "MACP protocol",
+    "agent-to-agent",
+    "knowledge graph",
+    "research methodology",
+    "AI collaboration",
+    "llms.txt",
+    "skill.md",
+    "Markdown-first",
+    "agentic web",
+    "C-S-P framework",
+    "multi-AI coordination",
+    "defensive publication"
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "language": "eng",
+  "version": "0.1.0-alpha",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/creator35lwb-web/macp-research-assistant",
+      "relation": "isSupplementTo",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/creator35lwb-web/VerifiMind-PEAS",
+      "relation": "references",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "10.5281/zenodo.17972751",
+      "relation": "references",
+      "scheme": "doi",
+      "resource_type": "publication-softwaredocumentation"
+    },
+    {
+      "identifier": "https://github.com/creator35lwb-web/godelai",
+      "relation": "references",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/creator35lwb-web/LegacyEvolve",
+      "relation": "references",
+      "scheme": "url",
+      "resource_type": "software"
+    }
+  ],
+  "communities": [
+    {
+      "identifier": "zenodo"
+    }
+  ],
+  "subjects": [
+    {
+      "term": "Artificial Intelligence",
+      "scheme": "acm"
+    },
+    {
+      "term": "Multi-Agent Systems",
+      "scheme": "keyword"
+    },
+    {
+      "term": "Research Methodology",
+      "scheme": "keyword"
+    },
+    {
+      "term": "Knowledge Management",
+      "scheme": "keyword"
+    },
+    {
+      "term": "Citation Analysis",
+      "scheme": "keyword"
+    }
+  ],
+  "notes": "Defensive publication establishing prior art for the MACP Research Assistant methodology and architecture. Key innovations: (1) MACP-based research provenance tracking across multiple AI agents, (2) C-S-P research methodology (Conflict=multi-pipeline discovery, Synthesis=insight extraction, Propagation=citation into projects), (3) Agent-attributed citation networks with handoff traceability, (4) AI-native discoverability via llms.txt and skill.md standards. Developed through multi-agent collaboration by the YSenseAI FLYWHEEL TEAM: Alton Lee (Human Orchestrator), Godel/Manus AI (CTO/Strategy), and Claude Code (Implementation). The architecture positions MACP as proto-Agent-to-Agent (A2A) infrastructure for the emerging agentic web, complementing MCP (tool access) with structured inter-agent communication.",
+  "references": [
+    "Lee, A., Manus AI, & Claude Code. (2025). Genesis Prompt Engineering Methodology v2.0. Zenodo. https://doi.org/10.5281/zenodo.17972751",
+    "Lee, A. & Godel (Manus AI). (2025). GodelAI: A C-S-P Framework for Wisdom-Preserving Language Models. GitHub. https://github.com/creator35lwb-web/godelai"
+  ]
+}

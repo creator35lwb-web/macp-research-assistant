@@ -1,0 +1,92 @@
+cff-version: 1.2.0
+title: "MACP Research Assistant: Multi-Agent Communication Protocol for Traceable AI-Powered Research"
+message: "If you use this software or methodology, please cite it as below."
+type: software
+authors:
+  - family-names: "Lee"
+    given-names: "Alton"
+    affiliation: "YSenseAI"
+    email: "creator35lwb@gmail.com"
+  - name: "Godel (Manus AI)"
+    alias: "L, CTO"
+    affiliation: "GodelAI / YSenseAI Ecosystem"
+  - name: "Claude Code"
+    alias: "RNA, Implementation Agent"
+    affiliation: "Anthropic"
+repository-code: "https://github.com/creator35lwb-web/macp-research-assistant"
+url: "https://github.com/creator35lwb-web/macp-research-assistant"
+abstract: >-
+  MACP Research Assistant is an open-source tool for tracking, tracing, and
+  recalling AI-powered research with complete citation provenance across multiple
+  AI assistants. It implements the Multi-Agent Communication Protocol (MACP) v2.0
+  to solve the problem of lost context, forgotten insights, and scattered citations
+  when using multiple AI tools for research. Key innovations include: (1) MACP-based
+  research tracking with full provenance chains, (2) Multi-AI agent coordination
+  with structured handoffs, (3) Knowledge recall system enabling natural language
+  queries across research history, (4) Citation network linking papers to projects
+  with agent attribution, (5) Knowledge graph generation mapping relationships
+  between papers, concepts, agents, and projects. The architecture adopts emerging
+  standards including llms.txt for AI agent discoverability and skill.md for agent
+  usability, positioning MACP as a proto-A2A (Agent-to-Agent) protocol for the
+  agentic web.
+keywords:
+  - "multi-agent communication"
+  - "research tracking"
+  - "citation provenance"
+  - "AI-powered research"
+  - "knowledge management"
+  - "MACP protocol"
+  - "agent-to-agent"
+  - "knowledge graph"
+  - "research methodology"
+  - "AI collaboration"
+  - "llms.txt"
+  - "Markdown-first"
+  - "agentic web"
+license: MIT
+version: "0.1.0-alpha"
+date-released: "2026-02-16"
+
+references:
+  - type: software
+    title: "VerifiMind-PEAS: Prompt Engineering Attribution System"
+    authors:
+      - family-names: "Lee"
+        given-names: "Alton"
+      - name: "Manus AI"
+      - name: "Claude Code"
+    version: "0.4.1"
+    repository-code: "https://github.com/creator35lwb-web/VerifiMind-PEAS"
+    doi: "10.5281/zenodo.17972751"
+  - type: software
+    title: "GodelAI: A C-S-P Framework for Wisdom-Preserving Language Models"
+    authors:
+      - family-names: "Lee"
+        given-names: "Alton"
+      - name: "Godel (Manus AI)"
+    repository-code: "https://github.com/creator35lwb-web/godelai"
+
+preferred-citation:
+  type: software
+  title: "MACP Research Assistant: Multi-Agent Communication Protocol for Traceable AI-Powered Research"
+  authors:
+    - family-names: "Lee"
+      given-names: "Alton"
+    - name: "Godel (Manus AI)"
+    - name: "Claude Code"
+  version: "0.1.0-alpha"
+  date-released: "2026-02-16"
+  url: "https://github.com/creator35lwb-web/macp-research-assistant"
+  repository-code: "https://github.com/creator35lwb-web/macp-research-assistant"
+  abstract: >-
+    Open-source research tracking tool implementing MACP v2.0 for multi-agent
+    AI-powered research with complete citation provenance, knowledge graphs,
+    and natural language recall. Defensive publication establishing prior art
+    for MACP-based research methodology.
+  license: MIT
+  keywords:
+    - "MACP protocol"
+    - "research tracking"
+    - "citation provenance"
+    - "multi-agent AI"
+    - "defensive publication"
