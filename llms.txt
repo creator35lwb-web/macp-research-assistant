@@ -1,0 +1,81 @@
+# MACP Research Assistant
+
+> MACP-Powered AI Research Assistant: Track, trace, and recall AI-powered research with complete citation provenance across multiple AI assistants.
+
+## What This Project Does
+
+This is a CLI-based research tracking tool built on the Multi-Agent Communication Protocol (MACP). It enables researchers using multiple AI assistants to maintain complete provenance of their research workflow — from paper discovery through analysis to citation.
+
+## Core Capabilities
+
+- **Paper Discovery** (`macp discover`): Find papers via HuggingFace Daily Papers API, HuggingFace Paper Search API, or arXiv API
+- **Learning Tracking** (`macp learn`): Record insights and learnings linked to specific papers with agent attribution
+- **Citation Management** (`macp cite`): Track citations from papers into projects with full provenance
+- **Knowledge Recall** (`macp recall`): Search across papers, learning sessions, and citations using natural language
+- **Knowledge Graph** (`knowledge_graph.py`): Generate relationship graphs between papers, sessions, citations, agents, and projects
+- **Status Overview** (`macp status`): View current state of the research knowledge base
+
+## Architecture
+
+The project uses a `.macp/` directory structure with JSON files validated against schemas:
+
+- `.macp/research_papers.json` — All discovered and analyzed papers
+- `.macp/learning_log.json` — Learning sessions with insights
+- `.macp/citations.json` — Citation records linking papers to projects
+- `.macp/knowledge_graph.json` — Generated relationship graph
+- `.macp/handoffs.json` — Multi-agent handoff records
+
+## Key Files for AI Agents
+
+- `tools/macp_cli.py` — Main CLI entry point (run with `python tools/macp_cli.py`)
+- `tools/paper_fetcher.py` — Paper discovery and MACP storage library
+- `tools/knowledge_graph.py` — Knowledge graph generation and provenance tracing
+- `schemas/` — JSON Schema definitions for all MACP data files
+- `templates/` — Empty template files for initializing new MACP directories
+- `docs/ARCHITECTURE.md` — Full system architecture
+- `docs/QUICK_START.md` — Beginner implementation guide
+- `docs/STRATEGIC_ANALYSIS_AND_ENHANCED_PLAN.md` — Current strategic plan and roadmap
+
+## Usage
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Discover papers by date
+python tools/macp_cli.py discover --date 2026-02-15
+
+# Search for papers
+python tools/macp_cli.py discover --query "multi-agent communication"
+
+# Fetch specific paper
+python tools/macp_cli.py discover --arxiv-id 2602.06570
+
+# Record a learning insight
+python tools/macp_cli.py learn "Key finding about X" --papers 2602.06570 --agent claude
+
+# Record a citation
+python tools/macp_cli.py cite 2602.06570 --project "GODELAI" --context "Used for C-S-P design"
+
+# Recall knowledge
+python tools/macp_cli.py recall "conflict data alignment"
+
+# Check status
+python tools/macp_cli.py status
+```
+
+## Ecosystem
+
+- **Part of:** YSenseAI Ecosystem (https://github.com/creator35lwb-web)
+- **Protocol:** MACP v2.0 (Multi-Agent Communication Protocol)
+- **Validation:** VerifiMind-PEAS X-Z-CS RefleXion Trinity
+- **License:** MIT
+- **Status:** Pre-Alpha
+
+## Detailed Documentation
+
+- docs/ARCHITECTURE.md
+- docs/QUICK_START.md
+- docs/ECOSYSTEM_ALIGNMENT.md
+- docs/ETHICAL_USE_GUIDELINES.md
+- docs/MACP_SPECIFICATION.md

@@ -11,21 +11,121 @@ Date: February 10, 2026
 
 import json
 import os
-import subprocess
+import re
 import sys
+import tempfile
 import xml.etree.ElementTree as ET
 from datetime import datetime, date
 from typing import Optional
 
+import jsonschema
 import requests
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 HF_DAILY_PAPERS_API = "https://huggingface.co/api/daily_papers"
+HF_PAPER_SEARCH_API = "https://huggingface.co/api/papers/search"
 ARXIV_API = "http://export.arxiv.org/api/query"
 MACP_DIR = ".macp"
 PAPERS_FILE = os.path.join(MACP_DIR, "research_papers.json")
+SCHEMAS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "schemas")
+
+# Input validation patterns
+DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+ARXIV_ID_PATTERN = re.compile(r"^\d{4}\.\d{4,5}(v\d+)?$")
+QUERY_MAX_LENGTH = 500
+
+# ---------------------------------------------------------------------------
+# Input Validation
+# ---------------------------------------------------------------------------
+
+def validate_date(date_str: str) -> str:
+    """Validate and return a date string in YYYY-MM-DD format."""
+    if not DATE_PATTERN.match(date_str):
+        raise ValueError(f"Invalid date format: {date_str!r}. Expected YYYY-MM-DD.")
+    # Verify it's a real date
+    datetime.strptime(date_str, "%Y-%m-%d")
+    return date_str
+
+
+def validate_arxiv_id(arxiv_id: str) -> str:
+    """Validate and return a clean arXiv ID."""
+    arxiv_id = arxiv_id.strip()
+    if not ARXIV_ID_PATTERN.match(arxiv_id):
+        raise ValueError(f"Invalid arXiv ID: {arxiv_id!r}. Expected format: YYMM.NNNNN")
+    return arxiv_id
+
+
+def validate_query(query: str) -> str:
+    """Validate and sanitize a search query string."""
+    query = query.strip()
+    if not query:
+        raise ValueError("Search query cannot be empty.")
+    if len(query) > QUERY_MAX_LENGTH:
+        raise ValueError(f"Query exceeds {QUERY_MAX_LENGTH} characters.")
+    # Strip control characters
+    query = re.sub(r"[\x00-\x1f\x7f]", "", query)
+    return query
+
+
+# ---------------------------------------------------------------------------
+# Schema Validation
+# ---------------------------------------------------------------------------
+
+_schema_cache: dict[str, dict] = {}
+
+
+def _load_schema(schema_name: str) -> dict:
+    """Load a JSON schema from the schemas/ directory (cached)."""
+    if schema_name in _schema_cache:
+        return _schema_cache[schema_name]
+    schema_path = os.path.join(SCHEMAS_DIR, schema_name)
+    if not os.path.exists(schema_path):
+        print(f"[WARN] Schema not found: {schema_path}", file=sys.stderr)
+        return {}
+    with open(schema_path, "r") as f:
+        schema = json.load(f)
+    _schema_cache[schema_name] = schema
+    return schema
+
+
+def validate_json_data(data: dict, schema_name: str) -> bool:
+    """Validate data against a JSON schema. Returns True if valid."""
+    schema = _load_schema(schema_name)
+    if not schema:
+        return True  # No schema found, skip validation
+    try:
+        jsonschema.validate(instance=data, schema=schema)
+        return True
+    except jsonschema.ValidationError as e:
+        print(f"[ERROR] Schema validation failed ({schema_name}): {e.message}", file=sys.stderr)
+        return False
+
+
+# ---------------------------------------------------------------------------
+# Atomic File I/O
+# ---------------------------------------------------------------------------
+
+def atomic_write_json(filepath: str, data: dict) -> None:
+    """Write JSON data atomically: write to temp file, then rename."""
+    dir_name = os.path.dirname(filepath) or "."
+    os.makedirs(dir_name, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp", prefix=".macp_")
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump(data, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, filepath)
+    except Exception:
+        # Clean up temp file on failure
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
 
 # ---------------------------------------------------------------------------
 # Utility: Normalize paper data to MACP schema
@@ -77,6 +177,7 @@ def fetch_by_date(target_date: str) -> list[dict]:
     Returns:
         List of normalized paper dicts.
     """
+    target_date = validate_date(target_date)
     params = {"date": target_date}
     try:
         resp = requests.get(HF_DAILY_PAPERS_API, params=params, timeout=30)
@@ -153,95 +254,52 @@ def fetch_by_date_range(start_date: str, end_date: str) -> list[dict]:
 
 def fetch_by_query(query: str, limit: int = 10) -> list[dict]:
     """
-    Search for papers using the Hugging Face MCP paper_search tool.
+    Search for papers using the Hugging Face Papers Search API (HTTP).
+
+    This replaces the previous subprocess-based approach that shelled out to
+    manus-mcp-cli, eliminating the command injection attack surface entirely.
 
     Args:
-        query: Natural language search query.
+        query: Natural language search query (validated before use).
         limit: Maximum number of results.
 
     Returns:
         List of normalized paper dicts.
     """
-    input_json = json.dumps({"query": query, "results_limit": limit})
+    query = validate_query(query)
+    limit = max(1, min(limit, 100))
+
     try:
-        result = subprocess.run(
-            [
-                "manus-mcp-cli", "tool", "call", "paper_search",
-                "--server", "hugging-face",
-                "--input", input_json,
-            ],
-            capture_output=True,
-            text=True,
-            timeout=60,
+        resp = requests.get(
+            HF_PAPER_SEARCH_API,
+            params={"query": query, "limit": limit},
+            timeout=30,
         )
-    except (subprocess.TimeoutExpired, FileNotFoundError) as e:
-        print(f"[ERROR] MCP paper_search call failed: {e}", file=sys.stderr)
+        resp.raise_for_status()
+        data = resp.json()
+    except requests.RequestException as e:
+        print(f"[ERROR] HF Paper Search API request failed: {e}", file=sys.stderr)
         return []
 
-    output = result.stdout
-    if not output:
-        print("[WARN] MCP paper_search returned empty output.", file=sys.stderr)
+    if not isinstance(data, list):
+        print(f"[WARN] HF Paper Search returned unexpected format.", file=sys.stderr)
         return []
 
-    # Parse the MCP output (structured text with paper blocks)
-    papers = _parse_mcp_paper_output(output, query)
-    return papers
-
-
-def _parse_mcp_paper_output(text: str, query: str) -> list[dict]:
-    """Parse the text output from the MCP paper_search tool into normalized papers."""
     papers = []
-    blocks = text.split("---")
+    for entry in data:
+        arxiv_id = entry.get("id", "")
+        title = entry.get("title", "Unknown Title")
+        authors = [a.get("name", "") for a in entry.get("authors", [])]
+        abstract = entry.get("summary", "")
 
-    for block in blocks:
-        block = block.strip()
-        if not block or "papers matched" in block.lower():
-            continue
-
-        title = ""
-        arxiv_id = ""
-        authors = []
-        abstract = ""
-        link = ""
-
-        lines = block.split("\n")
-        in_abstract = False
-
-        for line in lines:
-            line = line.strip()
-            if line.startswith("## "):
-                title = line.lstrip("# ").strip()
-                in_abstract = False
-            elif line.startswith("**Authors:**"):
-                author_text = line.replace("**Authors:**", "").strip()
-                # Remove HF usernames in parentheses
-                import re
-                author_text = re.sub(r'\s*\([^)]*\)', '', author_text)
-                authors = [a.strip() for a in author_text.split(",") if a.strip()]
-                in_abstract = False
-            elif line.startswith("### Abstract"):
-                in_abstract = True
-            elif line.startswith("**AI Keywords**"):
-                in_abstract = False
-            elif line.startswith("**Link to paper:**"):
-                import re
-                match = re.search(r'papers/(\d+\.\d+)', line)
-                if match:
-                    arxiv_id = match.group(1)
-                link = line
-                in_abstract = False
-            elif in_abstract and line:
-                abstract += line + " "
-
-        if title and arxiv_id:
+        if arxiv_id:
             papers.append(normalize_paper(
                 arxiv_id=arxiv_id,
                 title=title,
                 authors=authors,
-                abstract=abstract.strip(),
-                discovered_by=f"hf_mcp_search:{query[:50]}",
+                abstract=abstract,
+                discovered_by=f"hf_search:{query[:50]}",
             ))
-
     return papers
 
 
@@ -259,6 +317,7 @@ def fetch_by_id(arxiv_id: str) -> Optional[dict]:
     Returns:
         A normalized paper dict, or None if not found.
     """
+    arxiv_id = validate_arxiv_id(arxiv_id)
     params = {"id_list": arxiv_id, "max_results": 1}
     try:
         resp = requests.get(ARXIV_API, params=params, timeout=30)
@@ -311,11 +370,11 @@ def load_papers(macp_dir: str = MACP_DIR) -> dict:
 
 
 def save_papers(data: dict, macp_dir: str = MACP_DIR) -> None:
-    """Save the research_papers.json file."""
+    """Save the research_papers.json file with schema validation and atomic write."""
     filepath = os.path.join(macp_dir, "research_papers.json")
-    os.makedirs(macp_dir, exist_ok=True)
-    with open(filepath, "w") as f:
-        json.dump(data, f, indent=2)
+    if not validate_json_data(data, "research_papers_schema.json"):
+        print("[WARN] Data failed schema validation but saving anyway.", file=sys.stderr)
+    atomic_write_json(filepath, data)
     print(f"  Saved {len(data.get('papers', []))} papers to {filepath}")
 
 

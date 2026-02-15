@@ -15,6 +15,7 @@ Date: February 10, 2026
 import json
 import os
 import sys
+import tempfile
 from collections import defaultdict
 from datetime import datetime
 
@@ -205,11 +206,28 @@ def build_knowledge_graph() -> dict:
     return graph
 
 
+def _atomic_write_json(filepath: str, data: dict) -> None:
+    """Write JSON data atomically: write to temp file, then rename."""
+    dir_name = os.path.dirname(filepath) or "."
+    os.makedirs(dir_name, exist_ok=True)
+    fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp", prefix=".macp_")
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump(data, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, filepath)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
+
 def save_knowledge_graph(graph: dict) -> str:
-    """Save the knowledge graph to the MACP directory."""
-    os.makedirs(MACP_DIR, exist_ok=True)
-    with open(KNOWLEDGE_GRAPH_FILE, "w") as f:
-        json.dump(graph, f, indent=2)
+    """Save the knowledge graph to the MACP directory with atomic write."""
+    _atomic_write_json(KNOWLEDGE_GRAPH_FILE, graph)
     return KNOWLEDGE_GRAPH_FILE
 
 
@@ -363,11 +381,22 @@ def main():
         provenance = trace_provenance(demo_id, graph)
         print(json.dumps(provenance, indent=2))
 
-    # Generate Mermaid diagram
+    # Generate Mermaid diagram (atomic write)
     mermaid = generate_mermaid(graph, max_nodes=15)
     mermaid_file = os.path.join(MACP_DIR, "knowledge_graph.mmd")
-    with open(mermaid_file, "w") as f:
-        f.write(mermaid)
+    fd, tmp_path = tempfile.mkstemp(dir=os.path.dirname(mermaid_file) or ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(mermaid)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, mermaid_file)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
     print(f"\n--- Mermaid diagram saved to: {mermaid_file} ---")
 
     print("\n" + "=" * 60)

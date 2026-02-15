@@ -18,6 +18,7 @@ Date: February 10, 2026
 import argparse
 import json
 import os
+import re
 import sys
 import uuid
 from datetime import datetime, date
@@ -32,6 +33,11 @@ from paper_fetcher import (
     load_papers,
     save_papers,
     add_papers,
+    atomic_write_json,
+    validate_json_data,
+    validate_date,
+    validate_arxiv_id,
+    validate_query,
     MACP_DIR,
 )
 
@@ -41,6 +47,42 @@ from paper_fetcher import (
 LEARNING_LOG_FILE = os.path.join(MACP_DIR, "learning_log.json")
 CITATIONS_FILE = os.path.join(MACP_DIR, "citations.json")
 KNOWLEDGE_GRAPH_FILE = os.path.join(MACP_DIR, "knowledge_graph.json")
+
+# ---------------------------------------------------------------------------
+# Input Sanitization
+# ---------------------------------------------------------------------------
+
+# Max lengths for free-text inputs
+MAX_SUMMARY_LENGTH = 2000
+MAX_CONTEXT_LENGTH = 2000
+MAX_PROJECT_LENGTH = 200
+MAX_TAG_LENGTH = 50
+
+
+def sanitize_text(text: str, max_length: int, field_name: str) -> str:
+    """Sanitize a free-text input: strip control chars, enforce length."""
+    text = text.strip()
+    # Strip control characters (keep newlines and tabs)
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
+    if len(text) > max_length:
+        print(f"[WARN] {field_name} truncated to {max_length} chars.", file=sys.stderr)
+        text = text[:max_length]
+    if not text:
+        raise ValueError(f"{field_name} cannot be empty after sanitization.")
+    return text
+
+
+def sanitize_tags(tags_str: str) -> list[str]:
+    """Sanitize a comma-separated tags string."""
+    tags = []
+    for tag in tags_str.split(","):
+        tag = tag.strip().lower()
+        # Only allow alphanumeric, hyphens, underscores
+        tag = re.sub(r"[^a-z0-9_\-]", "", tag)
+        if tag and len(tag) <= MAX_TAG_LENGTH:
+            tags.append(tag)
+    return tags
+
 
 # ---------------------------------------------------------------------------
 # Learning Log Operations
@@ -55,10 +97,10 @@ def load_learning_log() -> dict:
 
 
 def save_learning_log(data: dict) -> None:
-    """Save the learning_log.json file."""
-    os.makedirs(MACP_DIR, exist_ok=True)
-    with open(LEARNING_LOG_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    """Save the learning_log.json file with schema validation and atomic write."""
+    if not validate_json_data(data, "learning_log_schema.json"):
+        print("[WARN] Learning log failed schema validation but saving anyway.", file=sys.stderr)
+    atomic_write_json(LEARNING_LOG_FILE, data)
 
 
 # ---------------------------------------------------------------------------
@@ -74,10 +116,10 @@ def load_citations() -> dict:
 
 
 def save_citations(data: dict) -> None:
-    """Save the citations.json file."""
-    os.makedirs(MACP_DIR, exist_ok=True)
-    with open(CITATIONS_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    """Save the citations.json file with schema validation and atomic write."""
+    if not validate_json_data(data, "citations_schema.json"):
+        print("[WARN] Citations failed schema validation but saving anyway.", file=sys.stderr)
+    atomic_write_json(CITATIONS_FILE, data)
 
 
 # ---------------------------------------------------------------------------
@@ -93,37 +135,49 @@ def cmd_discover(args):
 
     all_papers = []
 
-    # Pipeline 1: Date-based discovery
-    if args.date:
-        print(f"\n[Pipeline 1: HF Daily Papers] Date: {args.date}")
-        papers = fetch_by_date(args.date)
-        print(f"  Found {len(papers)} papers from HF Daily Papers")
-        all_papers.extend(papers)
+    # Validate inputs before any API calls
+    try:
+        # Pipeline 1: Date-based discovery
+        if args.date:
+            validated_date = validate_date(args.date)
+            print(f"\n[Pipeline 1: HF Daily Papers] Date: {validated_date}")
+            papers = fetch_by_date(validated_date)
+            print(f"  Found {len(papers)} papers from HF Daily Papers")
+            all_papers.extend(papers)
 
-    if args.date_range:
-        start, end = args.date_range.split(":")
-        print(f"\n[Pipeline 1: HF Daily Papers] Range: {start} to {end}")
-        papers = fetch_by_date_range(start, end)
-        print(f"  Found {len(papers)} papers from HF Daily Papers")
-        all_papers.extend(papers)
+        if args.date_range:
+            parts = args.date_range.split(":")
+            if len(parts) != 2:
+                print("[ERROR] --date-range must be YYYY-MM-DD:YYYY-MM-DD", file=sys.stderr)
+                return
+            start, end = validate_date(parts[0]), validate_date(parts[1])
+            print(f"\n[Pipeline 1: HF Daily Papers] Range: {start} to {end}")
+            papers = fetch_by_date_range(start, end)
+            print(f"  Found {len(papers)} papers from HF Daily Papers")
+            all_papers.extend(papers)
 
-    # Pipeline 2: Query-based discovery
-    if args.query:
-        limit = args.limit or 10
-        print(f"\n[Pipeline 2: HF MCP Search] Query: '{args.query}' (limit: {limit})")
-        papers = fetch_by_query(args.query, limit=limit)
-        print(f"  Found {len(papers)} papers from MCP Search")
-        all_papers.extend(papers)
+        # Pipeline 2: Query-based discovery
+        if args.query:
+            validated_query = validate_query(args.query)
+            limit = max(1, min(args.limit or 10, 100))
+            print(f"\n[Pipeline 2: HF Paper Search] Query: '{validated_query}' (limit: {limit})")
+            papers = fetch_by_query(validated_query, limit=limit)
+            print(f"  Found {len(papers)} papers from HF Search")
+            all_papers.extend(papers)
 
-    # Pipeline 3: Direct ID fetch
-    if args.arxiv_id:
-        print(f"\n[Pipeline 3: arXiv API] ID: {args.arxiv_id}")
-        paper = fetch_by_id(args.arxiv_id)
-        if paper:
-            print(f"  Found: {paper['title'][:70]}...")
-            all_papers.append(paper)
-        else:
-            print("  Paper not found.")
+        # Pipeline 3: Direct ID fetch
+        if args.arxiv_id:
+            validated_id = validate_arxiv_id(args.arxiv_id)
+            print(f"\n[Pipeline 3: arXiv API] ID: {validated_id}")
+            paper = fetch_by_id(validated_id)
+            if paper:
+                print(f"  Found: {paper['title'][:70]}...")
+                all_papers.append(paper)
+            else:
+                print("  Paper not found.")
+    except ValueError as e:
+        print(f"[ERROR] Input validation failed: {e}", file=sys.stderr)
+        return
 
     if not all_papers:
         print("\n[!] No papers discovered. Use --date, --query, or --arxiv-id.")
@@ -167,10 +221,26 @@ def cmd_learn(args):
     print("  C-S-P Phase: SYNTHESIS (distilling insights)")
     print("=" * 60)
 
-    # Validate paper IDs exist
+    # Sanitize inputs
+    try:
+        summary = sanitize_text(args.summary, MAX_SUMMARY_LENGTH, "Summary")
+        insight = sanitize_text(args.insight, MAX_SUMMARY_LENGTH, "Insight") if args.insight else summary
+        agent = sanitize_text(args.agent or "human", MAX_PROJECT_LENGTH, "Agent")
+        tags = sanitize_tags(args.tags) if args.tags else []
+    except ValueError as e:
+        print(f"[ERROR] Input validation failed: {e}", file=sys.stderr)
+        return
+
+    # Validate paper IDs
+    paper_ids = []
+    for pid in args.papers.split(","):
+        pid = pid.strip()
+        if not pid.startswith("arxiv:"):
+            pid = f"arxiv:{pid}"
+        paper_ids.append(pid)
+
     papers_data = load_papers()
     existing_ids = {p["id"] for p in papers_data.get("papers", [])}
-    paper_ids = [f"arxiv:{pid}" if not pid.startswith("arxiv:") else pid for pid in args.papers.split(",")]
 
     missing = [pid for pid in paper_ids if pid not in existing_ids]
     if missing:
@@ -187,11 +257,11 @@ def cmd_learn(args):
         "session_id": session_id,
         "date": date.today().isoformat(),
         "timestamp": datetime.now().isoformat(),
-        "summary": args.summary,
-        "key_insight": args.insight if args.insight else args.summary,
+        "summary": summary,
+        "key_insight": insight,
         "papers": paper_ids,
-        "agent": args.agent or "human",
-        "tags": args.tags.split(",") if args.tags else [],
+        "agent": agent,
+        "tags": tags,
     }
 
     # Save to learning log
@@ -228,15 +298,24 @@ def cmd_cite(args):
     print("  C-S-P Phase: PROPAGATION (applying knowledge)")
     print("=" * 60)
 
-    paper_id = f"arxiv:{args.arxiv_id}" if not args.arxiv_id.startswith("arxiv:") else args.arxiv_id
+    # Sanitize inputs
+    try:
+        arxiv_id = args.arxiv_id.strip()
+        paper_id = f"arxiv:{arxiv_id}" if not arxiv_id.startswith("arxiv:") else arxiv_id
+        project = sanitize_text(args.project, MAX_PROJECT_LENGTH, "Project")
+        context = sanitize_text(args.context, MAX_CONTEXT_LENGTH, "Context")
+        agent = sanitize_text(args.agent or "human", MAX_PROJECT_LENGTH, "Agent")
+    except ValueError as e:
+        print(f"[ERROR] Input validation failed: {e}", file=sys.stderr)
+        return
 
     citation = {
         "citation_id": f"cite_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}",
         "paper_id": paper_id,
-        "cited_in": args.project,
-        "context": args.context,
+        "cited_in": project,
+        "context": context,
         "date": date.today().isoformat(),
-        "cited_by": args.agent or "human",
+        "cited_by": agent,
     }
 
     citations_data = load_citations()

@@ -1,0 +1,5 @@
+# MACP Research Assistant - Pinned Dependencies
+# Last updated: 2026-02-16
+
+requests>=2.31.0,<3.0.0
+jsonschema>=4.20.0,<5.0.0
