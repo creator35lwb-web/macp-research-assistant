@@ -9,6 +9,7 @@ This is a CLI-based research tracking tool built on the Multi-Agent Communicatio
 ## Core Capabilities
 
 - **Paper Discovery** (`macp discover`): Find papers via HuggingFace Daily Papers API, HuggingFace Paper Search API, or arXiv API
+- **AI Analysis** (`macp analyze`): Send papers to LLMs (Gemini/Claude/OpenAI) for automated summarization, insight extraction, methodology identification, and research gap detection. BYOK with free-tier default. Includes consent prompt before sending data.
 - **Learning Tracking** (`macp learn`): Record insights and learnings linked to specific papers with agent attribution
 - **Citation Management** (`macp cite`): Track citations from papers into projects with full provenance
 - **Knowledge Recall** (`macp recall`): Search across papers, learning sessions, and citations using natural language
@@ -29,6 +30,7 @@ The project uses a `.macp/` directory structure with JSON files validated agains
 
 - `tools/macp_cli.py` — Main CLI entry point (run with `python tools/macp_cli.py`)
 - `tools/paper_fetcher.py` — Paper discovery and MACP storage library
+- `tools/llm_providers.py` — Multi-provider LLM interface (Gemini, Claude, OpenAI) with BYOK
 - `tools/knowledge_graph.py` — Knowledge graph generation and provenance tracing
 - `schemas/` — JSON Schema definitions for all MACP data files
 - `templates/` — Empty template files for initializing new MACP directories
@@ -50,6 +52,11 @@ python tools/macp_cli.py discover --query "multi-agent communication"
 
 # Fetch specific paper
 python tools/macp_cli.py discover --arxiv-id 2602.06570
+
+# AI-powered analysis (requires GEMINI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY)
+export GEMINI_API_KEY=your-key-here
+python tools/macp_cli.py analyze 2602.06570
+python tools/macp_cli.py analyze 2602.06570 --provider anthropic --yes
 
 # Record a learning insight
 python tools/macp_cli.py learn "Key finding about X" --papers 2602.06570 --agent claude

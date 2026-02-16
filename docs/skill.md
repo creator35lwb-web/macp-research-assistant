@@ -39,6 +39,36 @@ python tools/macp_cli.py discover --arxiv-id 2602.06570
 
 **Output:** Papers are added to `.macp/research_papers.json` with deduplication.
 
+### `analyze` — AI-powered paper analysis
+
+Sends a paper's abstract to an LLM for automated summarization, insight extraction, methodology identification, and research gap detection. Auto-creates a learning session with the results.
+
+```bash
+# Analyze a paper (auto-selects free-tier provider)
+export GEMINI_API_KEY=your-key-here
+python tools/macp_cli.py analyze 2602.06570
+
+# Use a specific provider
+python tools/macp_cli.py analyze 2602.06570 --provider anthropic
+
+# Skip consent prompt (for automation)
+python tools/macp_cli.py analyze 2602.06570 --yes
+```
+
+**Parameters:**
+- `arxiv_id` (required): arXiv ID of the paper (must be in KB or will be auto-fetched)
+- `--provider`: LLM provider — `gemini` (free, default), `anthropic`, `openai`
+- `--yes` / `-y`: Skip the consent confirmation prompt
+
+**Environment Variables (BYOK):**
+- `GEMINI_API_KEY` — Google Gemini (free tier, recommended)
+- `ANTHROPIC_API_KEY` — Anthropic Claude (paid)
+- `OPENAI_API_KEY` — OpenAI (paid)
+
+**Output:** Returns structured analysis (summary, key insights, methodology, research gaps, strength score). Automatically creates a learning session in `.macp/learning_log.json` and updates the paper status to `analyzed`.
+
+**Consent:** By default, prompts the user before sending any data to external APIs. Use `--yes` to skip for automation.
+
 ### `learn` — Record a learning insight
 
 Records an insight linked to specific papers, creating a learning session in `.macp/learning_log.json`.
@@ -111,10 +141,11 @@ All data is stored in `.macp/` and validated against JSON schemas in `schemas/`.
 
 ```
 1. discover  → Find papers (Conflict phase)
-2. learn     → Extract insights (Synthesis phase)
-3. cite      → Apply to projects (Propagation phase)
-4. recall    → Query knowledge base anytime
-5. status    → Monitor progress
+2. analyze   → AI-powered insight extraction (Synthesis phase, automated)
+3. learn     → Manual insight recording (Synthesis phase, human)
+4. cite      → Apply to projects (Propagation phase)
+5. recall    → Query knowledge base anytime
+6. status    → Monitor progress
 ```
 
 ## Security

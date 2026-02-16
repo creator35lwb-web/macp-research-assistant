@@ -40,6 +40,12 @@ from paper_fetcher import (
     validate_query,
     MACP_DIR,
 )
+from llm_providers import (
+    get_available_providers,
+    select_provider,
+    analyze_paper,
+    PROVIDERS,
+)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -207,6 +213,179 @@ def cmd_discover(args):
     # Summary
     total = load_papers()
     print(f"\n[Summary] Total papers in knowledge base: {len(total.get('papers', []))}")
+    print("=" * 60)
+
+
+# ---------------------------------------------------------------------------
+# Command: analyze
+# ---------------------------------------------------------------------------
+
+def cmd_analyze(args):
+    """Send a paper to an LLM for AI-powered analysis and insight extraction."""
+    print("=" * 60)
+    print("MACP Research Assistant - ANALYZE")
+    print("  C-S-P Phase: SYNTHESIS (AI-powered deep analysis)")
+    print("=" * 60)
+
+    # --- Resolve the paper ---
+    paper_id = args.arxiv_id.strip()
+    if not paper_id.startswith("arxiv:"):
+        paper_id = f"arxiv:{paper_id}"
+
+    papers_data = load_papers()
+    paper = None
+    for p in papers_data.get("papers", []):
+        if p["id"] == paper_id:
+            paper = p
+            break
+
+    if not paper:
+        print(f"\n[!] Paper {paper_id} not in knowledge base.")
+        print("  Fetching from arXiv...")
+        try:
+            raw_id = paper_id.replace("arxiv:", "")
+            validate_arxiv_id(raw_id)
+            from paper_fetcher import fetch_by_id as _fetch
+            paper = _fetch(raw_id)
+            if paper:
+                add_papers([paper])
+                print(f"  Added: {paper['title'][:70]}...")
+            else:
+                print(f"  [ERROR] Could not fetch paper {raw_id} from arXiv.", file=sys.stderr)
+                return
+        except ValueError as e:
+            print(f"  [ERROR] {e}", file=sys.stderr)
+            return
+
+    title = paper.get("title", "Unknown")
+    abstract = paper.get("abstract", "")
+    authors = paper.get("authors", [])
+
+    if not abstract:
+        print(f"\n[WARN] Paper has no abstract. Analysis quality will be limited.")
+
+    # --- Select provider ---
+    print(f"\n[Paper] {title[:70]}...")
+    print(f"  ID: {paper_id}")
+    print(f"  Authors: {', '.join(authors[:3])}" + ("..." if len(authors) > 3 else ""))
+
+    available = get_available_providers()
+    configured = [p for p in available if p["configured"]]
+
+    if not configured:
+        print("\n[ERROR] No LLM providers configured.", file=sys.stderr)
+        print("  Set one of these environment variables:", file=sys.stderr)
+        for p in available:
+            env = PROVIDERS[p["id"]]["env_key"]
+            tier = "(FREE tier)" if p["free_tier"] else "(paid)"
+            print(f"    export {env}=your-key-here  # {p['name']} {tier}", file=sys.stderr)
+        return
+
+    provider_id = select_provider(args.provider)
+    if not provider_id:
+        print("\n[ERROR] Could not select a provider.", file=sys.stderr)
+        return
+
+    provider_info = PROVIDERS[provider_id]
+
+    # --- Consent check ---
+    if not args.yes:
+        print(f"\n[CONSENT] About to send paper data to: {provider_info['name']}")
+        print(f"  Model: {provider_info['model']}")
+        print(f"  Free tier: {'Yes' if provider_info['free_tier'] else 'No (costs may apply)'}")
+        print(f"  Data sent: title, authors, abstract ({len(abstract)} chars)")
+        print()
+        try:
+            confirm = input("  Proceed? [y/N] ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            confirm = "n"
+        if confirm != "y":
+            print("  Aborted by user.")
+            return
+
+    # --- Call LLM ---
+    print(f"\n[Analyzing] Sending to {provider_info['name']} ({provider_info['model']})...")
+
+    analysis = analyze_paper(
+        title=title,
+        authors=authors,
+        abstract=abstract,
+        provider_id=provider_id,
+    )
+
+    if not analysis:
+        print("[ERROR] Analysis failed. See errors above.", file=sys.stderr)
+        return
+
+    # --- Display results ---
+    print(f"\n--- Analysis Results ---")
+    print(f"  Summary: {analysis.get('summary', 'N/A')}")
+
+    insights = analysis.get("key_insights", [])
+    if insights:
+        print(f"\n  Key Insights:")
+        for i, insight in enumerate(insights, 1):
+            print(f"    {i}. {insight}")
+
+    methodology = analysis.get("methodology", "")
+    if methodology:
+        print(f"\n  Methodology: {methodology}")
+
+    gaps = analysis.get("research_gaps", [])
+    if gaps:
+        print(f"\n  Research Gaps:")
+        for gap in gaps:
+            print(f"    - {gap}")
+
+    tags = analysis.get("relevance_tags", [])
+    score = analysis.get("strength_score", "N/A")
+    print(f"\n  Strength Score: {score}/10")
+    if tags:
+        print(f"  Tags: {', '.join(tags)}")
+
+    # --- Auto-create learning session ---
+    summary_text = analysis.get("summary", title)
+    insight_text = "; ".join(insights[:3]) if insights else summary_text
+
+    session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
+    session = {
+        "session_id": session_id,
+        "date": date.today().isoformat(),
+        "timestamp": datetime.now().isoformat(),
+        "summary": summary_text,
+        "key_insight": insight_text,
+        "papers": [paper_id],
+        "agent": f"{provider_info['name'].lower().replace(' ', '_')}:{provider_info['model']}",
+        "tags": [sanitize_tags(t)[0] if sanitize_tags(t) else t for t in tags] if tags else [],
+        "analysis": {
+            "provider": provider_id,
+            "model": provider_info["model"],
+            "methodology": methodology,
+            "research_gaps": gaps,
+            "strength_score": score,
+        },
+    }
+
+    log = load_learning_log()
+    log.setdefault("learning_sessions", []).append(session)
+    save_learning_log(log)
+
+    # Update paper status + insights
+    for p in papers_data.get("papers", []):
+        if p["id"] == paper_id:
+            p["status"] = "analyzed"
+            existing_insights = p.get("insights", [])
+            for insight in insights:
+                if insight not in existing_insights:
+                    existing_insights.append(insight)
+            p["insights"] = existing_insights
+            break
+    save_papers(papers_data)
+
+    print(f"\n[MACP] Learning session created: {session_id}")
+    print(f"  Paper status updated to: analyzed")
+    total = len(log.get("learning_sessions", []))
+    print(f"  Total learning sessions: {total}")
     print("=" * 60)
 
 
@@ -489,6 +668,13 @@ def main():
     p_discover.add_argument("--arxiv-id", help="Fetch a specific paper by arXiv ID")
     p_discover.add_argument("--limit", "-l", type=int, default=10, help="Max results for query search")
     p_discover.set_defaults(func=cmd_discover)
+
+    # --- analyze ---
+    p_analyze = subparsers.add_parser("analyze", help="AI-powered paper analysis (C-S-P: Synthesis)")
+    p_analyze.add_argument("arxiv_id", help="arXiv ID of the paper to analyze")
+    p_analyze.add_argument("--provider", help="LLM provider: gemini, anthropic, openai (default: auto-select)")
+    p_analyze.add_argument("--yes", "-y", action="store_true", help="Skip consent prompt")
+    p_analyze.set_defaults(func=cmd_analyze)
 
     # --- learn ---
     p_learn = subparsers.add_parser("learn", help="Record a learning insight (C-S-P: Synthesis)")
