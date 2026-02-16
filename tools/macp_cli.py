@@ -752,6 +752,197 @@ def cmd_recall(args):
 
 
 # ---------------------------------------------------------------------------
+# Command: export
+# ---------------------------------------------------------------------------
+
+EXPORTS_DIR = os.path.join(MACP_DIR, "exports")
+
+
+def cmd_export(args):
+    """Export the MACP knowledge base to a Markdown research report."""
+    print("=" * 60)
+    print("MACP Research Assistant - EXPORT")
+    print("  Generating Markdown research report")
+    print("=" * 60)
+
+    papers_data = load_papers()
+    log = load_learning_log()
+    citations_data = load_citations()
+    handoffs_data = load_handoffs()
+
+    paper_list = papers_data.get("papers", [])
+    session_list = log.get("learning_sessions", [])
+    citation_list = citations_data.get("citations", [])
+    handoff_list = handoffs_data.get("handoffs", [])
+
+    # Filter by tag if specified
+    if args.tag:
+        tag = args.tag.lower()
+        filtered_sessions = [
+            s for s in session_list if tag in [t.lower() for t in s.get("tags", [])]
+        ]
+        # Find papers linked from filtered sessions
+        linked_paper_ids = set()
+        for s in filtered_sessions:
+            linked_paper_ids.update(s.get("papers", []))
+        filtered_papers = [p for p in paper_list if p["id"] in linked_paper_ids]
+        filtered_citations = [c for c in citation_list if c["paper_id"] in linked_paper_ids]
+        paper_list = filtered_papers
+        session_list = filtered_sessions
+        citation_list = filtered_citations
+
+    # Build report
+    now = datetime.now()
+    lines = []
+    lines.append(f"# MACP Research Report")
+    lines.append(f"")
+    if args.tag:
+        lines.append(f"**Filter:** tag = `{args.tag}`")
+    lines.append(f"**Generated:** {now.strftime('%Y-%m-%d %H:%M')}")
+    lines.append(f"**Agent:** RNA (Claude Code)")
+    lines.append(f"**Protocol:** MACP v2.0 / GODELAI C-S-P Framework")
+    lines.append(f"")
+
+    # --- Summary ---
+    lines.append(f"## Summary")
+    lines.append(f"")
+    lines.append(f"| Metric | Count |")
+    lines.append(f"|--------|-------|")
+    lines.append(f"| Papers | {len(paper_list)} |")
+    lines.append(f"| Learning Sessions | {len(session_list)} |")
+    lines.append(f"| Citations | {len(citation_list)} |")
+    lines.append(f"| Handoffs | {len(handoff_list)} |")
+    lines.append(f"")
+
+    # --- Papers ---
+    if paper_list:
+        lines.append(f"## Papers")
+        lines.append(f"")
+        for paper in sorted(paper_list, key=lambda p: p.get("discovered_date", ""), reverse=True):
+            status = paper.get("status", "unknown")
+            lines.append(f"### {paper['title']}")
+            lines.append(f"")
+            lines.append(f"- **ID:** `{paper['id']}`")
+            lines.append(f"- **Authors:** {', '.join(paper.get('authors', ['Unknown']))}")
+            if paper.get("url"):
+                lines.append(f"- **URL:** {paper['url']}")
+            lines.append(f"- **Status:** {status}")
+            lines.append(f"- **Discovered:** {paper.get('discovered_date', 'N/A')}")
+            if paper.get("abstract"):
+                abstract = paper["abstract"]
+                if len(abstract) > 300:
+                    abstract = abstract[:300] + "..."
+                lines.append(f"")
+                lines.append(f"> {abstract}")
+            if paper.get("insights"):
+                lines.append(f"")
+                lines.append(f"**Key Insights:**")
+                for insight in paper["insights"]:
+                    if isinstance(insight, str):
+                        lines.append(f"- {insight}")
+            lines.append(f"")
+
+    # --- Learning Sessions ---
+    if session_list:
+        lines.append(f"## Learning Sessions")
+        lines.append(f"")
+        for session in sorted(session_list, key=lambda s: s.get("date", ""), reverse=True):
+            lines.append(f"### Session: {session['session_id']}")
+            lines.append(f"")
+            lines.append(f"- **Date:** {session.get('date', 'N/A')}")
+            lines.append(f"- **Agent:** {session.get('agent', 'N/A')}")
+            if session.get("tags"):
+                lines.append(f"- **Tags:** {', '.join(session['tags'])}")
+            if session.get("papers"):
+                lines.append(f"- **Papers:** {', '.join(session['papers'])}")
+            lines.append(f"")
+            lines.append(f"**Summary:** {session.get('summary', 'N/A')}")
+            if session.get("key_insight"):
+                lines.append(f"")
+                lines.append(f"**Key Insight:** {session['key_insight']}")
+
+            # Analysis details
+            analysis = session.get("analysis", {})
+            if analysis:
+                lines.append(f"")
+                lines.append(f"**Analysis Details:**")
+                if analysis.get("provider"):
+                    lines.append(f"- Provider: {analysis['provider']} ({analysis.get('model', 'N/A')})")
+                if analysis.get("methodology"):
+                    lines.append(f"- Methodology: {analysis['methodology']}")
+                if analysis.get("strength_score"):
+                    lines.append(f"- Strength Score: {analysis['strength_score']}/10")
+                if analysis.get("research_gaps"):
+                    lines.append(f"- Research Gaps:")
+                    for gap in analysis["research_gaps"]:
+                        lines.append(f"  - {gap}")
+            lines.append(f"")
+
+    # --- Citations ---
+    if citation_list:
+        lines.append(f"## Citations")
+        lines.append(f"")
+        lines.append(f"| Paper | Project | Context | Agent | Date |")
+        lines.append(f"|-------|---------|---------|-------|------|")
+        for cite in citation_list:
+            context = cite.get("context", "")
+            if len(context) > 60:
+                context = context[:60] + "..."
+            lines.append(f"| `{cite['paper_id']}` | {cite['cited_in']} | {context} | {cite.get('cited_by', 'N/A')} | {cite['date']} |")
+        lines.append(f"")
+
+    # --- Handoffs ---
+    if handoff_list:
+        lines.append(f"## Handoffs")
+        lines.append(f"")
+        for ho in handoff_list:
+            lines.append(f"### {ho['handoff_id']}")
+            lines.append(f"")
+            lines.append(f"- **From:** {ho.get('from_agent', ho.get('from_agent_id', 'N/A'))}")
+            lines.append(f"- **To:** {ho.get('to_agent', ho.get('to_agent_id', 'N/A'))}")
+            ts = ho.get("timestamp", ho.get("date", "N/A"))
+            lines.append(f"- **Timestamp:** {ts}")
+            summary = ho.get("task_summary", ho.get("task", "N/A"))
+            lines.append(f"- **Summary:** {summary}")
+            if ho.get("completed"):
+                lines.append(f"- **Completed:** {'; '.join(ho['completed'])}")
+            if ho.get("pending"):
+                lines.append(f"- **Pending:** {'; '.join(ho['pending'])}")
+            ks = ho.get("knowledge_state")
+            if ks:
+                lines.append(f"- **KB State:** {ks.get('total_papers', 0)} papers, {ks.get('total_sessions', 0)} sessions, {ks.get('total_citations', 0)} citations")
+            lines.append(f"")
+
+    # --- Footer ---
+    lines.append(f"---")
+    lines.append(f"")
+    lines.append(f"*Generated by MACP Research Assistant | YSenseAI Ecosystem | GODELAI C-S-P Framework*")
+    lines.append(f"")
+
+    report = "\n".join(lines)
+
+    # Determine output path
+    if args.output:
+        output_path = args.output
+    else:
+        os.makedirs(EXPORTS_DIR, exist_ok=True)
+        tag_suffix = f"_{args.tag}" if args.tag else ""
+        filename = f"research_report_{now.strftime('%Y%m%d_%H%M%S')}{tag_suffix}.md"
+        output_path = os.path.join(EXPORTS_DIR, filename)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(report)
+
+    print(f"\n[EXPORT] Report generated: {output_path}")
+    print(f"  Papers: {len(paper_list)}")
+    print(f"  Sessions: {len(session_list)}")
+    print(f"  Citations: {len(citation_list)}")
+    print(f"  Handoffs: {len(handoff_list)}")
+    print(f"  Size: {len(report)} chars")
+    print("=" * 60)
+
+
+# ---------------------------------------------------------------------------
 # Command: status
 # ---------------------------------------------------------------------------
 
@@ -777,7 +968,7 @@ def cmd_status(args):
 
     print(f"\n  Papers:          {len(paper_list)}")
     for status, count in sorted(status_counts.items()):
-        icon = {"discovered": "🔍", "analyzed": "📖", "cited": "📌"}.get(status, "?")
+        icon = {"discovered": "[d]", "analyzed": "[a]", "cited": "[c]", "validated": "[v]", "rejected": "[x]"}.get(status, "[?]")
         print(f"    {icon} {status}: {count}")
     print(f"  Learning Sessions: {len(session_list)}")
     print(f"  Citations:         {len(citation_list)}")
@@ -859,6 +1050,12 @@ def main():
     p_recall.add_argument("question", help="Natural language question to search for")
     p_recall.add_argument("--limit", "-l", type=int, default=5, help="Max results per category")
     p_recall.set_defaults(func=cmd_recall)
+
+    # --- export ---
+    p_export = subparsers.add_parser("export", help="Export knowledge base to Markdown report")
+    p_export.add_argument("--output", "-o", help="Output file path (default: .macp/exports/)")
+    p_export.add_argument("--tag", "-t", help="Filter report by tag")
+    p_export.set_defaults(func=cmd_export)
 
     # --- status ---
     p_status = subparsers.add_parser("status", help="Show knowledge base status")

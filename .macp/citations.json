@@ -1,1 +1,20 @@
-{"citations": []}
+{
+  "citations": [
+    {
+      "citation_id": "cite_20260217_074500_552b5c",
+      "paper_id": "arxiv:2501.04306",
+      "cited_in": "GODELAI C-S-P Framework",
+      "context": "LLM4SR validates the C-S-P approach: LLMs can automate Conflict (hypothesis), Synthesis (analysis), and Propagation (review) phases",
+      "date": "2026-02-17",
+      "cited_by": "RNA"
+    },
+    {
+      "citation_id": "cite_20260217_074500_0caf20",
+      "paper_id": "arxiv:2502.11271",
+      "cited_in": "MACP Research Assistant",
+      "context": "OctoTools tool-card pattern aligns with our skill.md and llms.txt agent discoverability approach",
+      "date": "2026-02-17",
+      "cited_by": "RNA"
+    }
+  ]
+}

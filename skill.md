@@ -148,6 +148,27 @@ Shows paper counts, learning sessions, citations, and recent activity.
 python tools/macp_cli.py status
 ```
 
+### `export` — Export knowledge base to Markdown report
+
+Generates a clean, readable Markdown research report from the knowledge base. Supports filtering by tag.
+
+```bash
+# Full report (saved to .macp/exports/)
+python tools/macp_cli.py export
+
+# Filter by tag
+python tools/macp_cli.py export --tag agentic-ai
+
+# Custom output path
+python tools/macp_cli.py export --output report.md
+```
+
+**Parameters:**
+- `--output` / `-o`: Custom output file path (default: `.macp/exports/research_report_{timestamp}.md`)
+- `--tag` / `-t`: Filter report to only include sessions/papers with this tag
+
+**Output:** Generates a Markdown report with sections for Summary, Papers (with abstracts and insights), Learning Sessions (with analysis details), Citations (as table), and Handoffs.
+
 ## Data Files
 
 All data is stored in `.macp/` and validated against JSON schemas in `schemas/`.
@@ -169,7 +190,8 @@ All data is stored in `.macp/` and validated against JSON schemas in `schemas/`.
 4. cite      → Apply to projects (Propagation phase)
 5. handoff   → Pass context between agents (Proto-A2A)
 6. recall    → Query knowledge base anytime
-7. status    → Monitor progress
+7. export    → Generate Markdown research report
+8. status    → Monitor progress
 ```
 
 ## Security

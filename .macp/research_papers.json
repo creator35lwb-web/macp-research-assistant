@@ -1,1 +1,100 @@
-{"papers": []}
+{
+  "papers": [
+    {
+      "id": "arxiv:2502.04128",
+      "title": "Llasa: Scaling Train-Time and Inference-Time Compute for Llama-based Speech Synthesis",
+      "authors": [
+        "Zhen Ye",
+        "Xinfa Zhu",
+        "Chi-Min Chan",
+        "Xinsheng Wang",
+        "Xu Tan",
+        "Jiahe Lei",
+        "Yi Peng",
+        "Haohe Liu",
+        "Yizhu Jin",
+        "Zheqi Dai",
+        "Hongzhan Lin",
+        "Jianyi Chen",
+        "Xingjian Du",
+        "Liumeng Xue",
+        "Yunlin Chen",
+        "Zhifei Li",
+        "Lei Xie",
+        "Qiuqiang Kong",
+        "Yike Guo",
+        "Wei Xue"
+      ],
+      "url": "https://arxiv.org/abs/2502.04128",
+      "abstract": "Recent advances in text-based large language models (LLMs), particularly in the GPT series and the o1 model, have demonstrated the effectiveness of scaling both training-time and inference-time compute. However, current state-of-the-art TTS systems leveraging LLMs are often multi-stage, requiring separate models (e.g., diffusion models after LLM), complicating the decision of whether to scale a particular model during training or testing. This work makes the following contributions: First, we explore the scaling of train-time and inference-time compute for speech synthesis. Second, we propose a simple framework Llasa for speech synthesis that employs a single-layer vector quantizer (VQ) codec and a single Transformer architecture to fully align with standard LLMs such as Llama. Our experiments reveal that scaling train-time compute for Llasa consistently improves the naturalness of synthesized speech and enables the generation of more complex and accurate prosody patterns. Furthermore, from the perspective of scaling inference-time compute, we employ speech understanding models as verifiers during the search, finding that scaling inference-time compute shifts the sampling modes toward the preferences of specific verifiers, thereby improving emotional expressiveness, timbre consistency, and content accuracy. In addition, we released the checkpoint and training code for our TTS model (1B, 3B, 8B) and codec model publicly available.",
+      "discovered_by": "arxiv_api",
+      "discovered_date": "2025-02-06",
+      "status": "discovered",
+      "insights": []
+    },
+    {
+      "id": "arxiv:2501.04306",
+      "title": "LLM4SR: A Survey on Large Language Models for Scientific Research",
+      "authors": [
+        "Ziming Luo",
+        "Zonglin Yang",
+        "Zexin Xu",
+        "Wei Yang",
+        "Xinya Du"
+      ],
+      "url": "https://arxiv.org/abs/2501.04306",
+      "abstract": "In recent years, the rapid advancement of Large Language Models (LLMs) has transformed the landscape of scientific research, offering unprecedented support across various stages of the research cycle. This paper presents the first systematic survey dedicated to exploring how LLMs are revolutionizing the scientific research process. We analyze the unique roles LLMs play across four critical stages of research: hypothesis discovery, experiment planning and implementation, scientific writing, and peer reviewing. Our review comprehensively showcases the task-specific methodologies and evaluation benchmarks. By identifying current challenges and proposing future research directions, this survey not only highlights the transformative potential of LLMs, but also aims to inspire and guide researchers and practitioners in leveraging LLMs to advance scientific inquiry. Resources are available at the following repository: https://github.com/du-nlp-lab/LLM4SR",
+      "discovered_by": "arxiv_api",
+      "discovered_date": "2025-01-08",
+      "status": "cited",
+      "insights": [
+        "LLMs are being applied across the entire scientific research lifecycle, from initial hypothesis generation through peer review, representing a fundamental shift in how research is conducted",
+        "Each research stage requires task-specific methodologies and evaluation benchmarks tailored to the unique requirements of scientific work",
+        "Current LLM applications in science face significant challenges including domain-specific knowledge limitations, evaluation difficulties, and the need for specialized benchmarks",
+        "The integration of LLMs into scientific workflows has transformative potential but requires careful consideration of reliability, reproducibility, and domain expertise"
+      ]
+    },
+    {
+      "id": "arxiv:2501.12946",
+      "title": "Less is More: Simple yet Effective Heuristic Community Detection with Graph Convolution Network",
+      "authors": [
+        "Hong Wang",
+        "Yinglong Zhang",
+        "Zhangqi Zhao",
+        "Zhicong Cai",
+        "Xuewen Xia",
+        "Xing Xu"
+      ],
+      "url": "https://arxiv.org/abs/2501.12946",
+      "abstract": "Community detection is crucial in data mining. Traditional methods primarily focus on graph structure, often neglecting the significance of attribute features. In contrast, deep learning-based approaches incorporate attribute features and local structural information through contrastive learning, improving detection performance. However, existing algorithms' complex design and joint optimization make them difficult to train and reduce detection efficiency. Additionally, these methods require the number of communities to be predefined, making the results susceptible to artificial interference. To address these challenges, we propose a simple yet effective community detection algorithm that can adaptively detect communities without relying on data augmentation and contrastive optimization. The proposed algorithm first performs community pre-detection to extract global structural information adaptively. It then utilizes GCN to integrate local structures and attribute features. Subsequently, it combines global, local structures and attribute features in the feature space to discover community affiliations. Finally, a modularity maximization method is employed to optimize the communities based on these three types of information, thereby uncovering the community affiliation of each node. We conduct experimental comparisons across various graph datasets, evaluating the proposed algorithm against traditional methods and state-of-the-art community detection algorithms. The experimental results demonstrate that our algorithm achieves greater efficiency and accuracy in terms of both detection speed and effectiveness. The code is available at https://github.com/wuanghoong/Less-is-More.git.",
+      "discovered_by": "arxiv_api",
+      "discovered_date": "2025-01-22",
+      "status": "discovered",
+      "insights": []
+    },
+    {
+      "id": "arxiv:2502.11271",
+      "title": "OctoTools: An Agentic Framework with Extensible Tools for Complex Reasoning",
+      "authors": [
+        "Pan Lu",
+        "Bowen Chen",
+        "Sheng Liu",
+        "Rahul Thapa",
+        "Joseph Boen",
+        "James Zou"
+      ],
+      "url": "https://arxiv.org/abs/2502.11271",
+      "abstract": "Solving complex reasoning tasks may involve visual understanding, domain knowledge retrieval, numerical calculation, and multi-step reasoning. Existing methods augment large language models (LLMs) with external tools but are restricted to specialized domains, limited tool types, or require additional training data. In this paper, we introduce OctoTools, a training-free, user-friendly, and easily extensible open-source agentic framework designed to tackle complex reasoning across diverse domains. OctoTools introduces standardized tool cards to encapsulate tool functionality, a planner for both high-level and low-level planning, and an executor to carry out tool usage. We validate OctoTools' generality across 16 diverse tasks (including MathVista, MMLU-Pro, MedQA, and GAIA-Text), achieving substantial average accuracy gains of 9.3% over GPT-4o. Furthermore, OctoTools outperforms AutoGen, GPT-Functions and LangChain by up to 10.6% when given the same set of tools. Through comprehensive analysis and ablations, OctoTools demonstrates advantages in task planning, effective tool usage, and multi-step problem solving.",
+      "discovered_by": "arxiv_api",
+      "discovered_date": "2025-02-16",
+      "status": "cited",
+      "insights": [
+        "OctoTools achieves 9.3% average accuracy improvement over GPT-4o across 16 diverse reasoning tasks without requiring additional training",
+        "The framework outperforms existing agentic systems (AutoGen, GPT-Functions, LangChain) by up to 10.6% when using the same tools",
+        "Standardized tool cards enable easy extensibility and consistent tool integration across different domains",
+        "The dual-level planning approach (high-level and low-level) effectively decomposes complex multi-step reasoning problems",
+        "Training-free design allows immediate deployment and adaptation to new domains and tools"
+      ]
+    }
+  ]
+}

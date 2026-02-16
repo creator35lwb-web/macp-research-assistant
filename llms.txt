@@ -14,6 +14,7 @@ This is a CLI-based research tracking tool built on the Multi-Agent Communicatio
 - **Learning Tracking** (`macp learn`): Record insights and learnings linked to specific papers with agent attribution
 - **Citation Management** (`macp cite`): Track citations from papers into projects with full provenance
 - **Knowledge Recall** (`macp recall`): Search across papers, learning sessions, citations, and handoffs using natural language
+- **Report Export** (`macp export`): Generate Markdown research reports with optional tag filtering
 - **Knowledge Graph** (`knowledge_graph.py`): Generate relationship graphs between papers, sessions, citations, agents, and projects
 - **Status Overview** (`macp status`): View current state of the research knowledge base
 
@@ -71,6 +72,10 @@ python tools/macp_cli.py cite 2602.06570 --project "GODELAI" --context "Used for
 
 # Recall knowledge
 python tools/macp_cli.py recall "conflict data alignment"
+
+# Export to Markdown report
+python tools/macp_cli.py export
+python tools/macp_cli.py export --tag agentic-ai --output report.md
 
 # Check status
 python tools/macp_cli.py status
