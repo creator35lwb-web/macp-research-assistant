@@ -10,9 +10,10 @@ This is a CLI-based research tracking tool built on the Multi-Agent Communicatio
 
 - **Paper Discovery** (`macp discover`): Find papers via HuggingFace Daily Papers API, HuggingFace Paper Search API, or arXiv API
 - **AI Analysis** (`macp analyze`): Send papers to LLMs (Gemini/Claude/OpenAI) for automated summarization, insight extraction, methodology identification, and research gap detection. BYOK with free-tier default. Includes consent prompt before sending data.
+- **Agent Handoff** (`macp handoff`): Create structured multi-agent research handoffs with knowledge state snapshots (proto-A2A)
 - **Learning Tracking** (`macp learn`): Record insights and learnings linked to specific papers with agent attribution
 - **Citation Management** (`macp cite`): Track citations from papers into projects with full provenance
-- **Knowledge Recall** (`macp recall`): Search across papers, learning sessions, and citations using natural language
+- **Knowledge Recall** (`macp recall`): Search across papers, learning sessions, citations, and handoffs using natural language
 - **Knowledge Graph** (`knowledge_graph.py`): Generate relationship graphs between papers, sessions, citations, agents, and projects
 - **Status Overview** (`macp status`): View current state of the research knowledge base
 
@@ -57,6 +58,10 @@ python tools/macp_cli.py discover --arxiv-id 2602.06570
 export GEMINI_API_KEY=your-key-here
 python tools/macp_cli.py analyze 2602.06570
 python tools/macp_cli.py analyze 2602.06570 --provider anthropic --yes
+
+# Create a multi-agent handoff
+python tools/macp_cli.py handoff --from claude --to gemini --summary "Research session complete" \
+  --completed "Analyzed 5 papers;Built knowledge graph" --pending "Review gaps" --papers 2602.06570
 
 # Record a learning insight
 python tools/macp_cli.py learn "Key finding about X" --papers 2602.06570 --agent claude

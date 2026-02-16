@@ -69,6 +69,29 @@ python tools/macp_cli.py analyze 2602.06570 --yes
 
 **Consent:** By default, prompts the user before sending any data to external APIs. Use `--yes` to skip for automation.
 
+### `handoff` — Multi-agent research handoff
+
+Creates a structured handoff record when passing research context between agents. Captures completed work, pending actions, relevant papers, and a snapshot of the knowledge base state.
+
+```bash
+python tools/macp_cli.py handoff \
+  --from claude --to gemini \
+  --summary "Completed analysis of 5 transformer papers" \
+  --completed "Analyzed papers;Built knowledge graph" \
+  --pending "Review research gaps;Export report" \
+  --papers 2602.06570,2602.07890
+```
+
+**Parameters:**
+- `--from` (required): Agent initiating the handoff
+- `--to` (required): Agent receiving the handoff
+- `--summary` / `-s` (required): Summary of the research task or context
+- `--completed`: Semicolon-separated list of completed actions
+- `--pending`: Semicolon-separated list of pending actions for the receiving agent
+- `--papers` / `-p`: Comma-separated arXiv IDs relevant to this handoff
+
+**Output:** Creates a handoff record in `.macp/handoffs.json` with a knowledge base state snapshot (paper count, session count, citation count).
+
 ### `learn` — Record a learning insight
 
 Records an insight linked to specific papers, creating a learning session in `.macp/learning_log.json`.
@@ -107,7 +130,7 @@ python tools/macp_cli.py cite 2602.06570 \
 
 ### `recall` — Search the knowledge base
 
-Natural language search across papers, learning sessions, and citations.
+Natural language search across papers, learning sessions, citations, and handoffs. Searches enriched fields including abstracts, insights, tags, methodology, research gaps, and handoff context.
 
 ```bash
 python tools/macp_cli.py recall "conflict data for AI alignment" --limit 10
@@ -144,8 +167,9 @@ All data is stored in `.macp/` and validated against JSON schemas in `schemas/`.
 2. analyze   → AI-powered insight extraction (Synthesis phase, automated)
 3. learn     → Manual insight recording (Synthesis phase, human)
 4. cite      → Apply to projects (Propagation phase)
-5. recall    → Query knowledge base anytime
-6. status    → Monitor progress
+5. handoff   → Pass context between agents (Proto-A2A)
+6. recall    → Query knowledge base anytime
+7. status    → Monitor progress
 ```
 
 ## Security

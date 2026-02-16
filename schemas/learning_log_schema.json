@@ -18,25 +18,64 @@
             "format": "date",
             "description": "The date of the learning session (YYYY-MM-DD)."
           },
-          "agent_id": {
+          "timestamp": {
             "type": "string",
-            "description": "The ID of the agent conducting the learning session."
+            "format": "date-time",
+            "description": "ISO 8601 timestamp of when the session was created."
           },
-          "topic": {
+          "agent": {
             "type": "string",
-            "description": "The main topic or question of the session."
+            "description": "The agent or person who produced this insight."
           },
           "summary": {
             "type": "string",
             "description": "A summary of the key insights and takeaways from the session."
           },
-          "paper_ids": {
+          "key_insight": {
+            "type": "string",
+            "description": "Concise key insight distilled from the session."
+          },
+          "papers": {
             "type": "array",
             "items": { "type": "string" },
             "description": "A list of paper IDs referenced during the session."
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Categorization tags for the session."
+          },
+          "analysis": {
+            "type": "object",
+            "description": "AI analysis metadata (present when created by macp analyze).",
+            "properties": {
+              "provider": {
+                "type": "string",
+                "description": "LLM provider used for analysis."
+              },
+              "model": {
+                "type": "string",
+                "description": "Model identifier used for analysis."
+              },
+              "methodology": {
+                "type": "string",
+                "description": "Methodology identified in the paper."
+              },
+              "research_gaps": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Research gaps identified by the analysis."
+              },
+              "strength_score": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "description": "Paper contribution strength score (1-10)."
+              }
+            }
           }
         },
-        "required": ["session_id", "date", "agent_id", "topic", "summary"]
+        "required": ["session_id", "date", "summary"]
       }
     }
   },

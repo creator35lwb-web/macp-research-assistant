@@ -390,6 +390,108 @@ def cmd_analyze(args):
 
 
 # ---------------------------------------------------------------------------
+# Command: handoff
+# ---------------------------------------------------------------------------
+
+HANDOFFS_FILE = os.path.join(MACP_DIR, "handoffs.json")
+
+
+def load_handoffs() -> dict:
+    """Load the current handoffs.json file."""
+    if not os.path.exists(HANDOFFS_FILE):
+        return {"handoffs": []}
+    with open(HANDOFFS_FILE, "r") as f:
+        return json.load(f)
+
+
+def save_handoffs(data: dict) -> None:
+    """Save the handoffs.json file with schema validation and atomic write."""
+    if not validate_json_data(data, "handoffs_schema.json"):
+        print("[WARN] Handoffs failed schema validation but saving anyway.", file=sys.stderr)
+    atomic_write_json(HANDOFFS_FILE, data)
+
+
+def cmd_handoff(args):
+    """Create a structured research handoff between agents."""
+    print("=" * 60)
+    print("MACP Research Assistant - HANDOFF")
+    print("  Proto-A2A: Structured multi-agent research handoff")
+    print("=" * 60)
+
+    # Sanitize inputs
+    try:
+        from_agent = sanitize_text(args.from_agent, MAX_PROJECT_LENGTH, "From agent")
+        to_agent = sanitize_text(args.to_agent, MAX_PROJECT_LENGTH, "To agent")
+        summary = sanitize_text(args.summary, MAX_SUMMARY_LENGTH, "Summary")
+    except ValueError as e:
+        print(f"[ERROR] Input validation failed: {e}", file=sys.stderr)
+        return
+
+    # Parse completed/pending items
+    completed = [c.strip() for c in args.completed.split(";") if c.strip()] if args.completed else []
+    pending = [p.strip() for p in args.pending.split(";") if p.strip()] if args.pending else []
+
+    # Parse paper IDs
+    paper_ids = []
+    if args.papers:
+        for pid in args.papers.split(","):
+            pid = pid.strip()
+            if not pid.startswith("arxiv:"):
+                pid = f"arxiv:{pid}"
+            paper_ids.append(pid)
+
+    # Build knowledge state snapshot
+    papers_data = load_papers()
+    log = load_learning_log()
+    citations_data = load_citations()
+    knowledge_state = {
+        "total_papers": len(papers_data.get("papers", [])),
+        "total_sessions": len(log.get("learning_sessions", [])),
+        "total_citations": len(citations_data.get("citations", [])),
+    }
+
+    # Create handoff record
+    handoff_id = f"handoff_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
+    handoff = {
+        "handoff_id": handoff_id,
+        "timestamp": datetime.now().isoformat(),
+        "from_agent": from_agent,
+        "to_agent": to_agent,
+        "task_summary": summary,
+        "completed": completed,
+        "pending": pending,
+        "papers": paper_ids,
+        "knowledge_state": knowledge_state,
+    }
+
+    handoffs_data = load_handoffs()
+    handoffs_data["handoffs"].append(handoff)
+    save_handoffs(handoffs_data)
+
+    # Display handoff
+    print(f"\n[HANDOFF] {handoff_id}")
+    print(f"  From: {from_agent}")
+    print(f"  To:   {to_agent}")
+    print(f"  Summary: {summary[:80]}...")
+    if completed:
+        print(f"\n  Completed:")
+        for c in completed:
+            print(f"    - {c}")
+    if pending:
+        print(f"\n  Pending:")
+        for p in pending:
+            print(f"    - {p}")
+    if paper_ids:
+        print(f"\n  Papers: {', '.join(paper_ids)}")
+    print(f"\n  Knowledge Base State:")
+    print(f"    Papers: {knowledge_state['total_papers']}")
+    print(f"    Learning Sessions: {knowledge_state['total_sessions']}")
+    print(f"    Citations: {knowledge_state['total_citations']}")
+    print(f"\n[MACP] Handoff recorded ({len(handoffs_data['handoffs'])} total)")
+    print("=" * 60)
+
+
+# ---------------------------------------------------------------------------
 # Command: learn
 # ---------------------------------------------------------------------------
 
@@ -520,8 +622,14 @@ def cmd_cite(args):
 # Command: recall
 # ---------------------------------------------------------------------------
 
+def _score_text(query_terms: set, text: str) -> int:
+    """Score a text against query terms. Returns number of matching terms."""
+    text_lower = text.lower()
+    return sum(1 for term in query_terms if term in text_lower)
+
+
 def cmd_recall(args):
-    """Recall knowledge from the MACP knowledge base."""
+    """Recall knowledge from the MACP knowledge base with enriched search."""
     print("=" * 60)
     print("MACP Research Assistant - RECALL")
     print("  'What have I learned?'")
@@ -530,45 +638,74 @@ def cmd_recall(args):
     query = args.question.lower()
     query_terms = set(query.split())
 
-    # Search across papers
+    # Search across papers (title, abstract, insights)
     papers_data = load_papers()
     paper_matches = []
     for paper in papers_data.get("papers", []):
-        title_lower = paper.get("title", "").lower()
-        abstract_lower = paper.get("abstract", "").lower()
-        score = sum(1 for term in query_terms if term in title_lower or term in abstract_lower)
+        score = 0
+        score += _score_text(query_terms, paper.get("title", ""))
+        score += _score_text(query_terms, paper.get("abstract", ""))
+        # Search through insights
+        for insight in paper.get("insights", []):
+            if isinstance(insight, str):
+                score += _score_text(query_terms, insight)
         if score > 0:
             paper_matches.append((score, paper))
 
     paper_matches.sort(key=lambda x: x[0], reverse=True)
 
-    # Search across learning sessions
+    # Search across learning sessions (summary, key_insight, tags, analysis fields)
     log = load_learning_log()
     session_matches = []
     for session in log.get("learning_sessions", log.get("sessions", [])):
-        summary_lower = session.get("summary", "").lower()
-        insight_lower = session.get("key_insight", "").lower()
-        score = sum(1 for term in query_terms if term in summary_lower or term in insight_lower)
+        score = 0
+        score += _score_text(query_terms, session.get("summary", ""))
+        score += _score_text(query_terms, session.get("key_insight", ""))
+        # Search tags
+        for tag in session.get("tags", []):
+            score += _score_text(query_terms, tag)
+        # Search analysis fields
+        analysis = session.get("analysis", {})
+        if analysis:
+            score += _score_text(query_terms, analysis.get("methodology", ""))
+            for gap in analysis.get("research_gaps", []):
+                score += _score_text(query_terms, gap)
         if score > 0:
             session_matches.append((score, session))
 
     session_matches.sort(key=lambda x: x[0], reverse=True)
 
-    # Search across citations
+    # Search across citations (context, project)
     citations_data = load_citations()
     citation_matches = []
     for cite in citations_data.get("citations", []):
-        context_lower = cite.get("context", "").lower()
-        score = sum(1 for term in query_terms if term in context_lower)
+        score = 0
+        score += _score_text(query_terms, cite.get("context", ""))
+        score += _score_text(query_terms, cite.get("cited_in", ""))
         if score > 0:
             citation_matches.append((score, cite))
 
     citation_matches.sort(key=lambda x: x[0], reverse=True)
 
+    # Search across handoffs (summary, completed, pending)
+    handoffs_data = load_handoffs()
+    handoff_matches = []
+    for ho in handoffs_data.get("handoffs", []):
+        score = 0
+        score += _score_text(query_terms, ho.get("task_summary", ""))
+        for item in ho.get("completed", []):
+            score += _score_text(query_terms, item)
+        for item in ho.get("pending", []):
+            score += _score_text(query_terms, item)
+        if score > 0:
+            handoff_matches.append((score, ho))
+
+    handoff_matches.sort(key=lambda x: x[0], reverse=True)
+
     # Present results
     limit = args.limit or 5
 
-    if not paper_matches and not session_matches and not citation_matches:
+    if not paper_matches and not session_matches and not citation_matches and not handoff_matches:
         print(f"\n[RECALL] No results found for: '{args.question}'")
         print("  Try broader terms or discover more papers first.")
         return
@@ -576,28 +713,41 @@ def cmd_recall(args):
     if paper_matches:
         print(f"\n--- Relevant Papers ({min(len(paper_matches), limit)} of {len(paper_matches)}) ---")
         for score, paper in paper_matches[:limit]:
-            status_icon = {"discovered": "🔍", "analyzed": "📖", "cited": "📌"}.get(paper.get("status"), "?")
-            print(f"  {status_icon} [{paper['id']}] {paper['title'][:70]}...")
+            status_icon = {"discovered": "d", "analyzed": "a", "cited": "c"}.get(paper.get("status"), "?")
+            print(f"  [{status_icon}] [{paper['id']}] {paper['title'][:70]}...")
             if paper.get("insights"):
                 for insight in paper["insights"][:2]:
-                    print(f"     → Insight: {insight[:60]}...")
+                    if isinstance(insight, str):
+                        print(f"     > Insight: {insight[:60]}...")
 
     if session_matches:
         print(f"\n--- Learning Sessions ({min(len(session_matches), limit)} of {len(session_matches)}) ---")
         for score, session in session_matches[:limit]:
-            print(f"  📝 [{session['session_id']}] {session['date']}")
+            print(f"  [s] [{session['session_id']}] {session['date']}")
             print(f"     Summary: {session['summary'][:70]}...")
+            if session.get("tags"):
+                print(f"     Tags: {', '.join(session['tags'])}")
+            analysis = session.get("analysis", {})
+            if analysis and analysis.get("strength_score"):
+                print(f"     Score: {analysis['strength_score']}/10")
             print(f"     Papers: {', '.join(session.get('papers', []))}")
 
     if citation_matches:
         print(f"\n--- Citations ({min(len(citation_matches), limit)} of {len(citation_matches)}) ---")
         for score, cite in citation_matches[:limit]:
-            print(f"  📌 [{cite['citation_id']}] in {cite['cited_in']}")
+            print(f"  [c] [{cite['citation_id']}] in {cite['cited_in']}")
             print(f"     Context: {cite['context'][:70]}...")
 
-    total_results = len(paper_matches) + len(session_matches) + len(citation_matches)
+    if handoff_matches:
+        print(f"\n--- Handoffs ({min(len(handoff_matches), limit)} of {len(handoff_matches)}) ---")
+        for score, ho in handoff_matches[:limit]:
+            print(f"  [h] [{ho['handoff_id']}] {ho['from_agent']} -> {ho['to_agent']}")
+            print(f"     Summary: {ho['task_summary'][:70]}...")
+
+    total_results = len(paper_matches) + len(session_matches) + len(citation_matches) + len(handoff_matches)
     print(f"\n[RECALL] Total matches: {total_results} (papers: {len(paper_matches)}, "
-          f"sessions: {len(session_matches)}, citations: {len(citation_matches)})")
+          f"sessions: {len(session_matches)}, citations: {len(citation_matches)}, "
+          f"handoffs: {len(handoff_matches)})")
     print("=" * 60)
 
 
@@ -675,6 +825,16 @@ def main():
     p_analyze.add_argument("--provider", help="LLM provider: gemini, anthropic, openai (default: auto-select)")
     p_analyze.add_argument("--yes", "-y", action="store_true", help="Skip consent prompt")
     p_analyze.set_defaults(func=cmd_analyze)
+
+    # --- handoff ---
+    p_handoff = subparsers.add_parser("handoff", help="Create a multi-agent research handoff")
+    p_handoff.add_argument("--from", dest="from_agent", required=True, help="Agent initiating the handoff")
+    p_handoff.add_argument("--to", dest="to_agent", required=True, help="Agent receiving the handoff")
+    p_handoff.add_argument("--summary", "-s", required=True, help="Summary of the research task or context")
+    p_handoff.add_argument("--completed", help="Semicolon-separated list of completed actions")
+    p_handoff.add_argument("--pending", help="Semicolon-separated list of pending actions")
+    p_handoff.add_argument("--papers", "-p", help="Comma-separated arXiv IDs relevant to this handoff")
+    p_handoff.set_defaults(func=cmd_handoff)
 
     # --- learn ---
     p_learn = subparsers.add_parser("learn", help="Record a learning insight (C-S-P: Synthesis)")

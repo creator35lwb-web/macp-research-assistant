@@ -21,9 +21,9 @@
             "type": "string",
             "description": "The project, document, or context where the citation is used."
           },
-          "cited_by_agent": {
+          "cited_by": {
             "type": "string",
-            "description": "The ID of the agent who made the citation."
+            "description": "The agent or person who made the citation."
           },
           "handoff_id": {
             "type": "string",
@@ -39,7 +39,7 @@
             "description": "The specific context or reason for the citation."
           }
         },
-        "required": ["citation_id", "paper_id", "cited_in", "cited_by_agent", "date"]
+        "required": ["citation_id", "paper_id", "cited_in", "cited_by", "date"]
       }
     }
   },

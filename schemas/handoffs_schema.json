@@ -18,21 +18,32 @@
             "format": "date-time",
             "description": "The ISO 8601 timestamp of the handoff."
           },
-          "from_agent_id": {
+          "from_agent": {
             "type": "string",
-            "description": "The ID of the agent initiating the handoff."
+            "description": "The agent initiating the handoff."
           },
-          "to_agent_id": {
+          "to_agent": {
             "type": "string",
-            "description": "The ID of the agent receiving the handoff."
-          },
-          "commit_hash": {
-            "type": "string",
-            "description": "The Git commit hash at the time of the handoff."
+            "description": "The agent receiving the handoff."
           },
           "task_summary": {
             "type": "string",
-            "description": "A brief summary of the task being handed off."
+            "description": "A brief summary of the task or research context being handed off."
+          },
+          "completed": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of actions completed before handoff."
+          },
+          "pending": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of pending actions for the receiving agent."
+          },
+          "papers": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Paper IDs relevant to this handoff."
           },
           "artifacts": {
             "type": "array",
@@ -43,10 +54,20 @@
                 "description": { "type": "string" }
               },
               "required": ["path", "description"]
+            },
+            "description": "Files or outputs created during the handoff session."
+          },
+          "knowledge_state": {
+            "type": "object",
+            "description": "Snapshot of knowledge base state at handoff time.",
+            "properties": {
+              "total_papers": { "type": "integer" },
+              "total_sessions": { "type": "integer" },
+              "total_citations": { "type": "integer" }
             }
           }
         },
-        "required": ["handoff_id", "timestamp", "from_agent_id", "to_agent_id", "commit_hash", "task_summary"]
+        "required": ["handoff_id", "from_agent", "to_agent"]
       }
     }
   },

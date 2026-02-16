@@ -11,7 +11,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Unique identifier for the paper, preferably using a standard like DOI or arXiv ID."
+            "description": "Unique identifier for the paper (format: arxiv:XXXX.XXXXX)."
           },
           "title": {
             "type": "string",
@@ -21,6 +21,10 @@
             "type": "array",
             "items": { "type": "string" },
             "description": "A list of the paper's authors."
+          },
+          "abstract": {
+            "type": "string",
+            "description": "The paper's abstract text."
           },
           "url": {
             "type": "string",
@@ -38,20 +42,13 @@
           },
           "status": {
             "type": "string",
-            "enum": ["discovered", "analyzing", "analyzed", "validated", "rejected"],
+            "enum": ["discovered", "analyzing", "analyzed", "cited", "validated", "rejected"],
             "description": "The current status of the paper in the research workflow."
           },
           "insights": {
             "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "text": { "type": "string" },
-                "extracted_by": { "type": "string" },
-                "date": { "type": "string", "format": "date" }
-              },
-              "required": ["text", "extracted_by", "date"]
-            }
+            "items": { "type": "string" },
+            "description": "Key insights extracted from the paper (plain text strings)."
           }
         },
         "required": ["id", "title", "discovered_by", "discovered_date", "status"]
