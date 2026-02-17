@@ -27,6 +27,8 @@ import requests
 HF_DAILY_PAPERS_API = "https://huggingface.co/api/daily_papers"
 HF_PAPER_SEARCH_API = "https://huggingface.co/api/papers/search"
 ARXIV_API = "http://export.arxiv.org/api/query"
+HYSTS_DATASET_API = "https://datasets-server.huggingface.co"
+HYSTS_DATASET_NAME = "hysts-bot-data/daily-papers"
 MACP_DIR = ".macp"
 PAPERS_FILE = os.path.join(MACP_DIR, "research_papers.json")
 SCHEMAS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "schemas")
@@ -354,6 +356,144 @@ def fetch_by_id(arxiv_id: str) -> Optional[dict]:
         discovered_by="arxiv_api",
         discovered_date=published if published else None,
     )
+
+
+# ---------------------------------------------------------------------------
+# Pipeline 4: hysts/daily-papers HuggingFace Dataset (12,700+ papers)
+# ---------------------------------------------------------------------------
+
+def fetch_from_hysts(query: str, limit: int = 10) -> list[dict]:
+    """
+    Search the hysts-bot-data/daily-papers dataset via the HuggingFace
+    Datasets Server API. This dataset contains 12,700+ curated papers
+    with abstracts, providing a reliable discovery source.
+
+    Args:
+        query: Natural language search query.
+        limit: Maximum number of results.
+
+    Returns:
+        List of normalized paper dicts.
+    """
+    query = validate_query(query)
+    limit = max(1, min(limit, 100))
+
+    try:
+        resp = requests.get(
+            f"{HYSTS_DATASET_API}/search",
+            params={
+                "dataset": HYSTS_DATASET_NAME,
+                "config": "default",
+                "split": "train",
+                "query": query,
+                "length": limit,
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except requests.RequestException as e:
+        print(f"[ERROR] hysts dataset search failed: {e}", file=sys.stderr)
+        return []
+
+    rows = data.get("rows", [])
+    papers = []
+    for row in rows:
+        record = row.get("row", {})
+        arxiv_id = record.get("arxiv_id", "")
+        title = record.get("title", "")
+        authors = record.get("authors", [])
+        abstract = record.get("abstract", "")
+        github = record.get("github", "")
+        pub_date = record.get("date", "")
+
+        if not arxiv_id or not title:
+            continue
+
+        # Parse date from timestamp format
+        discovered_date = None
+        if pub_date:
+            try:
+                discovered_date = pub_date[:10]
+            except (IndexError, TypeError):
+                pass
+
+        extra = {}
+        if github:
+            extra["github_repo"] = github
+
+        papers.append(normalize_paper(
+            arxiv_id=arxiv_id,
+            title=title,
+            authors=authors if isinstance(authors, list) else [],
+            abstract=abstract,
+            discovered_by="hysts_dataset",
+            discovered_date=discovered_date,
+            extra=extra if extra else None,
+        ))
+    return papers
+
+
+def fetch_hysts_by_date(target_date: str, limit: int = 50) -> list[dict]:
+    """
+    Fetch papers from the hysts dataset for a specific date using the
+    filter endpoint.
+
+    Args:
+        target_date: Date string in YYYY-MM-DD format.
+        limit: Maximum number of results.
+
+    Returns:
+        List of normalized paper dicts.
+    """
+    target_date = validate_date(target_date)
+    limit = max(1, min(limit, 100))
+
+    try:
+        resp = requests.get(
+            f"{HYSTS_DATASET_API}/filter",
+            params={
+                "dataset": HYSTS_DATASET_NAME,
+                "config": "default",
+                "split": "train",
+                "where": f"date >= timestamp '{target_date} 00:00:00' AND date < timestamp '{target_date} 23:59:59'",
+                "length": limit,
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except requests.RequestException as e:
+        print(f"[ERROR] hysts dataset filter failed: {e}", file=sys.stderr)
+        return []
+
+    rows = data.get("rows", [])
+    papers = []
+    for row in rows:
+        record = row.get("row", {})
+        arxiv_id = record.get("arxiv_id", "")
+        title = record.get("title", "")
+        authors = record.get("authors", [])
+        abstract = record.get("abstract", "")
+        github = record.get("github", "")
+
+        if not arxiv_id or not title:
+            continue
+
+        extra = {}
+        if github:
+            extra["github_repo"] = github
+
+        papers.append(normalize_paper(
+            arxiv_id=arxiv_id,
+            title=title,
+            authors=authors if isinstance(authors, list) else [],
+            abstract=abstract,
+            discovered_by="hysts_dataset",
+            discovered_date=target_date,
+            extra=extra if extra else None,
+        ))
+    return papers
 
 
 # ---------------------------------------------------------------------------

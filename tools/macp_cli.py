@@ -30,6 +30,8 @@ from paper_fetcher import (
     fetch_by_date_range,
     fetch_by_query,
     fetch_by_id,
+    fetch_from_hysts,
+    fetch_hysts_by_date,
     load_papers,
     save_papers,
     add_papers,
@@ -53,6 +55,158 @@ from llm_providers import (
 LEARNING_LOG_FILE = os.path.join(MACP_DIR, "learning_log.json")
 CITATIONS_FILE = os.path.join(MACP_DIR, "citations.json")
 KNOWLEDGE_GRAPH_FILE = os.path.join(MACP_DIR, "knowledge_graph.json")
+RESEARCH_DIR = os.path.join(MACP_DIR, "research")
+
+
+# ---------------------------------------------------------------------------
+# Knowledge Tree: Auto-create research directories
+# ---------------------------------------------------------------------------
+
+def slugify(title: str, max_length: int = 60) -> str:
+    """Convert a paper title to a clean directory slug."""
+    # Lowercase and strip
+    slug = title.lower().strip()
+    # Remove common prefixes/suffixes
+    for prefix in ["a ", "an ", "the "]:
+        if slug.startswith(prefix):
+            slug = slug[len(prefix):]
+    # Replace non-alphanumeric with hyphens
+    slug = re.sub(r"[^a-z0-9]+", "-", slug)
+    # Remove leading/trailing hyphens
+    slug = slug.strip("-")
+    # Truncate to max_length at a word boundary
+    if len(slug) > max_length:
+        slug = slug[:max_length].rsplit("-", 1)[0]
+    return slug or "untitled"
+
+
+def get_research_dir(paper: dict) -> str:
+    """Get or create the research directory for a paper."""
+    title = paper.get("title", "Untitled")
+    slug = slugify(title)
+    research_path = os.path.join(RESEARCH_DIR, slug)
+    os.makedirs(research_path, exist_ok=True)
+    return research_path
+
+
+def save_to_research_tree(paper: dict, analysis: dict = None, session: dict = None) -> str:
+    """
+    Save paper data to its research directory in the knowledge tree.
+    Creates/updates: paper.json, analysis.json, README.md
+
+    Returns the research directory path.
+    """
+    research_path = get_research_dir(paper)
+
+    # Save paper metadata
+    paper_file = os.path.join(research_path, "paper.json")
+    atomic_write_json(paper_file, paper)
+
+    # Save analysis if provided
+    if analysis:
+        analysis_file = os.path.join(research_path, "analysis.json")
+        existing = {}
+        if os.path.exists(analysis_file):
+            with open(analysis_file, "r") as f:
+                existing = json.load(f)
+        # Merge: keep history of analyses
+        analyses = existing.get("analyses", [])
+        analysis_record = {
+            "timestamp": datetime.now().isoformat(),
+            "result": analysis,
+        }
+        if session:
+            analysis_record["session_id"] = session.get("session_id")
+            analysis_record["agent"] = session.get("agent")
+        analyses.append(analysis_record)
+        atomic_write_json(analysis_file, {"paper_id": paper["id"], "analyses": analyses})
+
+    # Generate/update README.md for this research node
+    _update_research_readme(research_path, paper, analysis, session)
+
+    return research_path
+
+
+def _update_research_readme(research_path: str, paper: dict, analysis: dict = None, session: dict = None):
+    """Generate a README.md for the research directory."""
+    lines = []
+    lines.append(f"# {paper.get('title', 'Untitled')}")
+    lines.append(f"")
+    lines.append(f"**arXiv ID:** `{paper.get('id', 'N/A')}`")
+    if paper.get("url"):
+        lines.append(f"**URL:** {paper['url']}")
+    lines.append(f"**Status:** {paper.get('status', 'unknown')}")
+    lines.append(f"**Discovered:** {paper.get('discovered_date', 'N/A')}")
+    lines.append(f"")
+
+    authors = paper.get("authors", [])
+    if authors:
+        lines.append(f"## Authors")
+        lines.append(f"")
+        lines.append(f"{', '.join(authors)}")
+        lines.append(f"")
+
+    abstract = paper.get("abstract", "")
+    if abstract:
+        lines.append(f"## Abstract")
+        lines.append(f"")
+        lines.append(f"{abstract}")
+        lines.append(f"")
+
+    insights = paper.get("insights", [])
+    if insights:
+        lines.append(f"## Key Insights")
+        lines.append(f"")
+        for insight in insights:
+            if isinstance(insight, str):
+                lines.append(f"- {insight}")
+        lines.append(f"")
+
+    if analysis:
+        lines.append(f"## Analysis")
+        lines.append(f"")
+        if analysis.get("summary"):
+            lines.append(f"**Summary:** {analysis['summary']}")
+            lines.append(f"")
+        if analysis.get("methodology"):
+            lines.append(f"**Methodology:** {analysis['methodology']}")
+            lines.append(f"")
+        if analysis.get("strength_score"):
+            lines.append(f"**Strength Score:** {analysis['strength_score']}/10")
+            lines.append(f"")
+        gaps = analysis.get("research_gaps", [])
+        if gaps:
+            lines.append(f"### Research Gaps")
+            lines.append(f"")
+            for gap in gaps:
+                lines.append(f"- {gap}")
+            lines.append(f"")
+        tags = analysis.get("relevance_tags", [])
+        if tags:
+            lines.append(f"**Tags:** {', '.join(tags)}")
+            lines.append(f"")
+
+    if session:
+        lines.append(f"## Provenance")
+        lines.append(f"")
+        lines.append(f"- **Session:** `{session.get('session_id', 'N/A')}`")
+        lines.append(f"- **Agent:** {session.get('agent', 'N/A')}")
+        lines.append(f"- **Date:** {session.get('date', 'N/A')}")
+        lines.append(f"")
+
+    # List files in directory
+    lines.append(f"## Files")
+    lines.append(f"")
+    for f in sorted(os.listdir(research_path)):
+        if f != "README.md":
+            lines.append(f"- `{f}`")
+    lines.append(f"")
+    lines.append(f"---")
+    lines.append(f"*Part of MACP Research Knowledge Tree*")
+
+    readme_path = os.path.join(research_path, "README.md")
+    with open(readme_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
 
 # ---------------------------------------------------------------------------
 # Input Sanitization
@@ -181,6 +335,22 @@ def cmd_discover(args):
                 all_papers.append(paper)
             else:
                 print("  Paper not found.")
+
+        # Pipeline 4: hysts/daily-papers dataset (12,700+ curated papers)
+        if args.hysts:
+            validated_query = validate_query(args.hysts)
+            limit = max(1, min(args.limit or 10, 100))
+            print(f"\n[Pipeline 4: hysts Dataset] Query: '{validated_query}' (limit: {limit})")
+            papers = fetch_from_hysts(validated_query, limit=limit)
+            print(f"  Found {len(papers)} papers from hysts/daily-papers")
+            all_papers.extend(papers)
+
+        if args.hysts_date:
+            validated_date = validate_date(args.hysts_date)
+            print(f"\n[Pipeline 4: hysts Dataset] Date: {validated_date}")
+            papers = fetch_hysts_by_date(validated_date)
+            print(f"  Found {len(papers)} papers from hysts/daily-papers")
+            all_papers.extend(papers)
     except ValueError as e:
         print(f"[ERROR] Input validation failed: {e}", file=sys.stderr)
         return
@@ -210,9 +380,14 @@ def cmd_discover(args):
     added, skipped = add_papers(all_papers)
     print(f"  Added: {added} | Skipped (duplicates): {skipped}")
 
+    # Create research tree nodes for discovered papers
+    for p in list(seen_ids.values()):
+        save_to_research_tree(p)
+
     # Summary
     total = load_papers()
     print(f"\n[Summary] Total papers in knowledge base: {len(total.get('papers', []))}")
+    print(f"  Research tree: {RESEARCH_DIR}/")
     print("=" * 60)
 
 
@@ -382,8 +557,12 @@ def cmd_analyze(args):
             break
     save_papers(papers_data)
 
+    # --- Save to knowledge tree ---
+    research_path = save_to_research_tree(paper, analysis=analysis, session=session)
+
     print(f"\n[MACP] Learning session created: {session_id}")
     print(f"  Paper status updated to: analyzed")
+    print(f"  Research tree: {research_path}")
     total = len(log.get("learning_sessions", []))
     print(f"  Total learning sessions: {total}")
     print("=" * 60)
@@ -924,6 +1103,12 @@ def cmd_export(args):
     # Determine output path
     if args.output:
         output_path = args.output
+    elif args.title:
+        # Create named research directory
+        slug = slugify(args.title)
+        export_dir = os.path.join(RESEARCH_DIR, slug)
+        os.makedirs(export_dir, exist_ok=True)
+        output_path = os.path.join(export_dir, "report.md")
     else:
         os.makedirs(EXPORTS_DIR, exist_ok=True)
         tag_suffix = f"_{args.tag}" if args.tag else ""
@@ -1007,6 +1192,8 @@ def main():
     p_discover.add_argument("--date-range", help="Fetch papers for a date range (YYYY-MM-DD:YYYY-MM-DD)")
     p_discover.add_argument("--query", "-q", help="Semantic search query")
     p_discover.add_argument("--arxiv-id", help="Fetch a specific paper by arXiv ID")
+    p_discover.add_argument("--hysts", help="Search the hysts/daily-papers dataset (12,700+ papers)")
+    p_discover.add_argument("--hysts-date", help="Fetch from hysts dataset by date (YYYY-MM-DD)")
     p_discover.add_argument("--limit", "-l", type=int, default=10, help="Max results for query search")
     p_discover.set_defaults(func=cmd_discover)
 
@@ -1054,6 +1241,7 @@ def main():
     # --- export ---
     p_export = subparsers.add_parser("export", help="Export knowledge base to Markdown report")
     p_export.add_argument("--output", "-o", help="Output file path (default: .macp/exports/)")
+    p_export.add_argument("--title", help="Research title — creates named directory in .macp/research/")
     p_export.add_argument("--tag", "-t", help="Filter report by tag")
     p_export.set_defaults(func=cmd_export)
 

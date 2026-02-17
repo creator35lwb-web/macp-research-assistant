@@ -21,7 +21,7 @@ A CLI tool for tracking AI-powered research with complete citation provenance. I
 
 ### `discover` — Find and store research papers
 
-Discovers papers from HuggingFace or arXiv and stores them in `.macp/research_papers.json`.
+Discovers papers from HuggingFace, arXiv, or the hysts/daily-papers dataset (12,700+ curated papers). Stores them in `.macp/research_papers.json` and auto-creates knowledge tree directories.
 
 ```bash
 # By date (HuggingFace Daily Papers)
@@ -35,9 +35,18 @@ python tools/macp_cli.py discover --query "multi-agent systems" --limit 5
 
 # By arXiv ID
 python tools/macp_cli.py discover --arxiv-id 2602.06570
+
+# Search hysts/daily-papers dataset (12,700+ papers with abstracts)
+python tools/macp_cli.py discover --hysts "multi-agent collaboration" --limit 5
+
+# hysts dataset by date
+python tools/macp_cli.py discover --hysts-date 2025-02-14
+
+# Cross-pipeline discovery (conflict detection)
+python tools/macp_cli.py discover --arxiv-id 2501.04306 --hysts "LLM scientific research"
 ```
 
-**Output:** Papers are added to `.macp/research_papers.json` with deduplication.
+**Output:** Papers are added to `.macp/research_papers.json` with deduplication. Each paper gets a directory in `.macp/research/{slug}/` (knowledge tree).
 
 ### `analyze` — AI-powered paper analysis
 
@@ -150,11 +159,14 @@ python tools/macp_cli.py status
 
 ### `export` — Export knowledge base to Markdown report
 
-Generates a clean, readable Markdown research report from the knowledge base. Supports filtering by tag.
+Generates a clean, readable Markdown research report from the knowledge base. Supports filtering by tag and named research directories.
 
 ```bash
 # Full report (saved to .macp/exports/)
 python tools/macp_cli.py export
+
+# Named research directory (creates .macp/research/{slug}/report.md)
+python tools/macp_cli.py export --title "GodelAI Research Showcase"
 
 # Filter by tag
 python tools/macp_cli.py export --tag agentic-ai
@@ -164,10 +176,34 @@ python tools/macp_cli.py export --output report.md
 ```
 
 **Parameters:**
+- `--title`: Research title — creates named directory in `.macp/research/` (knowledge tree)
 - `--output` / `-o`: Custom output file path (default: `.macp/exports/research_report_{timestamp}.md`)
 - `--tag` / `-t`: Filter report to only include sessions/papers with this tag
 
 **Output:** Generates a Markdown report with sections for Summary, Papers (with abstracts and insights), Learning Sessions (with analysis details), Citations (as table), and Handoffs.
+
+## Knowledge Tree
+
+The MACP Research Assistant auto-creates a knowledge tree under `.macp/research/`:
+
+```
+.macp/research/
+  llm4sr-a-survey-on-large.../      <- Analyzed paper (deep root)
+    paper.json                       <- Paper metadata
+    analysis.json                    <- AI analysis history
+    README.md                        <- Human-readable summary
+  octotools-an-agentic.../          <- Analyzed paper (deep root)
+    paper.json
+    analysis.json
+    README.md
+  godelai-research-showcase/        <- Named research export
+    report.md                        <- Full Markdown report
+  mindagent-emergent.../            <- Discovered paper (shallow root)
+    paper.json
+    README.md
+```
+
+Each paper gets its own directory that grows as research deepens: discovery creates `paper.json`, analysis adds `analysis.json`, and exports create `report.md` — like roots growing deeper.
 
 ## Data Files
 

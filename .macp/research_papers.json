@@ -51,7 +51,10 @@
         "LLMs are being applied across the entire scientific research lifecycle, from initial hypothesis generation through peer review, representing a fundamental shift in how research is conducted",
         "Each research stage requires task-specific methodologies and evaluation benchmarks tailored to the unique requirements of scientific work",
         "Current LLM applications in science face significant challenges including domain-specific knowledge limitations, evaluation difficulties, and the need for specialized benchmarks",
-        "The integration of LLMs into scientific workflows has transformative potential but requires careful consideration of reliability, reproducibility, and domain expertise"
+        "The integration of LLMs into scientific workflows has transformative potential but requires careful consideration of reliability, reproducibility, and domain expertise",
+        "Each stage of research has developed task-specific methodologies and evaluation benchmarks for LLM integration, though standardization remains limited",
+        "Current challenges include ensuring factual accuracy, handling domain-specific knowledge, maintaining scientific rigor, and addressing ethical concerns about AI-generated research",
+        "The survey identifies significant gaps in evaluation frameworks and the need for better integration of LLMs with existing scientific tools and databases"
       ]
     },
     {
@@ -93,8 +96,79 @@
         "The framework outperforms existing agentic systems (AutoGen, GPT-Functions, LangChain) by up to 10.6% when using the same tools",
         "Standardized tool cards enable easy extensibility and consistent tool integration across different domains",
         "The dual-level planning approach (high-level and low-level) effectively decomposes complex multi-step reasoning problems",
-        "Training-free design allows immediate deployment and adaptation to new domains and tools"
+        "Training-free design allows immediate deployment and adaptation to new domains and tools",
+        "The framework outperforms existing tool-augmented systems (AutoGen, GPT-Functions, LangChain) by up to 10.6% when using the same tools",
+        "The dual-level planning approach (high-level and low-level) combined with an executor enables effective multi-step reasoning and tool orchestration",
+        "The training-free nature makes it more practical and accessible compared to methods requiring specialized training data"
       ]
+    },
+    {
+      "id": "arxiv:2511.00086",
+      "title": "Generalizing Test-time Compute-optimal Scaling as an Optimizable Graph",
+      "authors": [
+        "Fali Wang",
+        "Jihai Chen",
+        "Shuhua Yang",
+        "Runxue Bao",
+        "Tianxiang Zhao",
+        "Zhiwei Zhang",
+        "Xianfeng Tang",
+        "Hui Liu",
+        "Qi He",
+        "Suhang Wang"
+      ],
+      "url": "https://huggingface.co/papers/2511.00086",
+      "abstract": "Test-Time Scaling (TTS) improves large language models (LLMs) by allocating additional computation during inference, typically through parallel, sequential, or hybrid scaling. However, prior studies often assume fixed collaboration architectures (e.g., topologies) and single-model usage, overlooking that optimal architectures and model combinations can vary across tasks. Therefore, we study the novel problem of searching for compute-optimal model combinations and architectures in TTS under a fixed budget. We formalize it as a multi-LLM collaboration graph, where nodes encode roles and LLM model assignments, and edges capture information flow. This problem is challenging because (i) the combinatorial search space is prohibitively large, and (ii) task-specific requirements demand tailored designs. To address these, we reformulate the problem as probabilistic graph optimization and, through pilot experiments, derive three empirical insights into TTS collaboration graphs. Guided by these insights, we propose Agent-REINFORCE, an LLM-agent-augmented framework that mirrors the REINFORCE pipeline by mapping sampling-gradient-update to sampling-feedback-update, where feedback serves as a textual gradient to update the probabilistic graph and efficiently search for optimal multi-LLM collaboration graphs. Experiments show that Agent-REINFORCE outperforms both traditional and LLM-based baselines in sample efficiency and search performance, and effectively identifies optimal graphs under joint objectives of accuracy and inference latency.",
+      "discovered_by": "hysts_dataset",
+      "discovered_date": "2025-11-04",
+      "status": "discovered",
+      "insights": []
+    },
+    {
+      "id": "arxiv:2510.00507",
+      "title": "Graph2Eval: Automatic Multimodal Task Generation for Agents via Knowledge Graphs",
+      "authors": [
+        "Yurun Chen",
+        "Xavier Hu",
+        "Yuhan Liu",
+        "Ziqi Wang",
+        "Zeyi Liao",
+        "Lin Chen",
+        "Feng Wei",
+        "Yuxi Qian",
+        "Bo Zheng",
+        "Keting Yin",
+        "Shengyu Zhang"
+      ],
+      "url": "https://huggingface.co/papers/2510.00507",
+      "abstract": "As multimodal LLM-driven agents continue to advance in autonomy and generalization, evaluation based on static datasets can no longer adequately assess their true capabilities in dynamic environments and diverse tasks. Existing LLM-based synthetic data methods are largely designed for LLM training and evaluation, and thus cannot be directly applied to agent tasks that require tool use and interactive capabilities. While recent studies have explored automatic agent task generation with LLMs, most efforts remain limited to text or image analysis, without systematically modeling multi-step interactions in web environments. To address these challenges, we propose Graph2Eval, a knowledge graph-based framework that automatically generates both multimodal document comprehension tasks and web interaction tasks, enabling comprehensive evaluation of agents' reasoning, collaboration, and interactive capabilities. In our approach, knowledge graphs constructed from multi-source external data serve as the task space, where we translate semantic relations into structured multimodal tasks using subgraph sampling, task templates, and meta-paths. A multi-stage filtering pipeline based on node reachability, LLM scoring, and similarity analysis is applied to guarantee the quality and executability of the generated tasks. Furthermore, Graph2Eval supports end-to-end evaluation of multiple agent types (Single-Agent, Multi-Agent, Web Agent) and measures reasoning, collaboration, and interaction capabilities. We instantiate the framework with Graph2Eval-Bench, a curated dataset of 1,319 tasks spanning document comprehension and web interaction scenarios. Experiments show that Graph2Eval efficiently generates tasks that differentiate agent and model performance, revealing gaps in reasoning, collaboration, and web interaction across different settings and offering a new perspective for agent evaluation.",
+      "discovered_by": "hysts_dataset",
+      "discovered_date": "2025-10-07",
+      "status": "discovered",
+      "insights": []
+    },
+    {
+      "id": "arxiv:2309.09971",
+      "title": "MindAgent: Emergent Gaming Interaction",
+      "authors": [
+        "Ran Gong",
+        "Qiuyuan Huang",
+        "Xiaojian Ma",
+        "Hoi Vo",
+        "Zane Durante",
+        "Yusuke Noda",
+        "Zilong Zheng",
+        "Song-Chun Zhu",
+        "Demetri Terzopoulos",
+        "Li Fei-Fei",
+        "Jianfeng Gao"
+      ],
+      "url": "https://huggingface.co/papers/2309.09971",
+      "abstract": "Large Language Models (LLMs) have the capacity of performing complex scheduling in a multi-agent system and can coordinate these agents into completing sophisticated tasks that require extensive collaboration. However, despite the introduction of numerous gaming frameworks, the community has insufficient benchmarks towards building general multi-agents collaboration infrastructure that encompass both LLM and human-NPCs collaborations. In this work, we propose a novel infrastructure - MindAgent - to evaluate planning and coordination emergent capabilities for gaming interaction. In particular, our infrastructure leverages existing gaming framework, to i) require understanding of the coordinator for a multi-agent system, ii) collaborate with human players via un-finetuned proper instructions, and iii) establish an in-context learning on few-shot prompt with feedback. Furthermore, we introduce CUISINEWORLD, a new gaming scenario and related benchmark that dispatch a multi-agent collaboration efficiency and supervise multiple agents playing the game simultaneously. We conduct comprehensive evaluations with new auto-metric CoS for calculating the collaboration efficiency. Finally, our infrastructure can be deployed into real-world gaming scenarios in a customized VR version of CUISINEWORLD and adapted in existing broader Minecraft gaming domain. We hope our findings on LLMs and the new infrastructure for general-purpose scheduling and coordination can help shed light on how such skills can be obtained by learning from large language corpora.",
+      "discovered_by": "hysts_dataset",
+      "discovered_date": "2023-09-19",
+      "status": "discovered",
+      "insights": []
     }
   ]
 }

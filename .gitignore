@@ -26,7 +26,8 @@ venv/
 .DS_Store
 Thumbs.db
 
-# MACP exports (generated reports)
+# MACP generated data (knowledge tree + exports)
+.macp/research/
 .macp/exports/
 
 # Secrets - Never commit secrets

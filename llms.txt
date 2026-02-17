@@ -8,7 +8,7 @@ This is a CLI-based research tracking tool built on the Multi-Agent Communicatio
 
 ## Core Capabilities
 
-- **Paper Discovery** (`macp discover`): Find papers via HuggingFace Daily Papers API, HuggingFace Paper Search API, or arXiv API
+- **Paper Discovery** (`macp discover`): Find papers via HuggingFace Daily Papers API, HuggingFace Paper Search API, arXiv API, or hysts/daily-papers dataset (12,700+ curated papers)
 - **AI Analysis** (`macp analyze`): Send papers to LLMs (Gemini/Claude/OpenAI) for automated summarization, insight extraction, methodology identification, and research gap detection. BYOK with free-tier default. Includes consent prompt before sending data.
 - **Agent Handoff** (`macp handoff`): Create structured multi-agent research handoffs with knowledge state snapshots (proto-A2A)
 - **Learning Tracking** (`macp learn`): Record insights and learnings linked to specific papers with agent attribution
@@ -54,6 +54,9 @@ python tools/macp_cli.py discover --query "multi-agent communication"
 
 # Fetch specific paper
 python tools/macp_cli.py discover --arxiv-id 2602.06570
+
+# Search hysts/daily-papers dataset (12,700+ curated papers)
+python tools/macp_cli.py discover --hysts "multi-agent collaboration" --limit 5
 
 # AI-powered analysis (requires GEMINI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY)
 export GEMINI_API_KEY=your-key-here
