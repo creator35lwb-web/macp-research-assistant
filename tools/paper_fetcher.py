@@ -92,8 +92,24 @@ def _load_schema(schema_name: str) -> dict:
     return schema
 
 
-def validate_json_data(data: dict, schema_name: str) -> bool:
-    """Validate data against a JSON schema. Returns True if valid."""
+def validate_json_data(data: dict, schema_name: str, strict: bool = True) -> bool:
+    """
+    Validate data against a JSON schema.
+
+    Args:
+        data: The data to validate.
+        schema_name: Schema filename in schemas/ directory.
+        strict: If True (default), raises ValidationError on failure.
+                If False, logs a warning and returns False.
+
+    Returns:
+        True if valid. If strict=False, returns False on failure.
+
+    Raises:
+        jsonschema.ValidationError: If strict=True and validation fails.
+    """
+    from security_logger import log_validation_failure
+
     schema = _load_schema(schema_name)
     if not schema:
         return True  # No schema found, skip validation
@@ -101,7 +117,10 @@ def validate_json_data(data: dict, schema_name: str) -> bool:
         jsonschema.validate(instance=data, schema=schema)
         return True
     except jsonschema.ValidationError as e:
-        print(f"[ERROR] Schema validation failed ({schema_name}): {e.message}", file=sys.stderr)
+        log_validation_failure(schema_name, e.message)
+        if strict:
+            raise
+        print(f"[WARN] Schema validation failed ({schema_name}): {e.message}", file=sys.stderr)
         return False
 
 
@@ -509,16 +528,26 @@ def load_papers(macp_dir: str = MACP_DIR) -> dict:
         return json.load(f)
 
 
-def save_papers(data: dict, macp_dir: str = MACP_DIR) -> None:
-    """Save the research_papers.json file with schema validation and atomic write."""
+def save_papers(data: dict, macp_dir: str = MACP_DIR, force: bool = False) -> None:
+    """Save the research_papers.json file with schema validation and atomic write.
+
+    Args:
+        data: Papers data to save.
+        macp_dir: MACP directory path.
+        force: If True, save even if schema validation fails.
+    """
     filepath = os.path.join(macp_dir, "research_papers.json")
-    if not validate_json_data(data, "research_papers_schema.json"):
-        print("[WARN] Data failed schema validation but saving anyway.", file=sys.stderr)
+    try:
+        validate_json_data(data, "research_papers_schema.json", strict=not force)
+    except jsonschema.ValidationError as e:
+        print(f"[ERROR] Schema validation blocked save: {e.message}", file=sys.stderr)
+        print("  Use --force to bypass strict validation.", file=sys.stderr)
+        return
     atomic_write_json(filepath, data)
     print(f"  Saved {len(data.get('papers', []))} papers to {filepath}")
 
 
-def add_papers(new_papers: list[dict], macp_dir: str = MACP_DIR) -> tuple[int, int]:
+def add_papers(new_papers: list[dict], macp_dir: str = MACP_DIR, force: bool = False) -> tuple[int, int]:
     """
     Add new papers to research_papers.json, skipping duplicates.
 
@@ -539,7 +568,7 @@ def add_papers(new_papers: list[dict], macp_dir: str = MACP_DIR) -> tuple[int, i
             added += 1
 
     if added > 0:
-        save_papers(data, macp_dir)
+        save_papers(data, macp_dir, force=force)
 
     return added, skipped
 

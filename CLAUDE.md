@@ -3,7 +3,7 @@
 **Project:** MACP-Powered AI Research Assistant
 **Repository:** creator35lwb-web/macp-research-assistant (PUBLIC)
 **Command Central Hub:** creator35lwb-web/verifimind-genesis-mcp
-**Status:** Pre-Alpha / Conceptual Blueprint
+**Status:** Phase 2 Complete / P-1.5 Pre-Flight Done
 
 ---
 
@@ -32,18 +32,24 @@ Use the `macp_create_handoff` MCP tool with:
 
 ---
 
-## Current Task: P-1.5 Pre-Flight Implementation
+## Completed: P-1.5 Pre-Flight Implementation
 
-**Objective:** Implement the 7 mandatory conditions from the Phase 2 Trinity Validation.
+All 7 mandatory conditions from Phase 2 Trinity Validation are implemented:
 
-**Guide:** `docs/P1_5_IMPLEMENTATION_BLUEPRINT.md`
+| Condition | Status | Implementation |
+|-----------|--------|----------------|
+| C1: Database Design | DONE | `docs/architecture/phase3/DATABASE_DESIGN.md` |
+| C2: Auth Design | DONE | `docs/architecture/phase3/AUTH_DESIGN.md` |
+| C3: Strict Schema Validation | DONE | `validate_json_data(strict=True)` + `--force` flags |
+| C4: Dual-Use Risk Mitigation | DONE | `tools/risk_mitigation.py` + `cmd_analyze` integration |
+| C5: Structured Security Logging | DONE | `tools/security_logger.py` → `.macp/security.log` |
+| C6: Bias Awareness Disclosure | DONE | `_meta` field in `analyze_paper()` output |
+| C7: Data Retention / Purge | DONE | `macp purge` command with `--dry-run` |
 
-**Workflow:**
-1. Read the blueprint.
-2. Implement all code changes for conditions 3-7.
-3. Create the architectural design documents for conditions 1-2.
-4. Commit all changes with a clear commit message.
-5. Create a handoff record for L (Godel) to review.
+## Next Task: Phase 3 — MCP Server
+
+**Guide:** `docs/architecture/phase3/` for database and auth designs.
+**Objective:** Convert CLI into an MCP-compatible server with SQLite backend.
 
 ---
 
@@ -81,12 +87,13 @@ MACP Research Assistant tracks, traces, and recalls AI-powered research with com
 
 | Directory | Purpose |
 |-----------|---------|
-| `tools/` | CLI tools (macp_cli.py, paper_fetcher.py, knowledge_graph.py) |
+| `tools/` | CLI tools (macp_cli.py, paper_fetcher.py, llm_providers.py, risk_mitigation.py, security_logger.py) |
 | `schemas/` | JSON schemas for MACP research records |
 | `templates/` | Research templates |
 | `peas/` | VerifiMind-PEAS validation |
-| `docs/` | Documentation |
-| `.macp/` | MACP data (citations, handoffs, papers, knowledge graph) |
+| `docs/` | Documentation + Phase 3 architecture |
+| `.macp/` | MACP data (papers, sessions, citations, handoffs, security log) |
+| `.macp/research/` | Knowledge tree — auto-created directories per paper |
 
 ### Relationship to Other Projects
 
@@ -113,7 +120,7 @@ MACP Research Assistant tracks, traces, and recalls AI-powered research with com
 
 - This is a PUBLIC repository
 - Default branch is `master` (not `main`)
-- Currently pre-alpha — conceptual blueprint stage
+- Phase 2 complete with all 7 pre-flight conditions met
 - Never commit API keys, tokens, or credentials
 - This project doubles as a new ideas discovery tool
 

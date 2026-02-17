@@ -48,6 +48,7 @@ from llm_providers import (
     analyze_paper,
     PROVIDERS,
 )
+from risk_mitigation import check_for_sensitive_topics, warn_and_confirm
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -256,10 +257,14 @@ def load_learning_log() -> dict:
         return json.load(f)
 
 
-def save_learning_log(data: dict) -> None:
-    """Save the learning_log.json file with schema validation and atomic write."""
-    if not validate_json_data(data, "learning_log_schema.json"):
-        print("[WARN] Learning log failed schema validation but saving anyway.", file=sys.stderr)
+def save_learning_log(data: dict, force: bool = False) -> None:
+    """Save the learning_log.json file with strict schema validation and atomic write."""
+    try:
+        validate_json_data(data, "learning_log_schema.json", strict=not force)
+    except Exception as e:
+        print(f"[ERROR] Schema validation blocked save: {e}", file=sys.stderr)
+        print("  Use --force to bypass strict validation.", file=sys.stderr)
+        return
     atomic_write_json(LEARNING_LOG_FILE, data)
 
 
@@ -275,10 +280,14 @@ def load_citations() -> dict:
         return json.load(f)
 
 
-def save_citations(data: dict) -> None:
-    """Save the citations.json file with schema validation and atomic write."""
-    if not validate_json_data(data, "citations_schema.json"):
-        print("[WARN] Citations failed schema validation but saving anyway.", file=sys.stderr)
+def save_citations(data: dict, force: bool = False) -> None:
+    """Save the citations.json file with strict schema validation and atomic write."""
+    try:
+        validate_json_data(data, "citations_schema.json", strict=not force)
+    except Exception as e:
+        print(f"[ERROR] Schema validation blocked save: {e}", file=sys.stderr)
+        print("  Use --force to bypass strict validation.", file=sys.stderr)
+        return
     atomic_write_json(CITATIONS_FILE, data)
 
 
@@ -376,8 +385,9 @@ def cmd_discover(args):
         print("  This cross-validation strengthens discovery confidence.")
 
     # Add to MACP storage
+    force = getattr(args, "force", False)
     print(f"\n[MACP Storage] Adding {len(all_papers)} papers to research_papers.json...")
-    added, skipped = add_papers(all_papers)
+    added, skipped = add_papers(all_papers, force=force)
     print(f"  Added: {added} | Skipped (duplicates): {skipped}")
 
     # Create research tree nodes for discovered papers
@@ -438,6 +448,14 @@ def cmd_analyze(args):
 
     if not abstract:
         print(f"\n[WARN] Paper has no abstract. Analysis quality will be limited.")
+
+    # --- C4: Dual-use risk check ---
+    sensitive_text = f"{title} {abstract}"
+    matched_keywords = check_for_sensitive_topics(sensitive_text)
+    if matched_keywords:
+        if not warn_and_confirm(paper_id, matched_keywords):
+            print("  Analysis aborted by user.")
+            return
 
     # --- Select provider ---
     print(f"\n[Paper] {title[:70]}...")
@@ -541,9 +559,10 @@ def cmd_analyze(args):
         },
     }
 
+    force = getattr(args, "force", False)
     log = load_learning_log()
     log.setdefault("learning_sessions", []).append(session)
-    save_learning_log(log)
+    save_learning_log(log, force=force)
 
     # Update paper status + insights
     for p in papers_data.get("papers", []):
@@ -555,7 +574,7 @@ def cmd_analyze(args):
                     existing_insights.append(insight)
             p["insights"] = existing_insights
             break
-    save_papers(papers_data)
+    save_papers(papers_data, force=force)
 
     # --- Save to knowledge tree ---
     research_path = save_to_research_tree(paper, analysis=analysis, session=session)
@@ -583,10 +602,14 @@ def load_handoffs() -> dict:
         return json.load(f)
 
 
-def save_handoffs(data: dict) -> None:
-    """Save the handoffs.json file with schema validation and atomic write."""
-    if not validate_json_data(data, "handoffs_schema.json"):
-        print("[WARN] Handoffs failed schema validation but saving anyway.", file=sys.stderr)
+def save_handoffs(data: dict, force: bool = False) -> None:
+    """Save the handoffs.json file with strict schema validation and atomic write."""
+    try:
+        validate_json_data(data, "handoffs_schema.json", strict=not force)
+    except Exception as e:
+        print(f"[ERROR] Schema validation blocked save: {e}", file=sys.stderr)
+        print("  Use --force to bypass strict validation.", file=sys.stderr)
+        return
     atomic_write_json(HANDOFFS_FILE, data)
 
 
@@ -643,9 +666,10 @@ def cmd_handoff(args):
         "knowledge_state": knowledge_state,
     }
 
+    force = getattr(args, "force", False)
     handoffs_data = load_handoffs()
     handoffs_data["handoffs"].append(handoff)
-    save_handoffs(handoffs_data)
+    save_handoffs(handoffs_data, force=force)
 
     # Display handoff
     print(f"\n[HANDOFF] {handoff_id}")
@@ -725,10 +749,11 @@ def cmd_learn(args):
     }
 
     # Save to learning log
+    force = getattr(args, "force", False)
     log = load_learning_log()
     key = "learning_sessions" if "learning_sessions" in log else "sessions"
     log.setdefault(key, []).append(session)
-    save_learning_log(log)
+    save_learning_log(log, force=force)
 
     # Update paper status to "analyzed"
     for paper in papers_data.get("papers", []):
@@ -736,7 +761,7 @@ def cmd_learn(args):
             paper["status"] = "analyzed"
             if args.summary not in paper.get("insights", []):
                 paper.setdefault("insights", []).append(args.summary)
-    save_papers(papers_data)
+    save_papers(papers_data, force=force)
 
     print(f"\n[SYNTHESIS] Learning session created: {session_id}")
     print(f"  Summary: {args.summary[:80]}...")
@@ -778,16 +803,17 @@ def cmd_cite(args):
         "cited_by": agent,
     }
 
+    force = getattr(args, "force", False)
     citations_data = load_citations()
     citations_data["citations"].append(citation)
-    save_citations(citations_data)
+    save_citations(citations_data, force=force)
 
     # Update paper status to "cited"
     papers_data = load_papers()
     for paper in papers_data.get("papers", []):
         if paper["id"] == paper_id:
             paper["status"] = "cited"
-    save_papers(papers_data)
+    save_papers(papers_data, force=force)
 
     print(f"\n[PROPAGATION] Citation recorded: {citation['citation_id']}")
     print(f"  Paper: {paper_id}")
@@ -1175,6 +1201,90 @@ def cmd_status(args):
 
 
 # ---------------------------------------------------------------------------
+# Command: purge
+# ---------------------------------------------------------------------------
+
+def cmd_purge(args):
+    """Purge research data from the MACP knowledge base."""
+    import shutil
+    from security_logger import log_data_purge
+
+    print("=" * 60)
+    print("MACP Research Assistant - PURGE")
+    print("  Data retention: delete research data")
+    print("=" * 60)
+
+    dry_run = args.dry_run
+
+    # Collect files/dirs that would be deleted
+    targets = []
+
+    # .macp/research/ directory
+    if os.path.isdir(RESEARCH_DIR):
+        targets.append(("dir", RESEARCH_DIR))
+
+    # .macp/exports/ directory
+    if os.path.isdir(EXPORTS_DIR):
+        targets.append(("dir", EXPORTS_DIR))
+
+    # JSON data files (preserve config.json if it exists)
+    protected = {"config.json"}
+    for fname in os.listdir(MACP_DIR):
+        if fname.endswith(".json") and fname not in protected:
+            targets.append(("file", os.path.join(MACP_DIR, fname)))
+
+    # Security log
+    security_log = os.path.join(MACP_DIR, "security.log")
+    if os.path.isfile(security_log):
+        targets.append(("file", security_log))
+
+    if not targets:
+        print("\n[PURGE] Nothing to delete. Knowledge base is empty.")
+        return
+
+    # Show what would be deleted
+    print(f"\n  The following will be {'DELETED' if not dry_run else 'deleted (dry-run)'}:")
+    for kind, path in targets:
+        label = "[DIR] " if kind == "dir" else "[FILE]"
+        print(f"    {label} {path}")
+
+    if dry_run:
+        print(f"\n[DRY-RUN] {len(targets)} item(s) would be deleted. No changes made.")
+        log_data_purge(dry_run=True, files_affected=[p for _, p in targets])
+        return
+
+    # Require explicit multi-word confirmation
+    print()
+    print("  WARNING: This action is irreversible!")
+    print()
+    try:
+        confirm = input("  Type 'Yes, delete all my research data' to confirm: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        confirm = ""
+
+    if confirm != "Yes, delete all my research data":
+        print("  Purge aborted. Confirmation did not match.")
+        return
+
+    # Perform deletion
+    deleted = []
+    for kind, path in targets:
+        try:
+            if kind == "dir":
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
+            deleted.append(path)
+            print(f"    Deleted: {path}")
+        except OSError as e:
+            print(f"    [ERROR] Failed to delete {path}: {e}", file=sys.stderr)
+
+    log_data_purge(dry_run=False, files_affected=deleted)
+    print(f"\n[PURGE] {len(deleted)} item(s) deleted.")
+    print("=" * 60)
+
+
+# ---------------------------------------------------------------------------
 # Main: Argument Parser
 # ---------------------------------------------------------------------------
 
@@ -1195,6 +1305,7 @@ def main():
     p_discover.add_argument("--hysts", help="Search the hysts/daily-papers dataset (12,700+ papers)")
     p_discover.add_argument("--hysts-date", help="Fetch from hysts dataset by date (YYYY-MM-DD)")
     p_discover.add_argument("--limit", "-l", type=int, default=10, help="Max results for query search")
+    p_discover.add_argument("--force", action="store_true", help="Bypass strict schema validation")
     p_discover.set_defaults(func=cmd_discover)
 
     # --- analyze ---
@@ -1202,6 +1313,7 @@ def main():
     p_analyze.add_argument("arxiv_id", help="arXiv ID of the paper to analyze")
     p_analyze.add_argument("--provider", help="LLM provider: gemini, anthropic, openai (default: auto-select)")
     p_analyze.add_argument("--yes", "-y", action="store_true", help="Skip consent prompt")
+    p_analyze.add_argument("--force", action="store_true", help="Bypass strict schema validation")
     p_analyze.set_defaults(func=cmd_analyze)
 
     # --- handoff ---
@@ -1212,6 +1324,7 @@ def main():
     p_handoff.add_argument("--completed", help="Semicolon-separated list of completed actions")
     p_handoff.add_argument("--pending", help="Semicolon-separated list of pending actions")
     p_handoff.add_argument("--papers", "-p", help="Comma-separated arXiv IDs relevant to this handoff")
+    p_handoff.add_argument("--force", action="store_true", help="Bypass strict schema validation")
     p_handoff.set_defaults(func=cmd_handoff)
 
     # --- learn ---
@@ -1230,6 +1343,7 @@ def main():
     p_cite.add_argument("--project", "-p", required=True, help="Name of the project citing this paper")
     p_cite.add_argument("--context", "-c", required=True, help="Context of how the paper is being used")
     p_cite.add_argument("--agent", "-a", default="human", help="Agent making the citation")
+    p_cite.add_argument("--force", action="store_true", help="Bypass strict schema validation")
     p_cite.set_defaults(func=cmd_cite)
 
     # --- recall ---
@@ -1248,6 +1362,11 @@ def main():
     # --- status ---
     p_status = subparsers.add_parser("status", help="Show knowledge base status")
     p_status.set_defaults(func=cmd_status)
+
+    # --- purge ---
+    p_purge = subparsers.add_parser("purge", help="Delete research data (data retention)")
+    p_purge.add_argument("--dry-run", action="store_true", help="Show what would be deleted without deleting")
+    p_purge.set_defaults(func=cmd_purge)
 
     args = parser.parse_args()
     if not args.command:

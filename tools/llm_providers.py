@@ -288,4 +288,14 @@ def analyze_paper(
     if not expected.issubset(analysis.keys()):
         print(f"[WARN] Analysis missing expected fields: {expected - analysis.keys()}", file=sys.stderr)
 
+    # C6: Bias Awareness Disclosure — attach metadata to every analysis
+    analysis["_meta"] = {
+        "bias_disclaimer": (
+            "AI-generated analysis may contain inaccuracies or reflect biases "
+            "from the underlying model. Always perform critical evaluation."
+        ),
+        "provider": provider_id,
+        "model": config["model"],
+    }
+
     return analysis
