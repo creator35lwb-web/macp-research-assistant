@@ -32,6 +32,21 @@ Use the `macp_create_handoff` MCP tool with:
 
 ---
 
+## Current Task: P-1.5 Pre-Flight Implementation
+
+**Objective:** Implement the 7 mandatory conditions from the Phase 2 Trinity Validation.
+
+**Guide:** `docs/P1_5_IMPLEMENTATION_BLUEPRINT.md`
+
+**Workflow:**
+1. Read the blueprint.
+2. Implement all code changes for conditions 3-7.
+3. Create the architectural design documents for conditions 1-2.
+4. Commit all changes with a clear commit message.
+5. Create a handoff record for L (Godel) to review.
+
+---
+
 ## Session Start Checklist
 
 When starting a new session, ALWAYS:
