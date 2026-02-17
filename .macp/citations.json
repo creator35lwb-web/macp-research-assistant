@@ -1,36 +1,44 @@
 {
   "citations": [
     {
-      "citation_id": "cite_20260217_074500_552b5c",
-      "paper_id": "arxiv:2501.04306",
-      "cited_in": "GODELAI C-S-P Framework",
-      "context": "LLM4SR validates the C-S-P approach: LLMs can automate Conflict (hypothesis), Synthesis (analysis), and Propagation (review) phases",
+      "citation_id": "cite_20260217_040530_b73f81",
+      "paper_id": "arxiv:2212.08073",
+      "cited_in": "GodelAI",
+      "context": "Validates C-S-P framework with empirical evidence from Constitutional AI methodology",
       "date": "2026-02-17",
-      "cited_by": "RNA"
+      "cited_by": "L_Godel"
     },
     {
-      "citation_id": "cite_20260217_074500_0caf20",
-      "paper_id": "arxiv:2502.11271",
-      "cited_in": "MACP Research Assistant",
-      "context": "OctoTools tool-card pattern aligns with our skill.md and llms.txt agent discoverability approach",
+      "citation_id": "cite_20260217_040531_5907c7",
+      "paper_id": "arxiv:2303.17651",
+      "cited_in": "GodelAI",
+      "context": "Self-Refine pattern adopted for inference-time Synthesis phase implementation",
       "date": "2026-02-17",
-      "cited_by": "RNA"
+      "cited_by": "L_Godel"
     },
     {
-      "citation_id": "cite_20260217_081958_90c34b",
-      "paper_id": "arxiv:2501.04306",
-      "cited_in": "GODELAI C-S-P Framework",
-      "context": "LLM4SR validates the C-S-P approach: LLMs can automate the full research lifecycle",
+      "citation_id": "cite_20260217_040531_c96026",
+      "paper_id": "arxiv:2210.03629",
+      "cited_in": "GodelAI",
+      "context": "ReAct reasoning+acting pattern adopted as foundation for multi-agent architecture",
       "date": "2026-02-17",
-      "cited_by": "RNA"
+      "cited_by": "L_Godel"
     },
     {
-      "citation_id": "cite_20260217_081958_f9ae7e",
-      "paper_id": "arxiv:2502.11271",
-      "cited_in": "MACP Research Assistant",
-      "context": "OctoTools tool-card pattern aligns with skill.md and llms.txt agent discoverability",
+      "citation_id": "cite_20260217_040531_990bf3",
+      "paper_id": "arxiv:2212.08073",
+      "cited_in": "VerifiMind-PEAS",
+      "context": "Constitutional AI principles inform Z-Agent ethical validation methodology",
       "date": "2026-02-17",
-      "cited_by": "RNA"
+      "cited_by": "L_Godel"
+    },
+    {
+      "citation_id": "cite_20260217_040532_9dd680",
+      "paper_id": "arxiv:2602.08222",
+      "cited_in": "GodelAI",
+      "context": "Weak-Driven Learning informs iterative model improvement strategy for GodelAI training pipeline",
+      "date": "2026-02-17",
+      "cited_by": "L_Godel"
     }
   ]
 }

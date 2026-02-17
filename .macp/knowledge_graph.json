@@ -1,1 +1,1184 @@
-{}
+{
+  "metadata": {
+    "generated_at": "2026-02-17T04:05:48.107603",
+    "generator": "macp_knowledge_graph",
+    "version": "1.0.0"
+  },
+  "statistics": {
+    "total_nodes": 75,
+    "total_edges": 88,
+    "node_types": {
+      "paper": 55,
+      "learning_session": 9,
+      "citation": 5,
+      "project": 2,
+      "agent": 4
+    },
+    "edge_types": {
+      "discovered": 55,
+      "analyzed": 9,
+      "created_by": 9,
+      "cites": 5,
+      "propagated_to": 5,
+      "cited_by": 5
+    }
+  },
+  "nodes": [
+    {
+      "id": "arxiv:2502.09151",
+      "type": "paper",
+      "label": "Regularization can make diffusion models more efficient",
+      "status": "discovered",
+      "date": "2025-02-13",
+      "url": "https://arxiv.org/abs/2502.09151"
+    },
+    {
+      "id": "arxiv:2602.08222",
+      "type": "paper",
+      "label": "Weak-Driven Learning: How Weak Agents make Strong Agents Stronger",
+      "status": "cited",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08222"
+    },
+    {
+      "id": "arxiv:2602.07274",
+      "type": "paper",
+      "label": "TermiGen: High-Fidelity Environment and Robust Trajectory Synthesis for Terminal",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07274"
+    },
+    {
+      "id": "arxiv:2602.07085",
+      "type": "paper",
+      "label": "QuantaAlpha: An Evolutionary Framework for LLM-Driven Alpha Mining",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07085"
+    },
+    {
+      "id": "arxiv:2602.08794",
+      "type": "paper",
+      "label": "MOVA: Towards Scalable and Synchronized Video-Audio Generation",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08794"
+    },
+    {
+      "id": "arxiv:2602.07026",
+      "type": "paper",
+      "label": "Modality Gap-Driven Subspace Alignment Training Paradigm For Multimodal Large La",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07026"
+    },
+    {
+      "id": "arxiv:2602.06855",
+      "type": "paper",
+      "label": "AIRS-Bench: a Suite of Tasks for Frontier AI Research Science Agents",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.06855"
+    },
+    {
+      "id": "arxiv:2602.08990",
+      "type": "paper",
+      "label": "InternAgent-1.5: A Unified Agentic Framework for Long-Horizon Autonomous Scienti",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08990"
+    },
+    {
+      "id": "arxiv:2602.07845",
+      "type": "paper",
+      "label": "Recurrent-Depth VLA: Implicit Test-Time Compute Scaling of Vision-Language-Actio",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07845"
+    },
+    {
+      "id": "arxiv:2602.08676",
+      "type": "paper",
+      "label": "LLaDA2.1: Speeding Up Text Diffusion via Token Editing",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08676"
+    },
+    {
+      "id": "arxiv:2602.07837",
+      "type": "paper",
+      "label": "RLinf-USER: A Unified and Extensible System for Real-World Online Policy Learnin",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07837"
+    },
+    {
+      "id": "arxiv:2602.00169",
+      "type": "paper",
+      "label": "Towards Agentic Intelligence for Materials Science",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.00169"
+    },
+    {
+      "id": "arxiv:2602.06422",
+      "type": "paper",
+      "label": "Alleviating Sparse Rewards by Modeling Step-Wise and Long-Term Sampling Effects ",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.06422"
+    },
+    {
+      "id": "arxiv:2602.08321",
+      "type": "paper",
+      "label": "Improving Data and Reward Design for Scientific Reasoning in Large Language Mode",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08321"
+    },
+    {
+      "id": "arxiv:2602.09007",
+      "type": "paper",
+      "label": "GEBench: Benchmarking Image Generation Models as GUI Environments",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.09007"
+    },
+    {
+      "id": "arxiv:2602.08439",
+      "type": "paper",
+      "label": "Demo-ICL: In-Context Learning for Procedural Video Knowledge Acquisition",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08439"
+    },
+    {
+      "id": "arxiv:2602.06025",
+      "type": "paper",
+      "label": "Learning Query-Aware Budget-Tier Routing for Runtime Agent Memory",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.06025"
+    },
+    {
+      "id": "arxiv:2602.08543",
+      "type": "paper",
+      "label": "GISA: A Benchmark for General Information-Seeking Assistant",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08543"
+    },
+    {
+      "id": "arxiv:2602.07962",
+      "type": "paper",
+      "label": "LOCA-bench: Benchmarking Language Agents Under Controllable and Extreme Context ",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07962"
+    },
+    {
+      "id": "arxiv:2602.06540",
+      "type": "paper",
+      "label": "AgentCPM-Report: Interleaving Drafting and Deepening for Open-Ended Deep Researc",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.06540"
+    },
+    {
+      "id": "arxiv:2602.07055",
+      "type": "paper",
+      "label": "Theory of Space: Can Foundation Models Construct Spatial Beliefs through Active ",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07055"
+    },
+    {
+      "id": "arxiv:2602.09022",
+      "type": "paper",
+      "label": "WorldCompass: Reinforcement Learning for Long-Horizon World Models",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.09022"
+    },
+    {
+      "id": "arxiv:2602.07075",
+      "type": "paper",
+      "label": "LatentChem: From Textual CoT to Latent Thinking in Chemical Reasoning",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07075"
+    },
+    {
+      "id": "arxiv:2602.06694",
+      "type": "paper",
+      "label": "NanoQuant: Efficient Sub-1-Bit Quantization of Large Language Models",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.06694"
+    },
+    {
+      "id": "arxiv:2602.03784",
+      "type": "paper",
+      "label": "Context Compression via Explicit Information Transmission",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.03784"
+    },
+    {
+      "id": "arxiv:2602.08658",
+      "type": "paper",
+      "label": "Fundamental Reasoning Paradigms Induce Out-of-Domain Generalization in Language ",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08658"
+    },
+    {
+      "id": "arxiv:2602.06454",
+      "type": "paper",
+      "label": "RelayGen: Intra-Generation Model Switching for Efficient Reasoning",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.06454"
+    },
+    {
+      "id": "arxiv:2602.08236",
+      "type": "paper",
+      "label": "When and How Much to Imagine: Adaptive Test-Time Scaling with World Models for V",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08236"
+    },
+    {
+      "id": "arxiv:2602.08808",
+      "type": "paper",
+      "label": "How2Everything: Mining the Web for How-To Procedures to Evaluate and Improve LLM",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08808"
+    },
+    {
+      "id": "arxiv:2602.08145",
+      "type": "paper",
+      "label": "Reliable and Responsible Foundation Models: A Comprehensive Survey",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08145"
+    },
+    {
+      "id": "arxiv:2602.07796",
+      "type": "paper",
+      "label": "Thinking Makes LLM Agents Introverted: How Mandatory Thinking Can Backfire in Us",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07796"
+    },
+    {
+      "id": "arxiv:2602.07775",
+      "type": "paper",
+      "label": "Rolling Sink: Bridging Limited-Horizon Training and Open-Ended Testing in Autore",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07775"
+    },
+    {
+      "id": "arxiv:2602.07080",
+      "type": "paper",
+      "label": "CodeCircuit: Toward Inferring LLM-Generated Code Correctness via Attribution Gra",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07080"
+    },
+    {
+      "id": "arxiv:2602.09003",
+      "type": "paper",
+      "label": "Data Science and Technology Towards AGI Part I: Tiered Data Management",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.09003"
+    },
+    {
+      "id": "arxiv:2602.07803",
+      "type": "paper",
+      "label": "SoulX-Singer: Towards High-Quality Zero-Shot Singing Voice Synthesis",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07803"
+    },
+    {
+      "id": "arxiv:2601.21363",
+      "type": "paper",
+      "label": "Towards Bridging the Gap between Large-Scale Pretraining and Efficient Finetunin",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2601.21363"
+    },
+    {
+      "id": "arxiv:2602.09782",
+      "type": "paper",
+      "label": "Flexible Entropy Control in RLVR with Gradient-Preserving Perspective",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.09782"
+    },
+    {
+      "id": "arxiv:2602.08961",
+      "type": "paper",
+      "label": "MotionCrafter: Dense Geometry and Motion Reconstruction with a 4D VAE",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08961"
+    },
+    {
+      "id": "arxiv:2602.08829",
+      "type": "paper",
+      "label": "WildReward: Learning Reward Models from In-the-Wild Human Interactions",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08829"
+    },
+    {
+      "id": "arxiv:2602.08004",
+      "type": "paper",
+      "label": "Agent Skills: A Data-Driven Analysis of Claude Skills for Extending Large Langua",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08004"
+    },
+    {
+      "id": "arxiv:2602.06942",
+      "type": "paper",
+      "label": "Optimal Turkish Subword Strategies at Scale: Systematic Evaluation of Data, Voca",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.06942"
+    },
+    {
+      "id": "arxiv:2602.06445",
+      "type": "paper",
+      "label": "ECO: Energy-Constrained Optimization with Reinforcement Learning for Humanoid Wa",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.06445"
+    },
+    {
+      "id": "arxiv:2602.08818",
+      "type": "paper",
+      "label": "FlexMoRE: A Flexible Mixture of Rank-heterogeneous Experts for Efficient Federat",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08818"
+    },
+    {
+      "id": "arxiv:2602.07150",
+      "type": "paper",
+      "label": "On Randomness in Agentic Evals",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07150"
+    },
+    {
+      "id": "arxiv:2602.06600",
+      "type": "paper",
+      "label": "Echoes as Anchors: Probabilistic Costs and Attention Refocusing in LLM Reasoning",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.06600"
+    },
+    {
+      "id": "arxiv:2602.05929",
+      "type": "paper",
+      "label": "KV-CoRE: Benchmarking Data-Dependent Low-Rank Compressibility of KV-Caches in LL",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.05929"
+    },
+    {
+      "id": "arxiv:2602.07040",
+      "type": "paper",
+      "label": "Aster: Autonomous Scientific Discovery over 20x Faster Than Existing Methods",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07040"
+    },
+    {
+      "id": "arxiv:2602.02827",
+      "type": "paper",
+      "label": "Col-Bandit: Zero-Shot Query-Time Pruning for Late-Interaction Retrieval",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.02827"
+    },
+    {
+      "id": "arxiv:2602.08629",
+      "type": "paper",
+      "label": "CauScale: Neural Causal Discovery at Scale",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.08629"
+    },
+    {
+      "id": "arxiv:2602.07491",
+      "type": "paper",
+      "label": "GraphAgents: Knowledge Graph-Guided Agentic AI for Cross-Domain Materials Design",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.07491"
+    },
+    {
+      "id": "arxiv:2602.05708",
+      "type": "paper",
+      "label": "Cost-Efficient RAG for Entity Matching with LLMs: A Blocking-based Exploration",
+      "status": "discovered",
+      "date": "2026-02-10",
+      "url": "https://huggingface.co/papers/2602.05708"
+    },
+    {
+      "id": "arxiv:2602.06570",
+      "type": "paper",
+      "label": "Baichuan-M3: Modeling Clinical Inquiry for Reliable Medical Decision-Making",
+      "status": "analyzed",
+      "date": "2026-02-06",
+      "url": "https://arxiv.org/abs/2602.06570"
+    },
+    {
+      "id": "arxiv:2212.08073",
+      "type": "paper",
+      "label": "Constitutional AI: Harmlessness from AI Feedback",
+      "status": "cited",
+      "date": "2022-12-15",
+      "url": "https://arxiv.org/abs/2212.08073"
+    },
+    {
+      "id": "arxiv:2303.17651",
+      "type": "paper",
+      "label": "Self-Refine: Iterative Refinement with Self-Feedback",
+      "status": "cited",
+      "date": "2023-03-30",
+      "url": "https://arxiv.org/abs/2303.17651"
+    },
+    {
+      "id": "arxiv:2210.03629",
+      "type": "paper",
+      "label": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "status": "cited",
+      "date": "2022-10-06",
+      "url": "https://arxiv.org/abs/2210.03629"
+    },
+    {
+      "id": "session_20260217_040304_26b5e9",
+      "type": "learning_session",
+      "label": "Baichuan-M3 is a new AI medical assistant that acts more like a real doctor by a",
+      "date": "2026-02-17",
+      "agent": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "tags": [
+        "medical-ai",
+        "large-language-models",
+        "clinical-decision-support",
+        "healthcare-nlp",
+        "hallucination-mitigation"
+      ]
+    },
+    {
+      "id": "session_20260217_040322_177edf",
+      "type": "learning_session",
+      "label": "This paper introduces Constitutional AI, a method for training AI assistants to ",
+      "date": "2026-02-17",
+      "agent": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "tags": [
+        "constitutional-ai",
+        "ai-safety",
+        "reinforcement-learning",
+        "ai-alignment",
+        "self-improvement"
+      ]
+    },
+    {
+      "id": "session_20260217_040334_b3ca8a",
+      "type": "learning_session",
+      "label": "This paper introduces Self-Refine, a method that improves AI language model outp",
+      "date": "2026-02-17",
+      "agent": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "tags": [
+        "large-language-models",
+        "iterative-refinement",
+        "self-improvement",
+        "prompt-engineering",
+        "test-time-optimization"
+      ]
+    },
+    {
+      "id": "session_20260217_040346_7b153f",
+      "type": "learning_session",
+      "label": "This paper introduces ReAct, a method that combines reasoning and acting in larg",
+      "date": "2026-02-17",
+      "agent": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "tags": [
+        "large-language-models",
+        "reasoning",
+        "action-planning",
+        "prompt-engineering",
+        "knowledge-grounding"
+      ]
+    },
+    {
+      "id": "session_20260217_040407_8a3e4f",
+      "type": "learning_session",
+      "label": "This paper introduces ReAct, a method that combines reasoning and acting in larg",
+      "date": "2026-02-17",
+      "agent": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "tags": [
+        "large-language-models",
+        "reasoning",
+        "action-planning",
+        "chain-of-thought",
+        "question-answering",
+        "interactive-agents"
+      ]
+    },
+    {
+      "id": "session_20260217_040425_21847e",
+      "type": "learning_session",
+      "label": "This paper addresses the problem of diminishing returns when training large lang",
+      "date": "2026-02-17",
+      "agent": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "tags": [
+        "large-language-models",
+        "post-training-optimization",
+        "model-training",
+        "mathematical-reasoning",
+        "code-generation"
+      ]
+    },
+    {
+      "id": "session_20260217_040518_f6d57b",
+      "type": "learning_session",
+      "label": "Constitutional AI validates GodelAI C-S-P framework with empirical evidence",
+      "date": "2026-02-17",
+      "agent": "L_Godel",
+      "tags": [
+        "c-s-p",
+        "ethical-ai",
+        "self-improvement"
+      ]
+    },
+    {
+      "id": "session_20260217_040519_86a6e2",
+      "type": "learning_session",
+      "label": "Self-Refine proves inference-time iterative improvement without retraining",
+      "date": "2026-02-17",
+      "agent": "L_Godel",
+      "tags": [
+        "self-improvement",
+        "cost-saving",
+        "inference-time"
+      ]
+    },
+    {
+      "id": "session_20260217_040519_5bd43f",
+      "type": "learning_session",
+      "label": "ReAct provides theoretical foundation for GodelAI multi-agent architecture",
+      "date": "2026-02-17",
+      "agent": "L_Godel",
+      "tags": [
+        "multi-agent",
+        "reasoning",
+        "agent-architecture"
+      ]
+    },
+    {
+      "id": "cite_20260217_040530_b73f81",
+      "type": "citation",
+      "label": "Citation in GodelAI",
+      "date": "2026-02-17",
+      "context": "Validates C-S-P framework with empirical evidence from Constitutional AI methodology"
+    },
+    {
+      "id": "cite_20260217_040531_5907c7",
+      "type": "citation",
+      "label": "Citation in GodelAI",
+      "date": "2026-02-17",
+      "context": "Self-Refine pattern adopted for inference-time Synthesis phase implementation"
+    },
+    {
+      "id": "cite_20260217_040531_c96026",
+      "type": "citation",
+      "label": "Citation in GodelAI",
+      "date": "2026-02-17",
+      "context": "ReAct reasoning+acting pattern adopted as foundation for multi-agent architecture"
+    },
+    {
+      "id": "cite_20260217_040531_990bf3",
+      "type": "citation",
+      "label": "Citation in VerifiMind-PEAS",
+      "date": "2026-02-17",
+      "context": "Constitutional AI principles inform Z-Agent ethical validation methodology"
+    },
+    {
+      "id": "cite_20260217_040532_9dd680",
+      "type": "citation",
+      "label": "Citation in GodelAI",
+      "date": "2026-02-17",
+      "context": "Weak-Driven Learning informs iterative model improvement strategy for GodelAI training pipeline"
+    },
+    {
+      "id": "project:VerifiMind-PEAS",
+      "type": "project",
+      "label": "VerifiMind-PEAS"
+    },
+    {
+      "id": "project:GodelAI",
+      "type": "project",
+      "label": "GodelAI"
+    },
+    {
+      "id": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "type": "agent",
+      "label": "anthropic_claude:claude-sonnet-4-5-20250929"
+    },
+    {
+      "id": "hf_daily_papers",
+      "type": "agent",
+      "label": "hf_daily_papers"
+    },
+    {
+      "id": "L_Godel",
+      "type": "agent",
+      "label": "L_Godel"
+    },
+    {
+      "id": "arxiv_api",
+      "type": "agent",
+      "label": "arxiv_api"
+    }
+  ],
+  "edges": [
+    {
+      "source": "arxiv_api",
+      "target": "arxiv:2502.09151",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08222",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07274",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07085",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08794",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07026",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.06855",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08990",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07845",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08676",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07837",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.00169",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.06422",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08321",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.09007",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08439",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.06025",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08543",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07962",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.06540",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07055",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.09022",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07075",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.06694",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.03784",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08658",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.06454",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08236",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08808",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08145",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07796",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07775",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07080",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.09003",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07803",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2601.21363",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.09782",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08961",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08829",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08004",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.06942",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.06445",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08818",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07150",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.06600",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.05929",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07040",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.02827",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.08629",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.07491",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "hf_daily_papers",
+      "target": "arxiv:2602.05708",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "arxiv_api",
+      "target": "arxiv:2602.06570",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "arxiv_api",
+      "target": "arxiv:2212.08073",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "arxiv_api",
+      "target": "arxiv:2303.17651",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "arxiv_api",
+      "target": "arxiv:2210.03629",
+      "type": "discovered",
+      "label": "discovered"
+    },
+    {
+      "source": "session_20260217_040304_26b5e9",
+      "target": "arxiv:2602.06570",
+      "type": "analyzed",
+      "label": "synthesized from"
+    },
+    {
+      "source": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "target": "session_20260217_040304_26b5e9",
+      "type": "created_by",
+      "label": "created by"
+    },
+    {
+      "source": "session_20260217_040322_177edf",
+      "target": "arxiv:2212.08073",
+      "type": "analyzed",
+      "label": "synthesized from"
+    },
+    {
+      "source": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "target": "session_20260217_040322_177edf",
+      "type": "created_by",
+      "label": "created by"
+    },
+    {
+      "source": "session_20260217_040334_b3ca8a",
+      "target": "arxiv:2303.17651",
+      "type": "analyzed",
+      "label": "synthesized from"
+    },
+    {
+      "source": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "target": "session_20260217_040334_b3ca8a",
+      "type": "created_by",
+      "label": "created by"
+    },
+    {
+      "source": "session_20260217_040346_7b153f",
+      "target": "arxiv:2210.03629",
+      "type": "analyzed",
+      "label": "synthesized from"
+    },
+    {
+      "source": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "target": "session_20260217_040346_7b153f",
+      "type": "created_by",
+      "label": "created by"
+    },
+    {
+      "source": "session_20260217_040407_8a3e4f",
+      "target": "arxiv:2210.03629",
+      "type": "analyzed",
+      "label": "synthesized from"
+    },
+    {
+      "source": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "target": "session_20260217_040407_8a3e4f",
+      "type": "created_by",
+      "label": "created by"
+    },
+    {
+      "source": "session_20260217_040425_21847e",
+      "target": "arxiv:2602.08222",
+      "type": "analyzed",
+      "label": "synthesized from"
+    },
+    {
+      "source": "anthropic_claude:claude-sonnet-4-5-20250929",
+      "target": "session_20260217_040425_21847e",
+      "type": "created_by",
+      "label": "created by"
+    },
+    {
+      "source": "session_20260217_040518_f6d57b",
+      "target": "arxiv:2212.08073",
+      "type": "analyzed",
+      "label": "synthesized from"
+    },
+    {
+      "source": "L_Godel",
+      "target": "session_20260217_040518_f6d57b",
+      "type": "created_by",
+      "label": "created by"
+    },
+    {
+      "source": "session_20260217_040519_86a6e2",
+      "target": "arxiv:2303.17651",
+      "type": "analyzed",
+      "label": "synthesized from"
+    },
+    {
+      "source": "L_Godel",
+      "target": "session_20260217_040519_86a6e2",
+      "type": "created_by",
+      "label": "created by"
+    },
+    {
+      "source": "session_20260217_040519_5bd43f",
+      "target": "arxiv:2210.03629",
+      "type": "analyzed",
+      "label": "synthesized from"
+    },
+    {
+      "source": "L_Godel",
+      "target": "session_20260217_040519_5bd43f",
+      "type": "created_by",
+      "label": "created by"
+    },
+    {
+      "source": "cite_20260217_040530_b73f81",
+      "target": "arxiv:2212.08073",
+      "type": "cites",
+      "label": "cites"
+    },
+    {
+      "source": "cite_20260217_040530_b73f81",
+      "target": "project:GodelAI",
+      "type": "propagated_to",
+      "label": "propagated to"
+    },
+    {
+      "source": "L_Godel",
+      "target": "cite_20260217_040530_b73f81",
+      "type": "cited_by",
+      "label": "cited by"
+    },
+    {
+      "source": "cite_20260217_040531_5907c7",
+      "target": "arxiv:2303.17651",
+      "type": "cites",
+      "label": "cites"
+    },
+    {
+      "source": "cite_20260217_040531_5907c7",
+      "target": "project:GodelAI",
+      "type": "propagated_to",
+      "label": "propagated to"
+    },
+    {
+      "source": "L_Godel",
+      "target": "cite_20260217_040531_5907c7",
+      "type": "cited_by",
+      "label": "cited by"
+    },
+    {
+      "source": "cite_20260217_040531_c96026",
+      "target": "arxiv:2210.03629",
+      "type": "cites",
+      "label": "cites"
+    },
+    {
+      "source": "cite_20260217_040531_c96026",
+      "target": "project:GodelAI",
+      "type": "propagated_to",
+      "label": "propagated to"
+    },
+    {
+      "source": "L_Godel",
+      "target": "cite_20260217_040531_c96026",
+      "type": "cited_by",
+      "label": "cited by"
+    },
+    {
+      "source": "cite_20260217_040531_990bf3",
+      "target": "arxiv:2212.08073",
+      "type": "cites",
+      "label": "cites"
+    },
+    {
+      "source": "cite_20260217_040531_990bf3",
+      "target": "project:VerifiMind-PEAS",
+      "type": "propagated_to",
+      "label": "propagated to"
+    },
+    {
+      "source": "L_Godel",
+      "target": "cite_20260217_040531_990bf3",
+      "type": "cited_by",
+      "label": "cited by"
+    },
+    {
+      "source": "cite_20260217_040532_9dd680",
+      "target": "arxiv:2602.08222",
+      "type": "cites",
+      "label": "cites"
+    },
+    {
+      "source": "cite_20260217_040532_9dd680",
+      "target": "project:GodelAI",
+      "type": "propagated_to",
+      "label": "propagated to"
+    },
+    {
+      "source": "L_Godel",
+      "target": "cite_20260217_040532_9dd680",
+      "type": "cited_by",
+      "label": "cited by"
+    }
+  ]
+}
