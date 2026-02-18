@@ -46,7 +46,25 @@ All 7 mandatory conditions from Phase 2 Trinity Validation are implemented:
 | C6: Bias Awareness Disclosure | DONE | `_meta` field in `analyze_paper()` output |
 | C7: Data Retention / Purge | DONE | `macp purge` command with `--dry-run` |
 
-## Next Task: Phase 3 — MCP Server
+## Current Task: Phase 3A — WebMCP Prototype
+
+**Guide:** `docs/architecture/phase3/PHASE_3A_PROTOTYPE_SPECIFICATION.md`
+**Objective:** Implement the Phase 3A WebMCP prototype as specified.
+
+### Execution Steps:
+
+1.  Pull the latest from the `main` branch (commit `e50666f` or later).
+2.  Create a new feature branch: `feature/phase3a-prototype`.
+3.  Follow the **Handoff Checklist** in the specification document precisely.
+4.  Implement the Vite/React frontend, FastAPI backend, and WebMCP tool registrations.
+5.  Ensure the prototype is fully runnable locally according to the new `README.md` you will create.
+6.  Commit all work to the feature branch.
+7.  Create a pull request to `main` when complete.
+8.  Create a handoff record in `.macp/handoffs/` summarizing your work and hand back to L (Godel) for review.
+
+---
+
+## Backlog Task: Phase 3B — MCP Server
 
 **Guide:** `docs/architecture/phase3/` for database and auth designs.
 **Objective:** Convert CLI into an MCP-compatible server with SQLite backend.

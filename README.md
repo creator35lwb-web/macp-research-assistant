@@ -309,23 +309,21 @@ Track what you've learned over time.
 
 ---
 
-### Phase 3: Full MCP Server (Long-term)
+### Phase 3: Three-Layer Hybrid Architecture (WebMCP + MCP Server)
 
-**Effort:** 2-3 months development  
-**Automation:** 90% (AI-powered)  
-**Benefit:** Seamless workflow  
+**Effort:** 3-4 months development
+**Automation:** 95% (AI-powered, human-in-the-loop)
+**Benefit:** Seamless workflow across CLI, Web, and autonomous agents
 
 **What you'll build:**
-- MACP MCP Server
-- Integration with gpt-researcher
-- Knowledge graph visualization
-- "What have I learned?" query interface
-- Multi-AI orchestration
+- **Layer 1: CLI** (Existing, maintained)
+- **Layer 2: Backend MCP Server** (For autonomous agents)
+- **Layer 3: WebMCP Frontend** (For human-in-the-loop research)
 
-**Time per session:** 30 seconds (just review)  
-**ROI:** Positive after 50+ research sessions  
+**Time per session:** < 30 seconds (review or interact)
+**ROI:** Positive after 20+ research sessions (due to broader utility)
 
-**Status:** 📋 Roadmap (Q3-Q4 2026)
+**Status:** 🟢 **Approved & In Progress (Q2 2026)**
 
 ---
 
@@ -500,13 +498,26 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 - ✅ Ethical use guidelines
 - ✅ Ecosystem alignment documentation
 
-### Q3-Q4 2026
+### Q2 2026 (Phase 3A)
 
-- 📋 Phase 3: Full MCP server
-- 📋 Integration with gpt-researcher
-- 📋 Knowledge graph visualization
-- 📋 "What have I learned?" query interface
-- 📋 Multi-AI orchestration
+- 🟡 **Phase 3A: Web UI & WebMCP Prototype**
+- 🟡 Build minimal React UI + FastAPI backend
+- 🟡 Implement 2 WebMCP tools (`search_papers`, `analyze_paper`)
+- 🟡 Validate human-in-the-loop workflow
+
+### Q3 2026 (Phase 3B)
+
+- 📋 **Phase 3B: Full Hybrid Implementation**
+- 📋 Implement remaining 4 WebMCP tools
+- 📋 Build parallel Backend MCP Server for autonomous agents
+- 📋 Refactor core engine for shared use
+
+### Q4 2026 (Phase 3C)
+
+- 📋 **Phase 3C: Public Launch & W3C Engagement**
+- 📋 Launch full hybrid platform
+- 📋 Promote unique MACP provenance layer
+- 📋 Engage with W3C community
 
 ---
 
