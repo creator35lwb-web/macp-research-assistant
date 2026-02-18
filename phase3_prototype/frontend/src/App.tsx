@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
+import { registerCallbacks } from "./webmcp";
 
 const API_BASE = "http://localhost:8000";
 
@@ -38,6 +39,25 @@ function App() {
 
   const [provider, setProvider] = useState("gemini");
   const [apiKey, setApiKey] = useState("");
+  const [consented, setConsented] = useState(() =>
+    localStorage.getItem("macp_consent") === "true"
+  );
+
+  // P2.5-01: Connect WebMCP tool callbacks to React state
+  useEffect(() => {
+    registerCallbacks(
+      (data) => setPapers(data as Paper[]),
+      (data) => {
+        const { paperId, analysis } = data as { paperId: string; analysis: Analysis };
+        setAnalyses((prev) => ({ ...prev, [paperId]: analysis }));
+      }
+    );
+  }, []);
+
+  const handleConsent = () => {
+    localStorage.setItem("macp_consent", "true");
+    setConsented(true);
+  };
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -94,6 +114,25 @@ function App() {
         <h1>MACP Research Assistant</h1>
         <p className="subtitle">Phase 3A WebMCP Prototype</p>
       </header>
+
+      {/* P2.5-04: Consent dialog — must accept before using the app */}
+      {!consented && (
+        <div className="consent-overlay">
+          <div className="consent-dialog">
+            <h2>Terms of Use & Privacy Notice</h2>
+            <div className="consent-body">
+              <p><strong>Data Processing:</strong> When you search for papers, queries are sent to the HuggingFace Datasets API. When you analyze a paper, its title, authors, and abstract are sent to the LLM provider you select (Google Gemini, Anthropic Claude, or OpenAI).</p>
+              <p><strong>BYOK (Bring Your Own Key):</strong> API keys you provide are used only for the duration of the request and are never stored on the server.</p>
+              <p><strong>Local Storage:</strong> Search results and analyses are saved locally to <code>.macp/</code> data files for your research traceability.</p>
+              <p><strong>AI Disclaimer:</strong> All AI-generated analyses may contain inaccuracies or biases. Always perform independent critical evaluation of results.</p>
+              <p><strong>No Warranty:</strong> This is a research prototype provided as-is, without warranty of any kind.</p>
+            </div>
+            <button className="consent-button" onClick={handleConsent}>
+              I understand and agree — Continue
+            </button>
+          </div>
+        </div>
+      )}
 
       <section className="config-section">
         <label>

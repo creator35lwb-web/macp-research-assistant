@@ -13,9 +13,13 @@ import sys
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 # Add the tools directory to the Python path so we can import the engine
 TOOLS_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "tools")
@@ -78,12 +82,29 @@ async def lifespan(app: FastAPI):
     yield
 
 
+# ---------------------------------------------------------------------------
+# Rate Limiting (P2.5-02)
+# ---------------------------------------------------------------------------
+
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(
     title="MACP Research Assistant API",
     description="Phase 3A WebMCP Prototype — bridges the React UI to the MACP Python engine.",
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.state.limiter = limiter
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Rate limit exceeded. Please wait before making more requests."},
+    )
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -111,7 +132,8 @@ async def health():
 
 
 @app.post("/search")
-async def search_papers(req: SearchRequest):
+@limiter.limit("30/minute")
+async def search_papers(request: Request, req: SearchRequest):
     """
     Search for research papers.
 
@@ -144,7 +166,8 @@ async def search_papers(req: SearchRequest):
 
 
 @app.post("/analyze")
-async def analyze_paper_endpoint(req: AnalyzeRequest):
+@limiter.limit("10/minute")
+async def analyze_paper_endpoint(request: Request, req: AnalyzeRequest):
     """
     Analyze a paper using an LLM provider.
 
