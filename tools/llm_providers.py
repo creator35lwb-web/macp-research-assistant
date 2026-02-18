@@ -214,6 +214,7 @@ def analyze_paper(
     authors: list[str],
     abstract: str,
     provider_id: str,
+    api_key_override: Optional[str] = None,
 ) -> Optional[dict]:
     """
     Send a paper to an LLM for analysis and return structured insights.
@@ -223,6 +224,8 @@ def analyze_paper(
         authors: List of author names.
         abstract: Paper abstract text.
         provider_id: Which LLM provider to use.
+        api_key_override: Optional BYOK key passed directly (thread-safe).
+            When provided, this key is used instead of the environment variable.
 
     Returns:
         Parsed analysis dict, or None on failure.
@@ -232,7 +235,7 @@ def analyze_paper(
         print(f"[ERROR] Unknown provider: {provider_id}", file=sys.stderr)
         return None
 
-    api_key = os.environ.get(config["env_key"], "")
+    api_key = api_key_override or os.environ.get(config["env_key"], "")
     if not api_key:
         print(f"[ERROR] No API key for {config['name']}. Set {config['env_key']}.", file=sys.stderr)
         return None

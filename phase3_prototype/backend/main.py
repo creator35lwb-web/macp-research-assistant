@@ -22,7 +22,9 @@ from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from config import CORS_ORIGINS, RATE_LIMIT_ANALYZE, RATE_LIMIT_SEARCH, TOOLS_DIR
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+
+from config import CORS_ORIGINS, ENFORCE_HTTPS, RATE_LIMIT_ANALYZE, RATE_LIMIT_SEARCH, TOOLS_DIR
 from database import (
     Analysis,
     AuditLog,
@@ -118,6 +120,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# P3C-02: HTTPS enforcement — redirect HTTP→HTTPS in production
+if ENFORCE_HTTPS:
+    app.add_middleware(HTTPSRedirectMiddleware)
+
 
 # ---------------------------------------------------------------------------
 # Helper
@@ -203,13 +209,9 @@ async def analyze_paper_endpoint(
         raise HTTPException(status_code=400, detail=f"Unknown provider: {req.provider}")
 
     config = PROVIDERS[req.provider]
-    env_key = config["env_key"]
-    original_key = os.environ.get(env_key)
-    if req.api_key:
-        os.environ[env_key] = req.api_key
 
+    db = SessionLocal()
     try:
-        db = SessionLocal()
         paper = _resolve_paper(db, req.paper_id)
 
         title = paper.title
@@ -219,8 +221,10 @@ async def analyze_paper_endpoint(
         if not abstract:
             raise HTTPException(status_code=422, detail="Paper has no abstract.")
 
+        # P3C-01: Pass BYOK key directly — no os.environ mutation (thread-safe)
         analysis = _analyze_paper(
-            title=title, authors=authors, abstract=abstract, provider_id=req.provider,
+            title=title, authors=authors, abstract=abstract,
+            provider_id=req.provider, api_key_override=req.api_key,
         )
 
         if not analysis:
@@ -249,7 +253,6 @@ async def analyze_paper_endpoint(
 
         log_audit(event="analyze", message=f"paper={paper.arxiv_id} provider={req.provider}",
                   source_ip=get_remote_address(request), db=db)
-        db.close()
 
         return {"paper_id": paper.arxiv_id, "title": title, "analysis": analysis}
 
@@ -260,11 +263,7 @@ async def analyze_paper_endpoint(
                   source_ip=get_remote_address(request))
         raise HTTPException(status_code=500, detail=f"Analysis failed: {e}")
     finally:
-        if req.api_key:
-            if original_key is not None:
-                os.environ[env_key] = original_key
-            else:
-                os.environ.pop(env_key, None)
+        db.close()
 
 
 @app.post("/learn")
