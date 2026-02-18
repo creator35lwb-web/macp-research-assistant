@@ -48,35 +48,23 @@ All 7 mandatory conditions from Phase 2 Trinity Validation are implemented:
 
 ## CURRENT TASK
 
-**Task:** Implement Phase 3B — Full Hybrid Architecture
+**Task:** Implement Phase 3C — Public Launch
 **Status:** **🟡 IN PROGRESS**
-**Handoff from L (Godel):** `20260219_L_phase3b_spec_handoff.md`
-**Specification:** `docs/architecture/phase3/PHASE_3B_STRATEGIC_PLAN.md`
+**Handoff from L (Godel):** `20260219_L_phase3c_spec_handoff.md`
+**Specification:** `docs/architecture/phase3/PHASE_3C_STRATEGIC_PLAN.md`
 
 ### Implementation Checklist
 
-- [ ] **P3B-01: Database Integration**
-  - [ ] Create `tools/database.py` with SQLAlchemy ORM and session management
-  - [ ] Define all 5 tables (`papers`, `analyses`, `learning_sessions`, `citations`, `audit_log`)
-  - [ ] Refactor `macp_cli.py` and `backend/main.py` to use the database instead of JSON files
-  - [ ] Create a one-time migration script to import existing JSON data into the new SQLite DB
-- [ ] **P3B-02: Authentication System**
-  - [ ] Create `config.ini` for storing API keys
-  - [ ] Implement API key generation and validation logic
-  - [ ] Add `Depends(get_api_key)` to all protected FastAPI and MCP server endpoints
-- [ ] **P3B-03: Externalize Configuration**
-  - [ ] Create `.env` file and `.env.example`
-  - [ ] Use `python-dotenv` to load all configurations (DB path, API URLs, etc.)
-- [ ] **P3B-04: Enhanced Audit & Transparency**
-  - [ ] Implement structured JSON logging to `audit_log` table for all key events
-  - [ ] Add `macp audit` command to the CLI
-  - [ ] Add `provenance` JSON field to `analyses` table
-- [ ] **P3B-05: Accessibility (Guest Mode)**
-  - [ ] Implement IP-based tracking for guest users in the FastAPI backend
-  - [ ] Add a guest mode check to the `/search` and `/analyze` endpoints
-- [ ] **Backend MCP Server**
-  - [ ] Create `mcp_server.py` using `uc-micro-py`
-  - [ ] Expose all 5 `macp.*` tools with authentication
+- [ ] **P3C-H1: Unit & Integration Tests**
+- [ ] **P3C-H2: Container Security**
+- [ ] **P3C-H3: Configuration Validation**
+- [ ] **P3C-D1: Public API Documentation**
+- [ ] **P3C-D2: User & Developer Guides**
+- [ ] **P3C-D3: GitHub Community Setup**
+- [ ] **P3C-L1: Terms of Service & Privacy Policy**
+- [ ] **P3C-L2: License Review**
+- [ ] **P3C-O1: CI/CD Pipeline**
+- [ ] **P3C-O2: Deployment Scripts**
 
 ### Definition of Done
 
@@ -89,6 +77,9 @@ All 7 mandatory conditions from Phase 2 Trinity Validation are implemented:
 
 ## COMPLETED TASKS
 
+- **Task:** Implement Phase 3B — Full Hybrid Architecture
+  - **Status:** ✅ **COMPLETE**
+  - **Merge commit:** `e7b90d9`
 - **Task:** Implement P-2.5 Pre-Flight Conditions
   - **Status:** ✅ **COMPLETE**
   - **Merge commit:** `aaf7b27`
