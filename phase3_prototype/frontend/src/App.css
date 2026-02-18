@@ -1,0 +1,248 @@
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: left;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #333;
+}
+
+.header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+/* Config */
+.config-section {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.config-section label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.config-section select,
+.config-section input {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #1a1a1a;
+  color: #eee;
+  font-size: 0.9rem;
+}
+
+/* Search */
+.search-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #1a1a1a;
+  color: #eee;
+  font-size: 1rem;
+}
+
+.search-bar button {
+  padding: 0.75rem 1.5rem;
+  background: #646cff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.search-bar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #ff6b6b;
+  padding: 0.5rem;
+  border-left: 3px solid #ff6b6b;
+  margin-top: 0.5rem;
+}
+
+/* Paper cards */
+.results-section h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.paper-card {
+  background: #1e1e2e;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.paper-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.paper-header h3 {
+  font-size: 1.05rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.status-badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  white-space: nowrap;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-discovered { background: #2a4a6b; color: #8bc4ff; }
+.status-analyzed { background: #2a5a3b; color: #8bffb4; }
+.status-cited { background: #5a3a6b; color: #d4a5ff; }
+
+.paper-meta {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 0.5rem;
+}
+
+.paper-meta code {
+  font-size: 0.8rem;
+  background: #2a2a3a;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.paper-abstract {
+  font-size: 0.9rem;
+  color: #bbb;
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+
+.paper-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  align-items: center;
+}
+
+.paper-actions a {
+  font-size: 0.85rem;
+}
+
+.paper-actions button {
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+}
+
+/* Analysis */
+.analysis-card {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #1a2a1a;
+  border: 1px solid #2a5a3b;
+  border-radius: 8px;
+}
+
+.analysis-card h4 {
+  margin-top: 0;
+  color: #8bffb4;
+}
+
+.analysis-card ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.analysis-card li {
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.score {
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.tags {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.tag {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  background: #2a2a4a;
+  border-radius: 12px;
+  color: #a0a0ff;
+}
+
+.bias-disclaimer {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #2a2a1a;
+  border-left: 3px solid #ffd700;
+  font-size: 0.8rem;
+  color: #ccc;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+@media (prefers-color-scheme: light) {
+  .paper-card {
+    background: #f5f5ff;
+    border-color: #ddd;
+  }
+  .analysis-card {
+    background: #f0fff0;
+    border-color: #bbb;
+  }
+  .config-section select,
+  .config-section input,
+  .search-bar input {
+    background: #fff;
+    color: #333;
+    border-color: #ccc;
+  }
+  .paper-meta code {
+    background: #eef;
+  }
+}
