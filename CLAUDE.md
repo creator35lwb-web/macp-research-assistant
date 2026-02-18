@@ -46,28 +46,65 @@ All 7 mandatory conditions from Phase 2 Trinity Validation are implemented:
 | C6: Bias Awareness Disclosure | DONE | `_meta` field in `analyze_paper()` output |
 | C7: Data Retention / Purge | DONE | `macp purge` command with `--dry-run` |
 
-## Current Task: Phase 3A — WebMCP Prototype
+## CURRENT TASK
 
-**Guide:** `docs/architecture/phase3/PHASE_3A_PROTOTYPE_SPECIFICATION.md`
-**Objective:** Implement the Phase 3A WebMCP prototype as specified.
+**Task:** Implement Phase 3B — Full Hybrid Architecture
+**Status:** **🟡 IN PROGRESS**
+**Handoff from L (Godel):** `20260219_L_phase3b_spec_handoff.md`
+**Specification:** `docs/architecture/phase3/PHASE_3B_STRATEGIC_PLAN.md`
 
-### Execution Steps:
+### Implementation Checklist
 
-1.  Pull the latest from the `main` branch (commit `e50666f` or later).
-2.  Create a new feature branch: `feature/phase3a-prototype`.
-3.  Follow the **Handoff Checklist** in the specification document precisely.
-4.  Implement the Vite/React frontend, FastAPI backend, and WebMCP tool registrations.
-5.  Ensure the prototype is fully runnable locally according to the new `README.md` you will create.
-6.  Commit all work to the feature branch.
-7.  Create a pull request to `main` when complete.
-8.  Create a handoff record in `.macp/handoffs/` summarizing your work and hand back to L (Godel) for review.
+- [ ] **P3B-01: Database Integration**
+  - [ ] Create `tools/database.py` with SQLAlchemy ORM and session management
+  - [ ] Define all 5 tables (`papers`, `analyses`, `learning_sessions`, `citations`, `audit_log`)
+  - [ ] Refactor `macp_cli.py` and `backend/main.py` to use the database instead of JSON files
+  - [ ] Create a one-time migration script to import existing JSON data into the new SQLite DB
+- [ ] **P3B-02: Authentication System**
+  - [ ] Create `config.ini` for storing API keys
+  - [ ] Implement API key generation and validation logic
+  - [ ] Add `Depends(get_api_key)` to all protected FastAPI and MCP server endpoints
+- [ ] **P3B-03: Externalize Configuration**
+  - [ ] Create `.env` file and `.env.example`
+  - [ ] Use `python-dotenv` to load all configurations (DB path, API URLs, etc.)
+- [ ] **P3B-04: Enhanced Audit & Transparency**
+  - [ ] Implement structured JSON logging to `audit_log` table for all key events
+  - [ ] Add `macp audit` command to the CLI
+  - [ ] Add `provenance` JSON field to `analyses` table
+- [ ] **P3B-05: Accessibility (Guest Mode)**
+  - [ ] Implement IP-based tracking for guest users in the FastAPI backend
+  - [ ] Add a guest mode check to the `/search` and `/analyze` endpoints
+- [ ] **Backend MCP Server**
+  - [ ] Create `mcp_server.py` using `uc-micro-py`
+  - [ ] Expose all 5 `macp.*` tools with authentication
+
+### Definition of Done
+
+- All checklist items are complete.
+- All existing tests pass, and new tests for DB/MCP server are added.
+- A new handoff record is created in `.macp/handoffs/`.
+- A PR is opened from `feature/phase3b` to `master`.
 
 ---
 
-## Backlog Task: Phase 3B — MCP Server
+## COMPLETED TASKS
 
-**Guide:** `docs/architecture/phase3/` for database and auth designs.
-**Objective:** Convert CLI into an MCP-compatible server with SQLite backend.
+- **Task:** Implement P-2.5 Pre-Flight Conditions
+  - **Status:** ✅ **COMPLETE**
+  - **Merge commit:** `aaf7b27`
+- **Task:** Implement Phase 3A WebMCP Prototype
+  - **Status:** ✅ **COMPLETE**
+  - **Commit:** `250a5c7`
+- **Task:** Implement P-1.5 Pre-Flight Conditions
+  - **Status:** ✅ **COMPLETE**
+  - **Commit:** `b5a9424`
+
+---
+
+## Backlog Task: Phase 3C — Public Launch
+
+**Guide:** TBD
+**Objective:** Prepare for public launch, including documentation, website, and community engagement.
 
 ---
 
