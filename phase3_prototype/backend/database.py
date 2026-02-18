@@ -1,0 +1,252 @@
+"""
+MACP Research Assistant — Database Layer (P3B-01)
+==================================================
+SQLAlchemy ORM models and session management.
+SQLite for local-first storage, PostgreSQL-ready via DATABASE_URL.
+
+Tables: papers, analyses, learning_sessions, citations, audit_log
+"""
+
+import json
+from datetime import datetime, timezone
+from typing import Optional
+
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    create_engine,
+)
+from sqlalchemy.orm import DeclarativeBase, Session, relationship, sessionmaker
+
+from config import DATABASE_URL, MACP_DIR
+
+# ---------------------------------------------------------------------------
+# Engine & Session
+# ---------------------------------------------------------------------------
+
+engine = create_engine(DATABASE_URL, echo=False, connect_args={"check_same_thread": False})
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+SessionLocal = sessionmaker(bind=engine)
+
+
+def get_db() -> Session:
+    """Yield a database session (for FastAPI Depends)."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def init_db():
+    """Create all tables if they don't exist."""
+    import os
+    os.makedirs(MACP_DIR, exist_ok=True)
+    Base.metadata.create_all(bind=engine)
+
+
+# ---------------------------------------------------------------------------
+# Models
+# ---------------------------------------------------------------------------
+
+class Paper(Base):
+    __tablename__ = "papers"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    arxiv_id = Column(String(50), unique=True, nullable=False, index=True)
+    title = Column(Text, nullable=False)
+    authors = Column(Text, default="[]")  # JSON array
+    abstract = Column(Text, default="")
+    url = Column(String(500), default="")
+    source = Column(String(50), default="unknown")
+    status = Column(String(20), default="discovered")
+    added_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    analyses = relationship("Analysis", back_populates="paper")
+    sessions = relationship("LearningSession", back_populates="paper")
+    citations = relationship("Citation", back_populates="paper")
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.arxiv_id,
+            "title": self.title,
+            "authors": json.loads(self.authors) if self.authors else [],
+            "abstract": self.abstract or "",
+            "url": self.url or "",
+            "status": self.status or "discovered",
+            "source": self.source or "unknown",
+            "added_at": self.added_at.isoformat() if self.added_at else None,
+        }
+
+
+class Analysis(Base):
+    __tablename__ = "analyses"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    paper_id = Column(Integer, ForeignKey("papers.id"), nullable=False)
+    provider = Column(String(50), nullable=False)
+    summary = Column(Text, default="")
+    key_insights = Column(Text, default="[]")  # JSON array
+    methodology = Column(Text, default="")
+    research_gaps = Column(Text, default="[]")  # JSON array
+    relevance_tags = Column(Text, default="[]")  # JSON array
+    score = Column(Float, default=0)
+    provenance = Column(Text, default="{}")  # JSON: model, timestamp, params
+    analyzed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    paper = relationship("Paper", back_populates="analyses")
+
+    def to_dict(self) -> dict:
+        return {
+            "summary": self.summary or "",
+            "key_insights": json.loads(self.key_insights) if self.key_insights else [],
+            "methodology": self.methodology or "",
+            "research_gaps": json.loads(self.research_gaps) if self.research_gaps else [],
+            "relevance_tags": json.loads(self.relevance_tags) if self.relevance_tags else [],
+            "strength_score": self.score or 0,
+            "provenance": json.loads(self.provenance) if self.provenance else {},
+            "_meta": json.loads(self.provenance) if self.provenance else {},
+        }
+
+
+class LearningSession(Base):
+    __tablename__ = "learning_sessions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    paper_id = Column(Integer, ForeignKey("papers.id"), nullable=False)
+    insight = Column(Text, nullable=False)
+    agent = Column(String(100), default="human")
+    learned_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    paper = relationship("Paper", back_populates="sessions")
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "paper_id": self.paper.arxiv_id if self.paper else None,
+            "insight": self.insight,
+            "agent": self.agent,
+            "learned_at": self.learned_at.isoformat() if self.learned_at else None,
+        }
+
+
+class Citation(Base):
+    __tablename__ = "citations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    paper_id = Column(Integer, ForeignKey("papers.id"), nullable=False)
+    project = Column(String(200), nullable=False)
+    context = Column(Text, default="")
+    cited_by = Column(String(100), default="human")
+    cited_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    paper = relationship("Paper", back_populates="citations")
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "paper_id": self.paper.arxiv_id if self.paper else None,
+            "project": self.project,
+            "context": self.context,
+            "cited_by": self.cited_by,
+            "cited_at": self.cited_at.isoformat() if self.cited_at else None,
+        }
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_log"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    level = Column(String(20), default="INFO")
+    event = Column(String(100), nullable=False)
+    message = Column(Text, default="")
+    source_ip = Column(String(45), default="")
+    details = Column(Text, default="{}")  # JSON
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "level": self.level,
+            "event": self.event,
+            "message": self.message,
+            "source_ip": self.source_ip,
+            "details": json.loads(self.details) if self.details else {},
+        }
+
+
+# ---------------------------------------------------------------------------
+# Helper: log audit event
+# ---------------------------------------------------------------------------
+
+def log_audit(
+    event: str,
+    message: str = "",
+    level: str = "INFO",
+    source_ip: str = "",
+    details: Optional[dict] = None,
+    db: Optional[Session] = None,
+):
+    """Write a structured audit log entry to the database."""
+    close_after = False
+    if db is None:
+        db = SessionLocal()
+        close_after = True
+    try:
+        entry = AuditLog(
+            event=event,
+            message=message,
+            level=level,
+            source_ip=source_ip,
+            details=json.dumps(details or {}),
+        )
+        db.add(entry)
+        db.commit()
+    finally:
+        if close_after:
+            db.close()
+
+
+# ---------------------------------------------------------------------------
+# Helper: upsert paper
+# ---------------------------------------------------------------------------
+
+def upsert_paper(db: Session, paper_dict: dict) -> Paper:
+    """Insert or update a paper from a dict (matching the old JSON format)."""
+    arxiv_id = paper_dict.get("id", "")
+    existing = db.query(Paper).filter(Paper.arxiv_id == arxiv_id).first()
+    if existing:
+        existing.title = paper_dict.get("title", existing.title)
+        existing.abstract = paper_dict.get("abstract", existing.abstract)
+        existing.url = paper_dict.get("url", existing.url)
+        if paper_dict.get("authors"):
+            existing.authors = json.dumps(paper_dict["authors"])
+        if paper_dict.get("status"):
+            existing.status = paper_dict["status"]
+        db.commit()
+        return existing
+
+    paper = Paper(
+        arxiv_id=arxiv_id,
+        title=paper_dict.get("title", ""),
+        authors=json.dumps(paper_dict.get("authors", [])),
+        abstract=paper_dict.get("abstract", ""),
+        url=paper_dict.get("url", ""),
+        source=paper_dict.get("discovered_by", paper_dict.get("source", "unknown")),
+        status=paper_dict.get("status", "discovered"),
+    )
+    db.add(paper)
+    db.commit()
+    db.refresh(paper)
+    return paper
