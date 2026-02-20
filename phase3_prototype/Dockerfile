@@ -1,0 +1,38 @@
+# MACP Research Assistant — Phase 3C Production Dockerfile
+# ========================================================
+# Multi-stage: Node.js frontend build → Python backend + static files
+
+# Stage 1: Frontend build
+FROM node:22-slim AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --production=false
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: Backend + static files
+FROM python:3.12-slim AS production
+WORKDIR /app
+
+# Install system deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Python deps
+COPY backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend code
+COPY backend/ ./
+COPY ../tools/ /app/tools/
+
+# Copy frontend build output
+COPY --from=frontend-build /app/frontend/dist /app/static
+
+# Expose port (Cloud Run uses PORT env var, default 8080)
+ENV PORT=8080
+EXPOSE 8080
+
+# Run with uvicorn
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
