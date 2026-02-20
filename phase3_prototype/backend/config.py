@@ -1,6 +1,6 @@
 """
-MACP Research Assistant — Configuration (P3B-03)
-=================================================
+MACP Research Assistant — Configuration (Phase 3C)
+===================================================
 Loads all configuration from environment variables / .env file.
 Single source of truth for all settings across backend, MCP server, and CLI.
 """
@@ -54,10 +54,36 @@ CORS_ORIGINS: list[str] = [
 MACP_API_KEY: str | None = os.getenv("MACP_API_KEY")
 
 # ---------------------------------------------------------------------------
+# GitHub App OAuth
+# ---------------------------------------------------------------------------
+
+GITHUB_APP_CLIENT_ID: str = os.getenv("GITHUB_APP_CLIENT_ID", "")
+GITHUB_APP_CLIENT_SECRET: str = os.getenv("GITHUB_APP_CLIENT_SECRET", "")
+GITHUB_APP_REDIRECT_URI: str = os.getenv(
+    "GITHUB_APP_REDIRECT_URI", "http://localhost:8000/api/auth/github/callback"
+)
+
+# ---------------------------------------------------------------------------
+# JWT
+# ---------------------------------------------------------------------------
+
+JWT_SECRET: str = os.getenv("JWT_SECRET", "dev-secret-change-in-production")
+JWT_ALGORITHM: str = "HS256"
+JWT_EXPIRY_HOURS: int = int(os.getenv("JWT_EXPIRY_HOURS", "168"))  # 7 days
+
+# ---------------------------------------------------------------------------
 # HTTPS
 # ---------------------------------------------------------------------------
 
 ENFORCE_HTTPS: bool = os.getenv("ENFORCE_HTTPS", "false").lower() in ("true", "1", "yes")
+
+# ---------------------------------------------------------------------------
+# Rate Limits (Authenticated tier — upgraded from Phase 3B)
+# ---------------------------------------------------------------------------
+
+RATE_LIMIT_AUTH_SEARCH: str = os.getenv("RATE_LIMIT_AUTH_SEARCH", "60/minute")
+RATE_LIMIT_AUTH_ANALYZE: str = os.getenv("RATE_LIMIT_AUTH_ANALYZE", "20/minute")
+RATE_LIMIT_AUTH_MCP: str = os.getenv("RATE_LIMIT_AUTH_MCP", "60/minute")
 
 # ---------------------------------------------------------------------------
 # MCP Server
