@@ -596,7 +596,7 @@ async def audit_endpoint(
 # Static files (production: serve frontend from /app/static)
 # ---------------------------------------------------------------------------
 
-_static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
+_static_dir = os.getenv("STATIC_DIR", os.path.join(os.path.dirname(__file__), "..", "static"))
 if os.path.isdir(_static_dir):
     from fastapi.staticfiles import StaticFiles
     from fastapi.responses import FileResponse

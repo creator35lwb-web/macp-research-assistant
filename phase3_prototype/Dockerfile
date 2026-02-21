@@ -36,6 +36,7 @@ COPY --from=frontend-build /app/frontend/dist /app/static
 # Set paths for Docker layout (backend files at /app/, tools at /app/tools/)
 ENV TOOLS_DIR=/app/tools
 ENV MACP_DIR=/app/.macp
+ENV STATIC_DIR=/app/static
 
 # Expose port (Cloud Run uses PORT env var, default 8080)
 ENV PORT=8080
