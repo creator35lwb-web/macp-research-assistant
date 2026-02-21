@@ -18,8 +18,8 @@ load_dotenv(_backend_dir / ".env")
 # Paths
 # ---------------------------------------------------------------------------
 
-TOOLS_DIR = str((_backend_dir / ".." / ".." / "tools").resolve())
-MACP_DIR = str((_backend_dir / ".." / ".." / ".macp").resolve())
+TOOLS_DIR = os.getenv("TOOLS_DIR", str((_backend_dir / ".." / ".." / "tools").resolve()))
+MACP_DIR = os.getenv("MACP_DIR", str((_backend_dir / ".." / ".." / ".macp").resolve()))
 
 # ---------------------------------------------------------------------------
 # Database
