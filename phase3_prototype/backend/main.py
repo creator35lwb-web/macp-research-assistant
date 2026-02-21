@@ -174,8 +174,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-if ENFORCE_HTTPS:
-    app.add_middleware(HTTPSRedirectMiddleware)
+# Note: Do NOT use HTTPSRedirectMiddleware on Cloud Run.
+# Cloud Run terminates TLS externally and forwards HTTP internally,
+# causing infinite redirect loops. HSTS header in security.py handles
+# browser enforcement. The X-Forwarded-Proto header is set by Cloud Run.
 
 # Register WebMCP router
 app.include_router(mcp_router)
