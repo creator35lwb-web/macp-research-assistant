@@ -67,7 +67,10 @@ GITHUB_APP_REDIRECT_URI: str = os.getenv(
 # JWT
 # ---------------------------------------------------------------------------
 
-JWT_SECRET: str = os.getenv("JWT_SECRET", "dev-secret-change-in-production")
+_jwt_secret = os.getenv("JWT_SECRET", "")
+if not _jwt_secret:
+    raise RuntimeError("JWT_SECRET environment variable is required. Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(32))\"")
+JWT_SECRET: str = _jwt_secret
 JWT_ALGORITHM: str = "HS256"
 JWT_EXPIRY_HOURS: int = int(os.getenv("JWT_EXPIRY_HOURS", "168"))  # 7 days
 

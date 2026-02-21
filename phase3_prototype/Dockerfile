@@ -1,13 +1,16 @@
 # MACP Research Assistant — Phase 3C Production Dockerfile
 # ========================================================
 # Multi-stage: Node.js frontend build → Python backend + static files
+#
+# Build context: repo root (run with -f phase3_prototype/Dockerfile .)
+# Example: docker build -f phase3_prototype/Dockerfile -t macp-research .
 
 # Stage 1: Frontend build
 FROM node:22-slim AS frontend-build
 WORKDIR /app/frontend
-COPY frontend/package.json frontend/package-lock.json ./
+COPY phase3_prototype/frontend/package.json phase3_prototype/frontend/package-lock.json ./
 RUN npm ci --production=false
-COPY frontend/ ./
+COPY phase3_prototype/frontend/ ./
 RUN npm run build
 
 # Stage 2: Backend + static files
@@ -20,12 +23,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Install Python deps
-COPY backend/requirements.txt ./
+COPY phase3_prototype/backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend code
-COPY backend/ ./
-COPY ../tools/ /app/tools/
+# Copy backend code and tools
+COPY phase3_prototype/backend/ ./
+COPY tools/ /app/tools/
 
 # Copy frontend build output
 COPY --from=frontend-build /app/frontend/dist /app/static
