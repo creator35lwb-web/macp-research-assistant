@@ -303,7 +303,7 @@ def fetch_by_query(query: str, limit: int = 10) -> list[dict]:
         return []
 
     if not isinstance(data, list):
-        print(f"[WARN] HF Paper Search returned unexpected format.", file=sys.stderr)
+        print("[WARN] HF Paper Search returned unexpected format.", file=sys.stderr)
         return []
 
     papers = []

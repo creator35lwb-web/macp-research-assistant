@@ -90,7 +90,7 @@ def log_security_event(event: str, level: str = "INFO", **kwargs):
     """
     logger = get_security_logger()
     log_data = {"event": event, **kwargs}
-    log_func = getattr(logger, level.lower(), logger.info)
+    getattr(logger, level.lower(), logger.info)
     record = logger.makeRecord(
         name=logger.name,
         level=getattr(logging, level.upper(), logging.INFO),

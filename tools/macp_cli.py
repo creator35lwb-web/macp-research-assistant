@@ -132,78 +132,78 @@ def _update_research_readme(research_path: str, paper: dict, analysis: dict = No
     """Generate a README.md for the research directory."""
     lines = []
     lines.append(f"# {paper.get('title', 'Untitled')}")
-    lines.append(f"")
+    lines.append("")
     lines.append(f"**arXiv ID:** `{paper.get('id', 'N/A')}`")
     if paper.get("url"):
         lines.append(f"**URL:** {paper['url']}")
     lines.append(f"**Status:** {paper.get('status', 'unknown')}")
     lines.append(f"**Discovered:** {paper.get('discovered_date', 'N/A')}")
-    lines.append(f"")
+    lines.append("")
 
     authors = paper.get("authors", [])
     if authors:
-        lines.append(f"## Authors")
-        lines.append(f"")
+        lines.append("## Authors")
+        lines.append("")
         lines.append(f"{', '.join(authors)}")
-        lines.append(f"")
+        lines.append("")
 
     abstract = paper.get("abstract", "")
     if abstract:
-        lines.append(f"## Abstract")
-        lines.append(f"")
+        lines.append("## Abstract")
+        lines.append("")
         lines.append(f"{abstract}")
-        lines.append(f"")
+        lines.append("")
 
     insights = paper.get("insights", [])
     if insights:
-        lines.append(f"## Key Insights")
-        lines.append(f"")
+        lines.append("## Key Insights")
+        lines.append("")
         for insight in insights:
             if isinstance(insight, str):
                 lines.append(f"- {insight}")
-        lines.append(f"")
+        lines.append("")
 
     if analysis:
-        lines.append(f"## Analysis")
-        lines.append(f"")
+        lines.append("## Analysis")
+        lines.append("")
         if analysis.get("summary"):
             lines.append(f"**Summary:** {analysis['summary']}")
-            lines.append(f"")
+            lines.append("")
         if analysis.get("methodology"):
             lines.append(f"**Methodology:** {analysis['methodology']}")
-            lines.append(f"")
+            lines.append("")
         if analysis.get("strength_score"):
             lines.append(f"**Strength Score:** {analysis['strength_score']}/10")
-            lines.append(f"")
+            lines.append("")
         gaps = analysis.get("research_gaps", [])
         if gaps:
-            lines.append(f"### Research Gaps")
-            lines.append(f"")
+            lines.append("### Research Gaps")
+            lines.append("")
             for gap in gaps:
                 lines.append(f"- {gap}")
-            lines.append(f"")
+            lines.append("")
         tags = analysis.get("relevance_tags", [])
         if tags:
             lines.append(f"**Tags:** {', '.join(tags)}")
-            lines.append(f"")
+            lines.append("")
 
     if session:
-        lines.append(f"## Provenance")
-        lines.append(f"")
+        lines.append("## Provenance")
+        lines.append("")
         lines.append(f"- **Session:** `{session.get('session_id', 'N/A')}`")
         lines.append(f"- **Agent:** {session.get('agent', 'N/A')}")
         lines.append(f"- **Date:** {session.get('date', 'N/A')}")
-        lines.append(f"")
+        lines.append("")
 
     # List files in directory
-    lines.append(f"## Files")
-    lines.append(f"")
+    lines.append("## Files")
+    lines.append("")
     for f in sorted(os.listdir(research_path)):
         if f != "README.md":
             lines.append(f"- `{f}`")
-    lines.append(f"")
-    lines.append(f"---")
-    lines.append(f"*Part of MACP Research Knowledge Tree*")
+    lines.append("")
+    lines.append("---")
+    lines.append("*Part of MACP Research Knowledge Tree*")
 
     readme_path = os.path.join(research_path, "README.md")
     with open(readme_path, "w", encoding="utf-8") as f:
@@ -447,7 +447,7 @@ def cmd_analyze(args):
     authors = paper.get("authors", [])
 
     if not abstract:
-        print(f"\n[WARN] Paper has no abstract. Analysis quality will be limited.")
+        print("\n[WARN] Paper has no abstract. Analysis quality will be limited.")
 
     # --- C4: Dual-use risk check ---
     sensitive_text = f"{title} {abstract}"
@@ -511,12 +511,12 @@ def cmd_analyze(args):
         return
 
     # --- Display results ---
-    print(f"\n--- Analysis Results ---")
+    print("\n--- Analysis Results ---")
     print(f"  Summary: {analysis.get('summary', 'N/A')}")
 
     insights = analysis.get("key_insights", [])
     if insights:
-        print(f"\n  Key Insights:")
+        print("\n  Key Insights:")
         for i, insight in enumerate(insights, 1):
             print(f"    {i}. {insight}")
 
@@ -526,7 +526,7 @@ def cmd_analyze(args):
 
     gaps = analysis.get("research_gaps", [])
     if gaps:
-        print(f"\n  Research Gaps:")
+        print("\n  Research Gaps:")
         for gap in gaps:
             print(f"    - {gap}")
 
@@ -580,7 +580,7 @@ def cmd_analyze(args):
     research_path = save_to_research_tree(paper, analysis=analysis, session=session)
 
     print(f"\n[MACP] Learning session created: {session_id}")
-    print(f"  Paper status updated to: analyzed")
+    print("  Paper status updated to: analyzed")
     print(f"  Research tree: {research_path}")
     total = len(log.get("learning_sessions", []))
     print(f"  Total learning sessions: {total}")
@@ -677,16 +677,16 @@ def cmd_handoff(args):
     print(f"  To:   {to_agent}")
     print(f"  Summary: {summary[:80]}...")
     if completed:
-        print(f"\n  Completed:")
+        print("\n  Completed:")
         for c in completed:
             print(f"    - {c}")
     if pending:
-        print(f"\n  Pending:")
+        print("\n  Pending:")
         for p in pending:
             print(f"    - {p}")
     if paper_ids:
         print(f"\n  Papers: {', '.join(paper_ids)}")
-    print(f"\n  Knowledge Base State:")
+    print("\n  Knowledge Base State:")
     print(f"    Papers: {knowledge_state['total_papers']}")
     print(f"    Learning Sessions: {knowledge_state['total_sessions']}")
     print(f"    Citations: {knowledge_state['total_citations']}")
@@ -999,34 +999,34 @@ def cmd_export(args):
     # Build report
     now = datetime.now()
     lines = []
-    lines.append(f"# MACP Research Report")
-    lines.append(f"")
+    lines.append("# MACP Research Report")
+    lines.append("")
     if args.tag:
         lines.append(f"**Filter:** tag = `{args.tag}`")
     lines.append(f"**Generated:** {now.strftime('%Y-%m-%d %H:%M')}")
-    lines.append(f"**Agent:** RNA (Claude Code)")
-    lines.append(f"**Protocol:** MACP v2.0 / GODELAI C-S-P Framework")
-    lines.append(f"")
+    lines.append("**Agent:** RNA (Claude Code)")
+    lines.append("**Protocol:** MACP v2.0 / GODELAI C-S-P Framework")
+    lines.append("")
 
     # --- Summary ---
-    lines.append(f"## Summary")
-    lines.append(f"")
-    lines.append(f"| Metric | Count |")
-    lines.append(f"|--------|-------|")
+    lines.append("## Summary")
+    lines.append("")
+    lines.append("| Metric | Count |")
+    lines.append("|--------|-------|")
     lines.append(f"| Papers | {len(paper_list)} |")
     lines.append(f"| Learning Sessions | {len(session_list)} |")
     lines.append(f"| Citations | {len(citation_list)} |")
     lines.append(f"| Handoffs | {len(handoff_list)} |")
-    lines.append(f"")
+    lines.append("")
 
     # --- Papers ---
     if paper_list:
-        lines.append(f"## Papers")
-        lines.append(f"")
+        lines.append("## Papers")
+        lines.append("")
         for paper in sorted(paper_list, key=lambda p: p.get("discovered_date", ""), reverse=True):
             status = paper.get("status", "unknown")
             lines.append(f"### {paper['title']}")
-            lines.append(f"")
+            lines.append("")
             lines.append(f"- **ID:** `{paper['id']}`")
             lines.append(f"- **Authors:** {', '.join(paper.get('authors', ['Unknown']))}")
             if paper.get("url"):
@@ -1037,40 +1037,40 @@ def cmd_export(args):
                 abstract = paper["abstract"]
                 if len(abstract) > 300:
                     abstract = abstract[:300] + "..."
-                lines.append(f"")
+                lines.append("")
                 lines.append(f"> {abstract}")
             if paper.get("insights"):
-                lines.append(f"")
-                lines.append(f"**Key Insights:**")
+                lines.append("")
+                lines.append("**Key Insights:**")
                 for insight in paper["insights"]:
                     if isinstance(insight, str):
                         lines.append(f"- {insight}")
-            lines.append(f"")
+            lines.append("")
 
     # --- Learning Sessions ---
     if session_list:
-        lines.append(f"## Learning Sessions")
-        lines.append(f"")
+        lines.append("## Learning Sessions")
+        lines.append("")
         for session in sorted(session_list, key=lambda s: s.get("date", ""), reverse=True):
             lines.append(f"### Session: {session['session_id']}")
-            lines.append(f"")
+            lines.append("")
             lines.append(f"- **Date:** {session.get('date', 'N/A')}")
             lines.append(f"- **Agent:** {session.get('agent', 'N/A')}")
             if session.get("tags"):
                 lines.append(f"- **Tags:** {', '.join(session['tags'])}")
             if session.get("papers"):
                 lines.append(f"- **Papers:** {', '.join(session['papers'])}")
-            lines.append(f"")
+            lines.append("")
             lines.append(f"**Summary:** {session.get('summary', 'N/A')}")
             if session.get("key_insight"):
-                lines.append(f"")
+                lines.append("")
                 lines.append(f"**Key Insight:** {session['key_insight']}")
 
             # Analysis details
             analysis = session.get("analysis", {})
             if analysis:
-                lines.append(f"")
-                lines.append(f"**Analysis Details:**")
+                lines.append("")
+                lines.append("**Analysis Details:**")
                 if analysis.get("provider"):
                     lines.append(f"- Provider: {analysis['provider']} ({analysis.get('model', 'N/A')})")
                 if analysis.get("methodology"):
@@ -1078,31 +1078,31 @@ def cmd_export(args):
                 if analysis.get("strength_score"):
                     lines.append(f"- Strength Score: {analysis['strength_score']}/10")
                 if analysis.get("research_gaps"):
-                    lines.append(f"- Research Gaps:")
+                    lines.append("- Research Gaps:")
                     for gap in analysis["research_gaps"]:
                         lines.append(f"  - {gap}")
-            lines.append(f"")
+            lines.append("")
 
     # --- Citations ---
     if citation_list:
-        lines.append(f"## Citations")
-        lines.append(f"")
-        lines.append(f"| Paper | Project | Context | Agent | Date |")
-        lines.append(f"|-------|---------|---------|-------|------|")
+        lines.append("## Citations")
+        lines.append("")
+        lines.append("| Paper | Project | Context | Agent | Date |")
+        lines.append("|-------|---------|---------|-------|------|")
         for cite in citation_list:
             context = cite.get("context", "")
             if len(context) > 60:
                 context = context[:60] + "..."
             lines.append(f"| `{cite['paper_id']}` | {cite['cited_in']} | {context} | {cite.get('cited_by', 'N/A')} | {cite['date']} |")
-        lines.append(f"")
+        lines.append("")
 
     # --- Handoffs ---
     if handoff_list:
-        lines.append(f"## Handoffs")
-        lines.append(f"")
+        lines.append("## Handoffs")
+        lines.append("")
         for ho in handoff_list:
             lines.append(f"### {ho['handoff_id']}")
-            lines.append(f"")
+            lines.append("")
             lines.append(f"- **From:** {ho.get('from_agent', ho.get('from_agent_id', 'N/A'))}")
             lines.append(f"- **To:** {ho.get('to_agent', ho.get('to_agent_id', 'N/A'))}")
             ts = ho.get("timestamp", ho.get("date", "N/A"))
@@ -1116,13 +1116,13 @@ def cmd_export(args):
             ks = ho.get("knowledge_state")
             if ks:
                 lines.append(f"- **KB State:** {ks.get('total_papers', 0)} papers, {ks.get('total_sessions', 0)} sessions, {ks.get('total_citations', 0)} citations")
-            lines.append(f"")
+            lines.append("")
 
     # --- Footer ---
-    lines.append(f"---")
-    lines.append(f"")
-    lines.append(f"*Generated by MACP Research Assistant | YSenseAI Ecosystem | GODELAI C-S-P Framework*")
-    lines.append(f"")
+    lines.append("---")
+    lines.append("")
+    lines.append("*Generated by MACP Research Assistant | YSenseAI Ecosystem | GODELAI C-S-P Framework*")
+    lines.append("")
 
     report = "\n".join(lines)
 
@@ -1187,13 +1187,13 @@ def cmd_status(args):
     # Recent activity
     if paper_list:
         recent = sorted(paper_list, key=lambda p: p.get("discovered_date", ""), reverse=True)[:3]
-        print(f"\n  Recent Papers:")
+        print("\n  Recent Papers:")
         for p in recent:
             print(f"    - [{p['discovered_date']}] {p['title'][:60]}...")
 
     if session_list:
         recent = sorted(session_list, key=lambda s: s.get("date", ""), reverse=True)[:3]
-        print(f"\n  Recent Learning:")
+        print("\n  Recent Learning:")
         for s in recent:
             print(f"    - [{s['date']}] {s['summary'][:60]}...")
 
