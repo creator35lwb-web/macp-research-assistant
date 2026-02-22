@@ -26,7 +26,7 @@ export function useAuth() {
     setUser(null);
   }, []);
 
-  const loginUrl = `${import.meta.env.VITE_API_BASE || "http://localhost:8000"}/api/auth/github`;
+  const loginUrl = `${import.meta.env.VITE_API_BASE ?? "http://localhost:8000"}/api/auth/github`;
 
   return { user, loading, logout, loginUrl, refetch: fetchUser };
 }

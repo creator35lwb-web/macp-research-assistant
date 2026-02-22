@@ -1,7 +1,7 @@
 // MACP Research Assistant — API Client (Phase 3C)
 // Fetch wrapper with JWT auth (cookie-based) and error handling.
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {

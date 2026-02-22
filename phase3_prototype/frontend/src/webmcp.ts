@@ -11,7 +11,7 @@
  * Date: February 19, 2026
  */
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
 
 // Callback to update React state from outside the component
 type StateCallback = (data: unknown) => void;

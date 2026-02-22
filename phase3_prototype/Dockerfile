@@ -11,6 +11,7 @@ WORKDIR /app/frontend
 COPY phase3_prototype/frontend/package.json phase3_prototype/frontend/package-lock.json ./
 RUN npm ci --production=false
 COPY phase3_prototype/frontend/ ./
+ENV VITE_API_BASE=""
 RUN npm run build
 
 # Stage 2: Backend + static files
