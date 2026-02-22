@@ -10,21 +10,16 @@ import os
 import sys
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from pydantic import BaseModel, Field
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
-from config import RATE_LIMIT_AUTH_MCP, TOOLS_DIR
+from config import TOOLS_DIR
 from database import (
     Analysis,
-    Citation,
-    LearningSession,
     Note,
     Paper,
     SessionLocal,
     User,
-    log_audit,
     upsert_paper,
 )
 from middleware import get_current_user, require_user

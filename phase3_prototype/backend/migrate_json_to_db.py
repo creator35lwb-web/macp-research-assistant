@@ -17,8 +17,6 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config import MACP_DIR
 from database import (
-    Analysis,
-    AuditLog,
     Citation,
     LearningSession,
     Paper,
