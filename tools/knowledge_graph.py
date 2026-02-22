@@ -361,7 +361,7 @@ def main():
     print("\n[1/3] Building knowledge graph from MACP data...")
     graph = build_knowledge_graph()
 
-    print(f"\n[2/3] Graph Statistics:")
+    print("\n[2/3] Graph Statistics:")
     stats = graph["statistics"]
     print(f"  Total Nodes: {stats['total_nodes']}")
     print(f"  Total Edges: {stats['total_edges']}")
