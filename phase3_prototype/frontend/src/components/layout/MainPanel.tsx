@@ -1,4 +1,4 @@
-import type { Paper, ViewMode } from "../../api/types";
+import type { Paper, ViewMode, Note } from "../../api/types";
 import type { Analysis } from "../../api/types";
 import { SearchBar } from "../search/SearchBar";
 import { PaperCard } from "../search/PaperCard";
@@ -43,6 +43,9 @@ interface MainPanelProps {
   hasMore?: boolean;
   onLoadMore?: () => void;
   loadingMore?: boolean;
+  // Notes
+  notes?: Note[];
+  notesLoading?: boolean;
 }
 
 export function MainPanel({
@@ -53,6 +56,7 @@ export function MainPanel({
   provider, onProviderChange, apiKey, onApiKeyChange,
   byokValidated, byokValidating, onValidateKey, onClearKey,
   hasMore, onLoadMore, loadingMore,
+  notes, notesLoading,
 }: MainPanelProps) {
   if (view === "search") {
     return (
@@ -170,11 +174,40 @@ export function MainPanel({
   }
 
   if (view === "notes") {
+    const noteList = notes || [];
     return (
       <main className="main-panel">
         <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Research Notes</h2>
         <NoteEditor onSave={onAddNote} />
-        <EmptyState icon="&#128221;" title="No notes yet" description="Write research notes and link them to papers." />
+        {notesLoading && <div style={{ color: "var(--text-secondary)", fontSize: 13, marginTop: 8 }}>Loading notes...</div>}
+        {!notesLoading && noteList.length === 0 && (
+          <EmptyState icon="&#128221;" title="No notes yet" description="Write research notes and link them to papers." />
+        )}
+        {noteList.map((note) => (
+          <div key={note.id} className="note-card" style={{
+            background: "var(--bg-tertiary, #18181b)",
+            borderRadius: 8,
+            padding: "12px 16px",
+            marginTop: 8,
+            border: "1px solid var(--border, #27272a)",
+          }}>
+            <p style={{ margin: 0, fontSize: 14, whiteSpace: "pre-wrap" }}>{note.content}</p>
+            <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+              {(note.tags || []).map((tag) => (
+                <span key={tag} style={{
+                  fontSize: 11,
+                  background: "var(--color-notes, #f59e0b)",
+                  color: "#000",
+                  borderRadius: 4,
+                  padding: "2px 6px",
+                }}>{tag}</span>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--text-secondary, #71717a)", marginTop: 6 }}>
+              {note.created_at ? new Date(note.created_at).toLocaleString() : ""}
+            </div>
+          </div>
+        ))}
       </main>
     );
   }

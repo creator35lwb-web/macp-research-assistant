@@ -46,6 +46,9 @@ export const mcpLibrary = () =>
 export const mcpGraph = () =>
   request<{ content: { type: string; text: string }[] }>("/api/mcp/graph");
 
+export const mcpListNotes = () =>
+  request<{ content: { type: string; text: string }[] }>("/api/mcp/notes");
+
 export const mcpAddNote = (content: string, tags: string[] = [], paper_id?: string) =>
   request<{ content: { type: string; text: string }[] }>("/api/mcp/note", {
     method: "POST",

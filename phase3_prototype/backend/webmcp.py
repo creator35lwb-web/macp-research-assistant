@@ -357,6 +357,20 @@ async def mcp_add_note(
         db.close()
 
 
+@mcp_router.get("/notes")
+async def mcp_list_notes(user: User = Depends(require_user)):
+    """List all research notes for the current user."""
+    db = SessionLocal()
+    try:
+        notes = db.query(Note).filter(Note.user_id == user.id).order_by(Note.created_at.desc()).all()
+        return mcp_response({
+            "notes": [n.to_dict() for n in notes],
+            "count": len(notes),
+        })
+    finally:
+        db.close()
+
+
 # ---------------------------------------------------------------------------
 # 7. Knowledge Graph
 # ---------------------------------------------------------------------------

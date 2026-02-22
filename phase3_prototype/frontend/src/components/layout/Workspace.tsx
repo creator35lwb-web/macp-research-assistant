@@ -1,10 +1,10 @@
-import { useState } from "react";
-import type { ViewMode } from "../../api/types";
+import { useCallback, useState } from "react";
+import type { Note, ViewMode } from "../../api/types";
 import { useAuth } from "../../hooks/useAuth";
 import { usePapers } from "../../hooks/usePapers";
 import { useGraph } from "../../hooks/useGraph";
 import { useGitHub } from "../../hooks/useGitHub";
-import { mcpAddNote, mcpSave, validateApiKey } from "../../api/client";
+import { mcpAddNote, mcpListNotes, mcpSave, validateApiKey } from "../../api/client";
 import { Sidebar } from "./Sidebar";
 import { MainPanel } from "./MainPanel";
 import { DetailPanel } from "./DetailPanel";
@@ -33,6 +33,24 @@ export function Workspace() {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem("byok_key") || "");
   const [byokValidated, setByokValidated] = useState(false);
   const [byokValidating, setByokValidating] = useState(false);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [notesLoading, setNotesLoading] = useState(false);
+
+  const fetchNotes = useCallback(async () => {
+    setNotesLoading(true);
+    try {
+      const data = await mcpListNotes();
+      const text = data.content?.[0]?.text;
+      if (text) {
+        const parsed = JSON.parse(text);
+        setNotes(parsed.notes || []);
+      }
+    } catch {
+      setNotes([]);
+    } finally {
+      setNotesLoading(false);
+    }
+  }, []);
 
   // Fetch GitHub status on mount if user is logged in
   useState(() => {
@@ -63,12 +81,16 @@ export function Workspace() {
     if (view === "library" && user) {
       fetchLibrary();
     }
+    if (view === "notes" && user) {
+      fetchNotes();
+    }
   };
 
   const handleAddNote = async (content: string, tags: string[], paperId?: string) => {
     try {
       await mcpAddNote(content, tags, paperId);
       showToast("success", "Note saved");
+      fetchNotes();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to save note";
       showToast("error", msg);
@@ -170,6 +192,8 @@ export function Workspace() {
             hasMore={hasMore}
             onLoadMore={() => loadMore()}
             loadingMore={loadingMore}
+            notes={notes}
+            notesLoading={notesLoading}
           />
         )}
       </ErrorBoundary>
