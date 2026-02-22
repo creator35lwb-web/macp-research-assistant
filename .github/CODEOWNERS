@@ -1,0 +1,26 @@
+# CODEOWNERS - MACP Research Assistant
+# These owners will be requested for review on all PRs.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for all files
+* @creator35lwb-web
+
+# Security-sensitive files require explicit review
+SECURITY.md @creator35lwb-web
+.github/workflows/ @creator35lwb-web
+.github/dependabot.yml @creator35lwb-web
+.github/CODEOWNERS @creator35lwb-web
+
+# Backend (API, auth, database)
+phase3_prototype/backend/ @creator35lwb-web
+
+# Tools (LLM providers, paper fetcher, knowledge graph)
+tools/ @creator35lwb-web
+
+# Deployment and infrastructure
+phase3_prototype/Dockerfile @creator35lwb-web
+cloudbuild.yaml @creator35lwb-web
+.dockerignore @creator35lwb-web
+
+# Documentation
+README.md @creator35lwb-web
