@@ -10,6 +10,8 @@ interface MainPanelProps {
   view: ViewMode;
   // Search
   papers: Paper[];
+  libraryPapers?: Paper[];
+  libraryLoading?: boolean;
   searching: boolean;
   searchError: string;
   onSearch: (query: string, source: string) => void;
@@ -44,7 +46,7 @@ interface MainPanelProps {
 }
 
 export function MainPanel({
-  view, papers, searching, searchError, onSearch,
+  view, papers, libraryPapers, libraryLoading, searching, searchError, onSearch,
   selectedPaper, onSelectPaper,
   analyses: _analyses, analyzingId, analyzeError, onAnalyze, onSave,
   onAddNote, onLoadGraph, graphLoading,
@@ -130,13 +132,15 @@ export function MainPanel({
   }
 
   if (view === "library") {
+    const libPapers = libraryPapers || [];
     return (
       <main className="main-panel">
         <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>My Library</h2>
-        {papers.length === 0 ? (
+        {libraryLoading && <div style={{ color: "var(--text-secondary)", fontSize: 13 }}>Loading library...</div>}
+        {!libraryLoading && libPapers.length === 0 ? (
           <EmptyState icon="&#128218;" title="No saved papers" description="Save papers from search results to build your library." />
         ) : (
-          papers.filter((p) => p.status === "saved" || p.status === "analyzed" || p.status === "cited").map((paper) => (
+          libPapers.map((paper) => (
             <PaperCard
               key={paper.id}
               paper={paper}

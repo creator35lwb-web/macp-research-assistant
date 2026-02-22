@@ -19,6 +19,7 @@ export function Workspace() {
     papers, searching, searchError, search,
     analyses, analyzingId, analyzeError, analyze,
     hasMore, loadMore, loadingMore,
+    libraryPapers, libraryLoading, fetchLibrary, markSaved,
   } = usePapers();
   const { graphData, loading: graphLoading, fetchGraph } = useGraph();
   const {
@@ -49,10 +50,18 @@ export function Workspace() {
   const handleSave = async (paperId: string) => {
     try {
       await mcpSave(paperId);
+      markSaved(paperId);
       showToast("success", "Paper saved to library");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to save paper";
       showToast("error", msg);
+    }
+  };
+
+  const handleViewChange = (view: ViewMode) => {
+    setActiveView(view);
+    if (view === "library" && user) {
+      fetchLibrary();
     }
   };
 
@@ -116,7 +125,7 @@ export function Workspace() {
         loginUrl={loginUrl}
         onLogout={logout}
         activeView={activeView}
-        onViewChange={setActiveView}
+        onViewChange={handleViewChange}
         repos={repos}
         connected={connected}
         connectedRepo={connectedRepo}
@@ -135,6 +144,8 @@ export function Workspace() {
           <MainPanel
             view={activeView}
             papers={papers}
+            libraryPapers={libraryPapers}
+            libraryLoading={libraryLoading}
             searching={searching}
             searchError={searchError}
             onSearch={handleSearch}

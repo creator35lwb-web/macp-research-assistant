@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { searchPapers, analyzePaper } from "../api/client";
+import { searchPapers, analyzePaper, mcpLibrary } from "../api/client";
 import type { Analysis, Paper } from "../api/types";
 
 export function usePapers() {
@@ -11,6 +11,8 @@ export function usePapers() {
   const [analyzeError, setAnalyzeError] = useState("");
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [libraryPapers, setLibraryPapers] = useState<Paper[]>([]);
+  const [libraryLoading, setLibraryLoading] = useState(false);
 
   // Track current query/source for loadMore
   const currentQuery = useRef("");
@@ -68,9 +70,33 @@ export function usePapers() {
     }
   }, []);
 
+  const fetchLibrary = useCallback(async () => {
+    setLibraryLoading(true);
+    try {
+      const data = await mcpLibrary();
+      const text = data.content?.[0]?.text;
+      if (text) {
+        const parsed = JSON.parse(text);
+        setLibraryPapers(parsed.papers || []);
+      }
+    } catch {
+      // Library fetch may fail for guests — that's OK
+      setLibraryPapers([]);
+    } finally {
+      setLibraryLoading(false);
+    }
+  }, []);
+
+  const markSaved = useCallback((paperId: string) => {
+    setPapers((prev) => prev.map((p) =>
+      p.id === paperId ? { ...p, status: "saved" } : p
+    ));
+  }, []);
+
   return {
     papers, searching, searchError, search,
     analyses, analyzingId, analyzeError, analyze,
     hasMore, loadMore, loadingMore,
+    libraryPapers, libraryLoading, fetchLibrary, markSaved,
   };
 }
