@@ -134,11 +134,14 @@ def upsert_user(github_user: dict, access_token: str) -> User:
 
 
 def create_jwt(user: User) -> str:
-    """Create a JWT for the given user."""
+    """Create a JWT for the given user. Includes connected_repo for cold-start recovery."""
     payload = {
         "sub": str(user.id),
         "github_id": user.github_id,
         "github_login": user.github_login,
+        "github_name": user.github_name or "",
+        "github_avatar_url": user.github_avatar_url or "",
+        "connected_repo": user.connected_repo or "",
         "iat": int(time.time()),
         "exp": int(time.time()) + JWT_EXPIRY_HOURS * 3600,
     }

@@ -1,16 +1,18 @@
 """
-MACP Research Assistant — GitHub Storage Layer (Phase 3C)
-=========================================================
-Dual-write: every save goes to DB (cache) AND user's GitHub repo (source of truth).
-GitHub writes are fire-and-forget via BackgroundTasks — they don't block API responses.
+MACP Research Assistant — GitHub Storage Layer (Sprint 3D.2)
+=============================================================
+GitHub-first persistence: GitHub is the write-ahead log, SQLite is a cache.
 
-Repo structure:
-  .macp-research/
-  ├── papers/{arxiv_id}.json
-  ├── analyses/{arxiv_id}.json
-  ├── graph/knowledge-graph.json
-  ├── notes/{note_id}.md
-  └── manifest.json
+MACP v2.0 Directory Standard:
+  .macp/
+  ├── manifest.json              ← Master index of all papers, analyses, notes
+  ├── papers/{arxiv_id}.json     ← One JSON file per paper
+  ├── analyses/{arxiv_id}.json   ← Analysis results per paper
+  ├── notes/note_{id}.md         ← Research notes as Markdown
+  └── graph/knowledge-graph.json ← Knowledge graph data
+
+Hydration: On cold start (empty SQLite), reads manifest.json from GitHub
+and re-populates the local database cache.
 """
 
 import asyncio
@@ -28,7 +30,7 @@ from github_auth import decrypt_token
 logger = logging.getLogger(__name__)
 
 GITHUB_API = "https://api.github.com"
-REPO_PREFIX = ".macp-research"
+REPO_PREFIX = ".macp"  # MACP v2.0 standard
 
 
 class GitHubStorageService:
@@ -96,22 +98,39 @@ class GitHubStorageService:
             return None
 
         url = f"{GITHUB_API}/repos/{self.repo}/contents/{path}"
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=15) as client:
             resp = await client.get(url, headers=self._headers())
             if resp.status_code != 200:
                 return None
             data = resp.json()
             return base64.b64decode(data["content"]).decode()
 
+    async def _list_dir(self, path: str) -> list[str]:
+        """List filenames in a GitHub directory."""
+        if not self.repo or not self._token:
+            return []
+
+        url = f"{GITHUB_API}/repos/{self.repo}/contents/{path}"
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.get(url, headers=self._headers())
+            if resp.status_code != 200:
+                return []
+            items = resp.json()
+            if isinstance(items, list):
+                return [item["name"] for item in items]
+        return []
+
     # -----------------------------------------------------------------------
     # Repository initialization
     # -----------------------------------------------------------------------
 
     async def init_repo_structure(self) -> bool:
-        """Create the .macp-research/ directory structure in the connected repo."""
+        """Create the .macp/ directory structure in the connected repo (MACP v2.0)."""
         manifest = {
-            "version": "1.0",
+            "version": "2.0",
+            "schema": "macp-research",
             "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "owner": self.user.github_login,
             "papers": {},
             "analyses": {},
@@ -120,7 +139,7 @@ class GitHubStorageService:
         return await self._put_file(
             f"{REPO_PREFIX}/manifest.json",
             json.dumps(manifest, indent=2),
-            "Initialize MACP Research data directory",
+            "Initialize MACP v2.0 research data directory",
         )
 
     # -----------------------------------------------------------------------
@@ -178,52 +197,187 @@ class GitHubStorageService:
     # -----------------------------------------------------------------------
 
     async def get_manifest(self) -> Optional[dict]:
-        """Read the manifest from GitHub."""
+        """Read the manifest from GitHub. Checks both v2.0 (.macp/) and v1.0 (.macp-research/)."""
+        # Try MACP v2.0 location first
         content = await self._get_file(f"{REPO_PREFIX}/manifest.json")
         if content:
             return json.loads(content)
+
+        # Fall back to legacy v1.0 location
+        content = await self._get_file(".macp-research/manifest.json")
+        if content:
+            return json.loads(content)
+
         return None
 
     async def update_manifest(self, updates: dict) -> bool:
-        """Merge updates into the manifest."""
+        """Merge updates into the manifest (deprecated — use update_manifest_entry)."""
         manifest = await self.get_manifest()
         if not manifest:
-            manifest = {"version": "1.0", "papers": {}, "analyses": {}, "notes": {}}
-        manifest.update(updates)
+            manifest = {"version": "2.0", "schema": "macp-research", "papers": {}, "analyses": {}, "notes": {}}
+
+        # Deep merge for papers/analyses/notes sections
+        for section in ("papers", "analyses", "notes"):
+            if section in updates:
+                manifest.setdefault(section, {}).update(updates[section])
+
+        manifest["updated_at"] = datetime.now(timezone.utc).isoformat()
         return await self._put_file(
             f"{REPO_PREFIX}/manifest.json",
             json.dumps(manifest, indent=2),
             "Update manifest",
         )
 
+    async def update_manifest_entry(self, section: str, key: str, data: dict) -> bool:
+        """Update a single entry in the manifest. Atomic read-modify-write."""
+        manifest = await self.get_manifest()
+        if not manifest:
+            manifest = {"version": "2.0", "schema": "macp-research", "papers": {}, "analyses": {}, "notes": {}}
+
+        manifest.setdefault(section, {})[key] = data
+        manifest["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+        return await self._put_file(
+            f"{REPO_PREFIX}/manifest.json",
+            json.dumps(manifest, indent=2),
+            f"Update manifest: {section}/{key}",
+        )
+
     # -----------------------------------------------------------------------
-    # Hydration (pull from GitHub → DB)
+    # Hydration (pull from GitHub → DB on cold start)
     # -----------------------------------------------------------------------
 
     async def hydrate_from_github(self) -> dict:
-        """Pull all data from GitHub repo into the database. GitHub wins on conflicts."""
-        stats = {"papers": 0, "analyses": 0, "notes": 0, "errors": 0}
+        """Pull all data from GitHub repo into the database. GitHub wins on conflicts.
 
-        manifest = await self.get_manifest()
-        if not manifest:
-            return stats
+        Strategy:
+        1. Read manifest.json for indexed entries
+        2. Also scan papers/ and analyses/ directories for any files not in manifest
+        3. Populate SQLite cache from GitHub data
+        """
+        stats = {"papers": 0, "analyses": 0, "notes": 0, "errors": 0}
 
         db = SessionLocal()
         try:
+            # Determine which prefix has data (v2.0 or legacy v1.0)
+            prefix = REPO_PREFIX
+            manifest = await self.get_manifest()
+
+            # Try to discover papers from directory listing if manifest is sparse
+            paper_files = set()
+            if manifest:
+                # Add manifest-indexed papers
+                for arxiv_id in manifest.get("papers", {}):
+                    paper_files.add(arxiv_id.replace(":", "_"))
+
+            # Also scan papers/ directory for any files not in manifest
+            for p in (prefix, ".macp-research"):
+                dir_files = await self._list_dir(f"{p}/papers")
+                for fname in dir_files:
+                    if fname.endswith(".json"):
+                        paper_files.add(fname.replace(".json", ""))
+                if dir_files:
+                    prefix = p  # use whichever prefix has data
+                    break
+
             # Hydrate papers
-            for arxiv_id in manifest.get("papers", {}):
+            from database import upsert_paper
+            for arxiv_file_id in paper_files:
                 try:
-                    content = await self._get_file(f"{REPO_PREFIX}/papers/{arxiv_id}.json")
+                    content = await self._get_file(f"{prefix}/papers/{arxiv_file_id}.json")
                     if content:
-                        from database import upsert_paper
                         paper_data = json.loads(content)
-                        upsert_paper(db, paper_data, user_id=self.user.id)
+                        paper = upsert_paper(db, paper_data, user_id=self.user.id)
+                        # Mark as saved if it came from the saved papers directory
+                        if paper.status == "discovered":
+                            paper.status = "saved"
+                            db.commit()
                         stats["papers"] += 1
                 except Exception as e:
-                    logger.warning("Hydrate paper %s failed: %s", arxiv_id, e)
+                    logger.warning("Hydrate paper %s failed: %s", arxiv_file_id, e)
+                    stats["errors"] += 1
+
+            # Hydrate analyses
+            analysis_files = await self._list_dir(f"{prefix}/analyses")
+            for fname in analysis_files:
+                if not fname.endswith(".json"):
+                    continue
+                try:
+                    content = await self._get_file(f"{prefix}/analyses/{fname}")
+                    if content:
+                        data = json.loads(content)
+                        paper_data = data.get("paper", {})
+                        analysis_data = data.get("analysis", {})
+                        arxiv_id = paper_data.get("id", "")
+                        if arxiv_id:
+                            paper = db.query(Paper).filter(Paper.arxiv_id == arxiv_id).first()
+                            if paper:
+                                # Check if analysis already exists
+                                existing = db.query(Analysis).filter(
+                                    Analysis.paper_id == paper.id,
+                                    Analysis.provider == analysis_data.get("provenance", {}).get("provider", "unknown"),
+                                ).first()
+                                if not existing:
+                                    provenance = analysis_data.get("_meta", analysis_data.get("provenance", {}))
+                                    db_analysis = Analysis(
+                                        paper_id=paper.id,
+                                        user_id=self.user.id,
+                                        provider=provenance.get("provider", "unknown") if isinstance(provenance, dict) else "unknown",
+                                        summary=analysis_data.get("summary", ""),
+                                        key_insights=json.dumps(analysis_data.get("key_insights", [])),
+                                        methodology=analysis_data.get("methodology", ""),
+                                        research_gaps=json.dumps(analysis_data.get("research_gaps", [])),
+                                        relevance_tags=json.dumps(analysis_data.get("relevance_tags", [])),
+                                        score=analysis_data.get("strength_score", 0),
+                                        provenance=json.dumps(provenance) if isinstance(provenance, dict) else "{}",
+                                    )
+                                    db.add(db_analysis)
+                                    paper.status = "analyzed"
+                                    stats["analyses"] += 1
+                except Exception as e:
+                    logger.warning("Hydrate analysis %s failed: %s", fname, e)
+                    stats["errors"] += 1
+
+            # Hydrate notes
+            note_files = await self._list_dir(f"{prefix}/notes")
+            for fname in note_files:
+                if not fname.endswith(".md"):
+                    continue
+                try:
+                    content = await self._get_file(f"{prefix}/notes/{fname}")
+                    if content:
+                        # Parse Markdown note: extract content after the header
+                        lines = content.split("\n")
+                        note_content = ""
+                        tags = []
+                        for line in lines:
+                            if line.startswith("**Tags:**"):
+                                tag_str = line.replace("**Tags:**", "").strip()
+                                if tag_str and tag_str != "none":
+                                    tags = [t.strip() for t in tag_str.split(",")]
+                            elif not line.startswith("#") and not line.startswith("**Created:**"):
+                                note_content += line + "\n"
+                        note_content = note_content.strip()
+                        if note_content:
+                            # Check for duplicate by content
+                            existing = db.query(Note).filter(
+                                Note.user_id == self.user.id,
+                                Note.content == note_content,
+                            ).first()
+                            if not existing:
+                                note = Note(
+                                    user_id=self.user.id,
+                                    content=note_content,
+                                    tags=json.dumps(tags),
+                                )
+                                db.add(note)
+                                stats["notes"] += 1
+                except Exception as e:
+                    logger.warning("Hydrate note %s failed: %s", fname, e)
                     stats["errors"] += 1
 
             db.commit()
+            logger.info("Hydration complete: %s", stats)
         finally:
             db.close()
 

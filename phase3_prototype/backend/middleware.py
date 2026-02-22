@@ -114,22 +114,38 @@ def is_authenticated(
 
 
 def _user_from_jwt(token: str) -> Optional[User]:
-    """Decode JWT and load user from DB. Returns None on failure."""
+    """Decode JWT and load user from DB. Auto-recreates user on cold start."""
     try:
         payload = decode_jwt(token)
     except InvalidTokenError:
         return None
 
     user_id = payload.get("sub")
-    if not user_id:
+    github_id = payload.get("github_id")
+    if not user_id or not github_id:
         return None
 
     db = SessionLocal()
     try:
-        user = db.query(User).filter(User.id == int(user_id)).first()
-        if user:
-            # Detach from session so it can be used outside
-            db.expunge(user)
+        user = db.query(User).filter(User.github_id == github_id).first()
+        if not user:
+            # Cold start recovery: recreate user stub from JWT claims.
+            # GitHub access token will be restored on next OAuth login.
+            from datetime import datetime, timezone
+            user = User(
+                github_id=github_id,
+                github_login=payload.get("github_login", ""),
+                github_name=payload.get("github_name", ""),
+                github_avatar_url=payload.get("github_avatar_url", ""),
+                connected_repo=payload.get("connected_repo", ""),
+                created_at=datetime.now(timezone.utc),
+                last_login=datetime.now(timezone.utc),
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        # Detach from session so it can be used outside
+        db.expunge(user)
         return user
     finally:
         db.close()

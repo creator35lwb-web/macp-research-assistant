@@ -326,7 +326,7 @@ async def github_connect(
     request: Request,
     user: User = Depends(require_user),
 ):
-    """Connect a repository for GitHub-first storage."""
+    """Connect a repository for GitHub-first storage. Reissues JWT with connected_repo."""
     body = await request.json()
     repo = body.get("repo", "").strip()
     if not repo or "/" not in repo:
@@ -346,8 +346,21 @@ async def github_connect(
         log_audit(event="github_connect", message=f"Connected repo: {repo}",
                   user_id=user.id, db=db)
 
-        return {"status": "ok" if ok else "partial", "repo": repo,
-                "message": "Repository connected" + (" and initialized" if ok else "")}
+        # Reissue JWT with connected_repo for cold-start recovery
+        new_token = create_jwt(db_user)
+        response = JSONResponse(content={
+            "status": "ok" if ok else "partial", "repo": repo,
+            "message": "Repository connected" + (" and initialized" if ok else ""),
+        })
+        response.set_cookie(
+            key="macp_session",
+            value=new_token,
+            httponly=True,
+            secure=ENFORCE_HTTPS,
+            samesite="lax",
+            max_age=168 * 3600,
+        )
+        return response
     finally:
         db.close()
 

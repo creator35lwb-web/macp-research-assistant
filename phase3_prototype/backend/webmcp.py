@@ -179,9 +179,10 @@ async def mcp_search(
 async def mcp_analyze(
     request: Request,
     req: McpAnalyzeRequest,
+    background_tasks: BackgroundTasks,
     user: Optional[User] = Depends(get_current_user),
 ):
-    """AI analysis of a paper."""
+    """AI analysis of a paper. Syncs to GitHub + updates manifest."""
     db = SessionLocal()
     try:
         if not req.paper_id.startswith("arxiv:"):
@@ -224,6 +225,19 @@ async def mcp_analyze(
         paper.status = "analyzed"
         db.commit()
 
+        # GitHub dual-write: save analysis + update manifest
+        if user:
+            storage = get_storage_service(user)
+            if storage:
+                async def _sync_analysis():
+                    await storage.save_analysis(paper, db_analysis)
+                    await storage.update_manifest_entry("analyses", paper.arxiv_id, {
+                        "provider": req.provider,
+                        "analyzed_at": __import__("datetime").datetime.now(
+                            __import__("datetime").timezone.utc).isoformat(),
+                    })
+                background_tasks.add_task(_sync_analysis)
+
         return mcp_response({"paper_id": paper.arxiv_id, "analysis": analysis})
 
     except Exception as e:
@@ -263,8 +277,11 @@ async def mcp_save(
             async def _sync_to_github():
                 ok = await storage.save_paper(paper)
                 if ok:
-                    await storage.update_manifest({
-                        "papers": {paper.arxiv_id: {"saved_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()}}
+                    await storage.update_manifest_entry("papers", paper.arxiv_id, {
+                        "title": paper.title[:80],
+                        "saved_at": __import__("datetime").datetime.now(
+                            __import__("datetime").timezone.utc).isoformat(),
+                        "status": "saved",
                     })
             background_tasks.add_task(_sync_to_github)
             github_synced = True  # queued for sync
@@ -305,10 +322,22 @@ async def mcp_get_analysis(paper_id: str, user: Optional[User] = Depends(get_cur
 
 @mcp_router.get("/library")
 async def mcp_library(user: User = Depends(require_user)):
-    """List all saved papers in user's library."""
+    """List all saved papers in user's library. Auto-hydrates from GitHub on cold start."""
     db = SessionLocal()
     try:
-        papers = db.query(Paper).filter(Paper.user_id == user.id).order_by(Paper.added_at.desc()).all()
+        papers = db.query(Paper).filter(Paper.user_id == user.id).all()
+
+        # Auto-hydrate from GitHub if DB is empty but user has a connected repo
+        if not papers and user.connected_repo:
+            storage = get_storage_service(user)
+            if storage:
+                try:
+                    stats = await storage.hydrate_from_github()
+                    if stats.get("papers", 0) > 0:
+                        papers = db.query(Paper).filter(Paper.user_id == user.id).all()
+                except Exception:
+                    pass  # Hydration failure is non-fatal
+
         return mcp_response({
             "papers": [p.to_dict() for p in papers],
             "count": len(papers),
@@ -347,10 +376,17 @@ async def mcp_add_note(
         db.commit()
         db.refresh(note)
 
-        # Fire-and-forget GitHub write
+        # Fire-and-forget GitHub write + manifest update
         storage = get_storage_service(user)
         if storage:
-            background_tasks.add_task(storage.save_note, note)
+            async def _sync_note():
+                await storage.save_note(note)
+                await storage.update_manifest_entry("notes", str(note.id), {
+                    "created_at": note.created_at.isoformat() if note.created_at else "",
+                    "paper_id": req.paper_id or "",
+                    "tags": req.tags,
+                })
+            background_tasks.add_task(_sync_note)
 
         return mcp_response({"status": "ok", "note_id": note.id})
     finally:
