@@ -289,7 +289,24 @@ def log_audit(
     user_id: Optional[int] = None,
     db: Optional[Session] = None,
 ):
-    """Write a structured audit log entry to the database."""
+    """Write a structured audit log entry to the database and stdout (JSON for GCP Cloud Logging)."""
+    from datetime import datetime, timezone
+
+    # Structured JSON log to stdout for GCP Cloud Logging compatibility
+    log_entry = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "severity": level,
+        "event": event,
+        "message": message,
+        "source_ip": source_ip or None,
+        "user_id": user_id,
+        "service": "macp-research-assistant",
+        "version": "phase3c",
+    }
+    log_entry = {k: v for k, v in log_entry.items() if v is not None}
+    print(json.dumps(log_entry), flush=True)
+
+    # Also persist to database
     close_after = False
     if db is None:
         db = SessionLocal()

@@ -381,7 +381,7 @@ def fetch_by_id(arxiv_id: str) -> Optional[dict]:
 # Pipeline 4: hysts/daily-papers HuggingFace Dataset (12,700+ papers)
 # ---------------------------------------------------------------------------
 
-def fetch_from_hysts(query: str, limit: int = 10) -> list[dict]:
+def fetch_from_hysts(query: str, limit: int = 10, offset: int = 0) -> list[dict]:
     """
     Search the hysts-bot-data/daily-papers dataset via the HuggingFace
     Datasets Server API. This dataset contains 12,700+ curated papers
@@ -390,12 +390,14 @@ def fetch_from_hysts(query: str, limit: int = 10) -> list[dict]:
     Args:
         query: Natural language search query.
         limit: Maximum number of results.
+        offset: Number of results to skip (for pagination).
 
     Returns:
         List of normalized paper dicts.
     """
     query = validate_query(query)
     limit = max(1, min(limit, 100))
+    offset = max(0, offset)
 
     try:
         resp = requests.get(
@@ -405,6 +407,7 @@ def fetch_from_hysts(query: str, limit: int = 10) -> list[dict]:
                 "config": "default",
                 "split": "train",
                 "query": query,
+                "offset": offset,
                 "length": limit,
             },
             timeout=30,

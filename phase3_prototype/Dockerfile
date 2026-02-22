@@ -34,6 +34,11 @@ COPY tools/ /app/tools/
 # Copy frontend build output
 COPY --from=frontend-build /app/frontend/dist /app/static
 
+# Create non-root user for security (D-06)
+RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
+RUN chown -R appuser:appuser /app
+USER appuser
+
 # Set paths for Docker layout (backend files at /app/, tools at /app/tools/)
 ENV TOOLS_DIR=/app/tools
 ENV MACP_DIR=/app/.macp

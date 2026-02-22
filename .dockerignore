@@ -1,0 +1,17 @@
+.env
+.env.*
+.git
+.gitignore
+__pycache__
+*.pyc
+node_modules
+.vscode
+.idea
+*.md
+!README.md
+tests/
+*.test.*
+.macp/research/
+.macp/exports/
+.macp/handoffs/
+verifimind-mcp-gcp-logs/

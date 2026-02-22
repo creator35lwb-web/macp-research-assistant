@@ -22,7 +22,6 @@ from pydantic import BaseModel, Field
 from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
-from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 import httpx
 
 from config import (
@@ -106,6 +105,7 @@ def _rate_limit_key(request: Request) -> str:
 class SearchRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=200)
     limit: int = Field(default=10, ge=1, le=50)
+    offset: int = Field(default=0, ge=0)
     source: str = Field(default="hysts", pattern="^(hf|hysts|arxiv)$")
 
 
@@ -135,11 +135,41 @@ class RecallRequest(BaseModel):
 # App Setup
 # ---------------------------------------------------------------------------
 
+REQUIRED_ENV_VARS = {
+    "JWT_SECRET": "JWT session signing (CRITICAL — sessions will be insecure without this)",
+}
+
+RECOMMENDED_ENV_VARS = {
+    "GEMINI_API_KEY": "Gemini API for paper analysis (analyze endpoint will return 503 without this)",
+    "GITHUB_APP_CLIENT_ID": "GitHub OAuth (login will be unavailable without this)",
+    "GITHUB_APP_CLIENT_SECRET": "GitHub OAuth secret",
+}
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize database on startup."""
+    """Initialize database and validate environment on startup."""
+    # Validate required env vars — fail fast
+    missing_required = []
+    for var, desc in REQUIRED_ENV_VARS.items():
+        if not os.environ.get(var):
+            missing_required.append(f"  - {var}: {desc}")
+
+    if missing_required:
+        print(f"\n{'='*60}", file=sys.stderr)
+        print("FATAL: Missing required environment variables:", file=sys.stderr)
+        for m in missing_required:
+            print(m, file=sys.stderr)
+        print(f"{'='*60}\n", file=sys.stderr)
+        sys.exit(1)
+
+    # Warn about recommended env vars
+    for var, desc in RECOMMENDED_ENV_VARS.items():
+        if not os.environ.get(var):
+            log_audit(event="env_warning", message=f"Missing recommended env var: {var} — {desc}", level="WARNING")
+
     init_db()
-    log_audit(event="server_start", message="Phase 3C backend started")
+    log_audit(event="server_start", message="Phase 3C backend started — all env vars validated")
     yield
     log_audit(event="server_stop", message="Phase 3C backend stopped")
 
@@ -170,8 +200,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key", "Cookie"],
 )
 
 # Note: Do NOT use HTTPSRedirectMiddleware on Cloud Run.
@@ -245,7 +275,7 @@ async def auth_github_callback(code: str, state: Optional[str] = None):
 
     except Exception as e:
         log_audit(event="login_error", message=str(e), level="ERROR")
-        raise HTTPException(status_code=401, detail=f"GitHub authentication failed: {e}")
+        raise HTTPException(status_code=401, detail="GitHub authentication failed. Please try again.")
 
 
 @app.get("/api/auth/me")
@@ -381,18 +411,18 @@ async def search_papers(
 
     try:
         if req.source == "hysts":
-            papers = fetch_from_hysts(req.query, limit=req.limit)
+            papers = fetch_from_hysts(req.query, limit=req.limit, offset=req.offset)
         elif req.source == "hf":
             papers = fetch_by_query(req.query, limit=req.limit)
         elif req.source == "arxiv":
             paper = fetch_by_id(req.query)
             papers = [paper] if paper else []
         else:
-            papers = fetch_from_hysts(req.query, limit=req.limit)
+            papers = fetch_from_hysts(req.query, limit=req.limit, offset=req.offset)
     except Exception as e:
         log_audit(event="search_error", message=str(e), level="ERROR",
                   source_ip=get_remote_address(request))
-        raise HTTPException(status_code=502, detail=f"Search engine error: {e}")
+        raise HTTPException(status_code=502, detail="Search service temporarily unavailable. Please try again.")
 
     db = SessionLocal()
     try:
@@ -403,7 +433,13 @@ async def search_papers(
     finally:
         db.close()
 
-    return {"results": papers, "count": len(papers), "source": req.source}
+    return {
+        "results": papers,
+        "count": len(papers),
+        "source": req.source,
+        "offset": req.offset,
+        "has_more": len(papers) == req.limit,
+    }
 
 
 @app.post("/analyze")
@@ -423,6 +459,15 @@ async def analyze_paper_endpoint(
         raise HTTPException(status_code=400, detail=f"Unknown provider: {req.provider}")
 
     config = PROVIDERS[req.provider]
+
+    # Pre-check: ensure API key is available before calling LLM
+    api_key = req.api_key or os.environ.get(config["env_key"], "")
+    if not api_key:
+        raise HTTPException(
+            status_code=503,
+            detail=f"{config['name']} API key not configured. "
+                   f"Set {config['env_key']} environment variable or provide your own key in the BYOK field."
+        )
 
     db = SessionLocal()
     try:
@@ -475,7 +520,7 @@ async def analyze_paper_endpoint(
     except Exception as e:
         log_audit(event="analyze_error", message=str(e), level="ERROR",
                   source_ip=get_remote_address(request))
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {e}")
+        raise HTTPException(status_code=500, detail="Analysis service encountered an error. Please try again.")
     finally:
         db.close()
 

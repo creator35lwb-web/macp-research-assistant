@@ -32,6 +32,10 @@ interface MainPanelProps {
   onProviderChange: (p: string) => void;
   apiKey: string;
   onApiKeyChange: (k: string) => void;
+  // Pagination
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  loadingMore?: boolean;
 }
 
 export function MainPanel({
@@ -40,6 +44,7 @@ export function MainPanel({
   analyses: _analyses, analyzingId, analyzeError, onAnalyze, onSave,
   onAddNote, onLoadGraph, graphLoading,
   provider, onProviderChange, apiKey, onApiKeyChange,
+  hasMore, onLoadMore, loadingMore,
 }: MainPanelProps) {
   if (view === "search") {
     return (
@@ -87,6 +92,17 @@ export function MainPanel({
             onSave={onSave}
           />
         ))}
+
+        {hasMore && onLoadMore && (
+          <button
+            className="btn btn-secondary"
+            onClick={onLoadMore}
+            disabled={loadingMore}
+            style={{ width: "100%", marginTop: 12 }}
+          >
+            {loadingMore ? "Loading..." : "Load More Papers"}
+          </button>
+        )}
       </main>
     );
   }

@@ -17,6 +17,7 @@ export function Workspace() {
   const {
     papers, searching, searchError, search,
     analyses, analyzingId, analyzeError, analyze,
+    hasMore, loadMore, loadingMore,
   } = usePapers();
   const { graphData, loading: graphLoading, fetchGraph } = useGraph();
   const {
@@ -105,6 +106,9 @@ export function Workspace() {
             onProviderChange={setProvider}
             apiKey={apiKey}
             onApiKeyChange={setApiKey}
+            hasMore={hasMore}
+            onLoadMore={() => loadMore()}
+            loadingMore={loadingMore}
           />
         )}
       </ErrorBoundary>

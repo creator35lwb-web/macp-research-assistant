@@ -26,10 +26,10 @@ export const getMe = () => request<{ user: import("./types").User | null; authen
 export const logout = () => request<{ status: string }>("/api/auth/logout", { method: "POST" });
 
 // Search
-export const searchPapers = (query: string, limit = 10, source = "hysts") =>
-  request<{ results: import("./types").Paper[]; count: number }>("/search", {
+export const searchPapers = (query: string, limit = 10, source = "hysts", offset = 0) =>
+  request<{ results: import("./types").Paper[]; count: number; has_more: boolean; offset: number }>("/search", {
     method: "POST",
-    body: JSON.stringify({ query, limit, source }),
+    body: JSON.stringify({ query, limit, source, offset }),
   });
 
 // Analyze
