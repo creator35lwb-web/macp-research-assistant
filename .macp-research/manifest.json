@@ -2,7 +2,11 @@
   "version": "1.0",
   "created_at": "2026-02-22T14:41:37.049201+00:00",
   "owner": "creator35lwb-web",
-  "papers": {},
+  "papers": {
+    "arxiv:2408.06195": {
+      "saved_at": "2026-02-22T14:43:08.315661+00:00"
+    }
+  },
   "analyses": {},
   "notes": {}
 }
