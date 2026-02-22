@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'phase3_prototype/Dockerfile'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/macp-research-assistant'
+      - '.'
+images:
+  - 'gcr.io/$PROJECT_ID/macp-research-assistant'
+timeout: '600s'

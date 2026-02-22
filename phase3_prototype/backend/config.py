@@ -60,7 +60,7 @@ MACP_API_KEY: str | None = os.getenv("MACP_API_KEY")
 GITHUB_APP_CLIENT_ID: str = os.getenv("GITHUB_APP_CLIENT_ID", "")
 GITHUB_APP_CLIENT_SECRET: str = os.getenv("GITHUB_APP_CLIENT_SECRET", "")
 GITHUB_APP_REDIRECT_URI: str = os.getenv(
-    "GITHUB_APP_REDIRECT_URI", "http://localhost:8000/api/auth/github/callback"
+    "GITHUB_APP_REDIRECT_URI", "https://macpresearch.ysenseai.org/api/auth/github/callback"
 )
 
 # ---------------------------------------------------------------------------
