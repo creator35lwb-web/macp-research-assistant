@@ -84,6 +84,13 @@ PROVIDERS = {
         "endpoint": "https://api.openai.com/v1/chat/completions",
         "free_tier": False,
     },
+    "grok": {
+        "name": "xAI Grok",
+        "env_key": "GROK_API_KEY",
+        "model": "grok-3",
+        "endpoint": "https://api.x.ai/v1/chat/completions",
+        "free_tier": False,
+    },
 }
 
 # The analysis prompt sent to all providers
@@ -131,7 +138,7 @@ def _call_gemini(api_key: str, prompt: str, model: str) -> Optional[str]:
         headers={"Content-Type": "application/json"},
         json={
             "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"temperature": 0.3, "maxOutputTokens": 1024},
+            "generationConfig": {"temperature": 0.3, "maxOutputTokens": 4096},
         },
         timeout=60,
     )
@@ -156,7 +163,7 @@ def _call_anthropic(api_key: str, prompt: str, model: str) -> Optional[str]:
         },
         json={
             "model": model,
-            "max_tokens": 1024,
+            "max_tokens": 4096,
             "temperature": 0.3,
             "messages": [{"role": "user", "content": prompt}],
         },
@@ -181,8 +188,32 @@ def _call_openai(api_key: str, prompt: str, model: str) -> Optional[str]:
         json={
             "model": model,
             "temperature": 0.3,
-            "max_tokens": 1024,
+            "max_tokens": 4096,
             "messages": [{"role": "user", "content": prompt}],
+        },
+        timeout=60,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    choices = data.get("choices", [])
+    if choices:
+        return choices[0].get("message", {}).get("content", "")
+    return None
+
+
+def _call_grok(api_key: str, prompt: str, model: str) -> Optional[str]:
+    """Call xAI Grok API (OpenAI-compatible)."""
+    resp = requests.post(
+        PROVIDERS["grok"]["endpoint"],
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.3,
+            "max_tokens": 4096,
         },
         timeout=60,
     )
@@ -198,6 +229,7 @@ _CALLERS = {
     "gemini": _call_gemini,
     "anthropic": _call_anthropic,
     "openai": _call_openai,
+    "grok": _call_grok,
 }
 
 

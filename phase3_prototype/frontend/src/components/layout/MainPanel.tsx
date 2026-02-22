@@ -58,6 +58,7 @@ export function MainPanel({
               <option value="gemini">Gemini (free)</option>
               <option value="anthropic">Claude</option>
               <option value="openai">OpenAI</option>
+              <option value="grok">xAI Grok</option>
             </select>
           </label>
           <label>
