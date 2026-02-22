@@ -25,7 +25,7 @@ from typing import Any
 _backend_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _backend_dir)
 
-from config import MACP_API_KEY, MCP_SERVER_PORT, TOOLS_DIR
+from config import MACP_API_KEY, TOOLS_DIR
 from database import (
     Analysis,
     Citation,

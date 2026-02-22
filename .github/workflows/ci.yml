@@ -40,7 +40,7 @@ jobs:
 
       - name: Run Ruff linter
         run: |
-          ruff check phase3_prototype/backend/ tools/ --select E,W,F --ignore E501
+          ruff check phase3_prototype/backend/ tools/ --select E,W,F --ignore E501,E402
 
       - name: Python syntax check
         run: |

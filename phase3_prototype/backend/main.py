@@ -28,10 +28,8 @@ from config import (
     CORS_ORIGINS,
     ENFORCE_HTTPS,
     GITHUB_APP_CLIENT_ID,
-    RATE_LIMIT_ANALYZE,
     RATE_LIMIT_AUTH_ANALYZE,
     RATE_LIMIT_AUTH_SEARCH,
-    RATE_LIMIT_SEARCH,
     TOOLS_DIR,
 )
 from database import (
@@ -42,7 +40,6 @@ from database import (
     Paper,
     SessionLocal,
     User,
-    get_db,
     init_db,
     log_audit,
     upsert_paper,
@@ -643,7 +640,6 @@ async def audit_endpoint(
 
 _static_dir = os.getenv("STATIC_DIR", os.path.join(os.path.dirname(__file__), "..", "static"))
 if os.path.isdir(_static_dir):
-    from fastapi.staticfiles import StaticFiles
     from fastapi.responses import FileResponse
 
     @app.get("/{path:path}")
