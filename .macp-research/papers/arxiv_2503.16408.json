@@ -1,0 +1,19 @@
+{
+  "id": "arxiv:2503.16408",
+  "title": "RoboFactory: Exploring Embodied Agent Collaboration with Compositional Constraints",
+  "authors": [
+    "Yiran Qin",
+    "Li Kang",
+    "Xiufeng Song",
+    "Zhenfei Yin",
+    "Xiaohong Liu",
+    "Xihui Liu",
+    "Ruimao Zhang",
+    "Lei Bai"
+  ],
+  "abstract": "Designing effective embodied multi-agent systems is critical for solving complex real-world tasks across domains. Due to the complexity of multi-agent embodied systems, existing methods fail to automatically generate safe and efficient training data for such systems. To this end, we propose the concept of compositional constraints for embodied multi-agent systems, addressing the challenges arising from collaboration among embodied agents. We design various interfaces tailored to different types of constraints, enabling seamless interaction with the physical world. Leveraging compositional constraints and specifically designed interfaces, we develop an automated data collection framework for embodied multi-agent systems and introduce the first benchmark for embodied multi-agent manipulation, RoboFactory. Based on RoboFactory benchmark, we adapt and evaluate the method of imitation learning and analyzed its performance in different difficulty agent tasks. Furthermore, we explore the architectures and training strategies for multi-agent imitation learning, aiming to build safe and efficient embodied multi-agent systems.",
+  "url": "https://huggingface.co/papers/2503.16408",
+  "status": "saved",
+  "source": "hysts_dataset",
+  "added_at": "2026-02-22T07:27:04.645414"
+}
