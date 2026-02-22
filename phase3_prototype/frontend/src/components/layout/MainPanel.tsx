@@ -32,6 +32,11 @@ interface MainPanelProps {
   onProviderChange: (p: string) => void;
   apiKey: string;
   onApiKeyChange: (k: string) => void;
+  // BYOK
+  byokValidated?: boolean;
+  byokValidating?: boolean;
+  onValidateKey?: () => void;
+  onClearKey?: () => void;
   // Pagination
   hasMore?: boolean;
   onLoadMore?: () => void;
@@ -44,6 +49,7 @@ export function MainPanel({
   analyses: _analyses, analyzingId, analyzeError, onAnalyze, onSave,
   onAddNote, onLoadGraph, graphLoading,
   provider, onProviderChange, apiKey, onApiKeyChange,
+  byokValidated, byokValidating, onValidateKey, onClearKey,
   hasMore, onLoadMore, loadingMore,
 }: MainPanelProps) {
   if (view === "search") {
@@ -61,16 +67,31 @@ export function MainPanel({
               <option value="grok">xAI Grok</option>
             </select>
           </label>
-          <label>
-            API Key:
-            <input
-              type="password"
-              placeholder="BYOK (optional)"
-              value={apiKey}
-              onChange={(e) => onApiKeyChange(e.target.value)}
-              style={{ marginLeft: 4, width: 160 }}
-            />
-          </label>
+          <div className="byok-row">
+            <label>
+              API Key:
+              <input
+                type="password"
+                placeholder="BYOK (optional)"
+                value={apiKey}
+                onChange={(e) => onApiKeyChange(e.target.value)}
+                style={{ marginLeft: 4, width: 140 }}
+              />
+            </label>
+            {apiKey && onValidateKey && (
+              <button
+                className="btn-validate"
+                onClick={onValidateKey}
+                disabled={byokValidating}
+              >
+                {byokValidating ? "..." : "Validate & Apply"}
+              </button>
+            )}
+            {apiKey && onClearKey && (
+              <button className="btn-clear-key" onClick={onClearKey}>Clear</button>
+            )}
+            {byokValidated && <span className="byok-status validated">Validated</span>}
+          </div>
         </div>
 
         {searchError && <div className="error-message">{searchError}</div>}

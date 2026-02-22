@@ -13,6 +13,7 @@ Repo structure:
   └── manifest.json
 """
 
+import asyncio
 import base64
 import json
 import logging
@@ -45,33 +46,49 @@ class GitHubStorageService:
             "X-GitHub-Api-Version": "2022-11-28",
         }
 
-    async def _put_file(self, path: str, content: str, message: str) -> bool:
-        """Create or update a file via GitHub Contents API."""
+    async def _put_file(self, path: str, content: str, message: str, max_retries: int = 3) -> bool:
+        """Create or update a file via GitHub Contents API with retry logic."""
         if not self.repo or not self._token:
             return False
 
         url = f"{GITHUB_API}/repos/{self.repo}/contents/{path}"
 
-        # Check if file exists (to get sha for update)
-        sha = None
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url, headers=self._headers())
-            if resp.status_code == 200:
-                sha = resp.json().get("sha")
+        for attempt in range(1, max_retries + 1):
+            try:
+                # Check if file exists (to get sha for update)
+                sha = None
+                async with httpx.AsyncClient(timeout=30) as client:
+                    resp = await client.get(url, headers=self._headers())
+                    if resp.status_code == 200:
+                        sha = resp.json().get("sha")
 
-            body = {
-                "message": message,
-                "content": base64.b64encode(content.encode()).decode(),
-            }
-            if sha:
-                body["sha"] = sha
+                    body = {
+                        "message": message,
+                        "content": base64.b64encode(content.encode()).decode(),
+                    }
+                    if sha:
+                        body["sha"] = sha
 
-            resp = await client.put(url, json=body, headers=self._headers())
-            if resp.status_code in (200, 201):
-                return True
+                    resp = await client.put(url, json=body, headers=self._headers())
+                    if resp.status_code in (200, 201):
+                        logger.info("GitHub PUT %s succeeded (attempt %d)", path, attempt)
+                        return True
 
-            logger.warning("GitHub PUT %s failed: %s %s", path, resp.status_code, resp.text[:200])
-            return False
+                    # Don't retry on auth errors
+                    if resp.status_code in (401, 403, 404, 422):
+                        logger.warning("GitHub PUT %s failed (non-retryable): %s", path, resp.status_code)
+                        return False
+
+                    logger.warning("GitHub PUT %s failed (attempt %d/%d): %s", path, attempt, max_retries, resp.status_code)
+
+            except (httpx.TimeoutException, httpx.ConnectError) as e:
+                logger.warning("GitHub PUT %s error (attempt %d/%d): %s", path, attempt, max_retries, e)
+
+            if attempt < max_retries:
+                await asyncio.sleep(2 ** attempt)  # exponential backoff: 2s, 4s
+
+        logger.error("GitHub PUT %s failed after %d attempts", path, max_retries)
+        return False
 
     async def _get_file(self, path: str) -> Optional[str]:
         """Read a file from the GitHub repo."""

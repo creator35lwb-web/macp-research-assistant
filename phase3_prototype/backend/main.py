@@ -106,6 +106,11 @@ class SearchRequest(BaseModel):
     source: str = Field(default="hysts", pattern="^(hf|hysts|arxiv)$")
 
 
+class ValidateKeyRequest(BaseModel):
+    provider: str = Field(..., min_length=1)
+    api_key: str = Field(..., min_length=1)
+
+
 class AnalyzeRequest(BaseModel):
     paper_id: str = Field(..., min_length=1)
     provider: str = Field(default="gemini")
@@ -391,6 +396,44 @@ async def health():
         "version": "phase3c",
         "papers_in_db": count,
     }
+
+
+@app.post("/api/validate-key")
+async def validate_api_key(req: ValidateKeyRequest):
+    """Validate a BYOK API key by sending a minimal test request."""
+    if req.provider not in PROVIDERS:
+        return {"valid": False, "provider": req.provider, "model": "", "error": f"Unknown provider: {req.provider}"}
+
+    config = PROVIDERS[req.provider]
+    caller = None
+
+    # Import callers
+    from llm_providers import _call_gemini, _call_anthropic, _call_openai
+    callers = {"gemini": _call_gemini, "anthropic": _call_anthropic, "openai": _call_openai}
+
+    # Check for grok caller
+    try:
+        from llm_providers import _call_grok
+        callers["grok"] = _call_grok
+    except ImportError:
+        pass
+
+    caller = callers.get(req.provider)
+    if not caller:
+        return {"valid": False, "provider": req.provider, "model": config["model"], "error": "Provider not supported for validation"}
+
+    try:
+        result = caller(req.api_key, "Say 'ok'", config["model"])
+        if result:
+            return {"valid": True, "provider": config["name"], "model": config["model"]}
+        return {"valid": False, "provider": config["name"], "model": config["model"], "error": "Empty response from provider"}
+    except Exception as e:
+        error_msg = str(e)
+        if "401" in error_msg or "403" in error_msg:
+            error_msg = "Invalid API key"
+        elif "429" in error_msg:
+            error_msg = "Rate limited — key is valid but try again later"
+        return {"valid": False, "provider": config["name"], "model": config["model"], "error": error_msg}
 
 
 @app.post("/search")

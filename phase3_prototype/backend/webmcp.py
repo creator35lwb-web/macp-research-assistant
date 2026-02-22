@@ -256,12 +256,20 @@ async def mcp_save(
         paper.user_id = user.id
         db.commit()
 
-        # Fire-and-forget GitHub write
+        # GitHub dual-write with retry (fire-and-forget but logged)
+        github_synced = False
         storage = get_storage_service(user)
         if storage:
-            background_tasks.add_task(storage.save_paper, paper)
+            async def _sync_to_github():
+                ok = await storage.save_paper(paper)
+                if ok:
+                    await storage.update_manifest({
+                        "papers": {paper.arxiv_id: {"saved_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()}}
+                    })
+            background_tasks.add_task(_sync_to_github)
+            github_synced = True  # queued for sync
 
-        return mcp_response({"status": "saved", "paper_id": paper.arxiv_id})
+        return mcp_response({"status": "saved", "paper_id": paper.arxiv_id, "github_queued": github_synced})
     finally:
         db.close()
 

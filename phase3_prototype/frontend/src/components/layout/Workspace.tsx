@@ -4,12 +4,13 @@ import { useAuth } from "../../hooks/useAuth";
 import { usePapers } from "../../hooks/usePapers";
 import { useGraph } from "../../hooks/useGraph";
 import { useGitHub } from "../../hooks/useGitHub";
-import { mcpAddNote, mcpSave } from "../../api/client";
+import { mcpAddNote, mcpSave, validateApiKey } from "../../api/client";
 import { Sidebar } from "./Sidebar";
 import { MainPanel } from "./MainPanel";
 import { DetailPanel } from "./DetailPanel";
 import { KnowledgeGraph } from "../graph/KnowledgeGraph";
 import { ErrorBoundary } from "../common/ErrorBoundary";
+import { showToast } from "../common/Toast";
 import type { Paper } from "../../api/types";
 
 export function Workspace() {
@@ -27,8 +28,10 @@ export function Workspace() {
 
   const [activeView, setActiveView] = useState<ViewMode>("search");
   const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
-  const [provider, setProvider] = useState("gemini");
-  const [apiKey, setApiKey] = useState("");
+  const [provider, setProvider] = useState(() => localStorage.getItem("byok_provider") || "gemini");
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem("byok_key") || "");
+  const [byokValidated, setByokValidated] = useState(false);
+  const [byokValidating, setByokValidating] = useState(false);
 
   // Fetch GitHub status on mount if user is logged in
   useState(() => {
@@ -46,17 +49,60 @@ export function Workspace() {
   const handleSave = async (paperId: string) => {
     try {
       await mcpSave(paperId);
-    } catch {
-      // Silently fail — user may not be logged in
+      showToast("success", "Paper saved to library");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to save paper";
+      showToast("error", msg);
     }
   };
 
   const handleAddNote = async (content: string, tags: string[], paperId?: string) => {
     try {
       await mcpAddNote(content, tags, paperId);
-    } catch {
-      // Silently fail
+      showToast("success", "Note saved");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to save note";
+      showToast("error", msg);
     }
+  };
+
+  const handleValidateKey = async () => {
+    if (!apiKey.trim()) {
+      showToast("error", "Enter an API key first");
+      return;
+    }
+    setByokValidating(true);
+    try {
+      const result = await validateApiKey(provider, apiKey);
+      if (result.valid) {
+        localStorage.setItem("byok_key", apiKey);
+        localStorage.setItem("byok_provider", provider);
+        setByokValidated(true);
+        showToast("success", `Key validated for ${result.provider} (${result.model})`);
+      } else {
+        setByokValidated(false);
+        showToast("error", result.error || "Invalid API key");
+      }
+    } catch (err) {
+      setByokValidated(false);
+      const msg = err instanceof Error ? err.message : "Validation failed";
+      showToast("error", msg);
+    } finally {
+      setByokValidating(false);
+    }
+  };
+
+  const handleClearKey = () => {
+    setApiKey("");
+    setByokValidated(false);
+    localStorage.removeItem("byok_key");
+    localStorage.removeItem("byok_provider");
+    showToast("info", "API key cleared — using server default");
+  };
+
+  const handleProviderChange = (p: string) => {
+    setProvider(p);
+    setByokValidated(false);
   };
 
   if (authLoading) {
@@ -103,9 +149,13 @@ export function Workspace() {
             onLoadGraph={fetchGraph}
             graphLoading={graphLoading}
             provider={provider}
-            onProviderChange={setProvider}
+            onProviderChange={handleProviderChange}
             apiKey={apiKey}
-            onApiKeyChange={setApiKey}
+            onApiKeyChange={(k) => { setApiKey(k); setByokValidated(false); }}
+            byokValidated={byokValidated}
+            byokValidating={byokValidating}
+            onValidateKey={handleValidateKey}
+            onClearKey={handleClearKey}
             hasMore={hasMore}
             onLoadMore={() => loadMore()}
             loadingMore={loadingMore}

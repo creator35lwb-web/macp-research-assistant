@@ -58,6 +58,13 @@ export const mcpSave = (paper_id: string) =>
     body: JSON.stringify({ paper_id }),
   });
 
+// BYOK Validation
+export const validateApiKey = (provider: string, api_key: string) =>
+  request<{ valid: boolean; provider: string; model: string; error?: string }>("/api/validate-key", {
+    method: "POST",
+    body: JSON.stringify({ provider, api_key }),
+  });
+
 export const mcpDiscovery = () =>
   request<{ tools: unknown[]; count: number; version: string }>("/api/mcp/");
 
