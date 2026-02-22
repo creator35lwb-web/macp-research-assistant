@@ -1,0 +1,149 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'phase3_prototype/backend/**'
+      - 'tools/**'
+      - 'phase3_prototype/frontend/**'
+      - '.github/workflows/security-scan.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'phase3_prototype/backend/**'
+      - 'tools/**'
+      - 'phase3_prototype/frontend/**'
+      - '.github/workflows/security-scan.yml'
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly: Sunday at midnight UTC
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  bandit-sast:
+    name: Bandit SAST Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit on backend
+        run: |
+          echo "Running Bandit SAST on phase3_prototype/backend/..."
+          bandit -r phase3_prototype/backend/ -ll -ii --skip B101 -f json -o bandit-backend.json || true
+          bandit -r phase3_prototype/backend/ -ll -ii --skip B101 || true
+
+      - name: Run Bandit on tools
+        run: |
+          echo "Running Bandit SAST on tools/..."
+          bandit -r tools/ -ll -ii --skip B101 -f json -o bandit-tools.json || true
+          bandit -r tools/ -ll -ii --skip B101 || true
+
+      - name: Upload Bandit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-security-reports
+          path: bandit-*.json
+          retention-days: 90
+
+      - name: Security scan summary
+        if: always()
+        run: |
+          echo "## Bandit SAST Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for f in bandit-*.json; do
+            if [ -f "$f" ]; then
+              ISSUES=$(python -c "import json; d=json.load(open('$f')); print(len(d.get('results',[])))" 2>/dev/null || echo "unknown")
+              echo "- $f: $ISSUES issues" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+  safety-sca:
+    name: Safety Dependency Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Safety
+        run: pip install safety
+
+      - name: Check Python dependencies
+        run: |
+          echo "Running Safety dependency vulnerability check..."
+          safety check -r phase3_prototype/backend/requirements.txt --output text || true
+
+      - name: Safety scan summary
+        if: always()
+        run: |
+          echo "## Safety Dependency Check" >> $GITHUB_STEP_SUMMARY
+          echo "Checked phase3_prototype/backend/requirements.txt" >> $GITHUB_STEP_SUMMARY
+
+  npm-audit:
+    name: npm Audit (Frontend)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run npm audit
+        run: |
+          cd phase3_prototype/frontend
+          npm ci
+          npm audit --omit=dev || true
+
+      - name: npm audit summary
+        if: always()
+        run: |
+          echo "## npm Audit Results" >> $GITHUB_STEP_SUMMARY
+          echo "Checked phase3_prototype/frontend dependencies" >> $GITHUB_STEP_SUMMARY
+
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python, javascript-typescript
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python-javascript"
+
+      - name: CodeQL summary
+        if: always()
+        run: |
+          echo "## CodeQL Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "Semantic security analysis for Python + TypeScript" >> $GITHUB_STEP_SUMMARY
