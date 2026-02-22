@@ -267,6 +267,8 @@ When conducting research using multiple AI assistants (ChatGPT, Claude, Perplexi
 
 ## Development Phases
 
+> For the complete, detailed roadmap with sprint breakdowns, architecture diagrams, and agent contribution matrix, see **[ROADMAP.md](ROADMAP.md)**.
+
 ### Completed
 
 | Phase | Description | Highlights |
@@ -277,31 +279,39 @@ When conducting research using multiple AI assistants (ChatGPT, Claude, Perplexi
 | **Phase 3B** | Full Hybrid Implementation | All 8 WebMCP tools, GitHub OAuth, paper library |
 | **Phase 3C** | Production Deployment | GCP Cloud Run, CI/CD, security hardening, multi-provider LLM, Load More |
 
-### Current: Phase 3C.4 — Production Hardening (Complete)
+### Current: Phase 3D — Foundation Repair & GitHub Integration
 
-- Security remediation: prompt injection protection, non-root Docker, sanitized errors
-- CI/CD pipeline with GitHub Actions
-- Load More pagination
-- Multi-provider LLM support (Gemini, Claude, GPT-4o, Grok)
-- BYOK (Bring Your Own Key) support
-- Comprehensive test suite
+- Fix save-to-library pipeline (broken in production)
+- Fix BYOK UX (add validation, apply button, error feedback)
+- Implement GitHub-first persistence (GitHub as source of truth, SQLite as cache)
+- End-to-end pipeline: Search → Save → Library → GitHub Sync → Cold Restart → Hydrate
 
-### Next: Phase 3D — Deep Analysis & GitHub Integration
+### Next: Phase 3E — MACP v2.0 Schema & Deep Analysis
 
-- Deep PDF analysis (full-text, not just abstract)
-- Citation extraction and cross-referencing
-- Multi-pass analysis with configurable depth
-- Real-time GitHub repository sync on paper save
+- Define MACP v2.0 `schema.json` (self-describing repository standard)
+- Deep PDF analysis (full-text extraction, section chunking)
+- Multi-agent analysis files (one file per agent per paper)
+- Knowledge graph visualization in web UI
+
+### Future: Phase 3F — Multi-Agent Research Sync
+
+- Perplexity API integration for deep research with citations
+- Multi-agent consensus generation
+- Agent registry (`.macp/agents/`)
+- Full-text search across all analyses
 
 ---
 
 ## Roadmap
 
 ```
-Phase 1 ✅ → Phase 2 ✅ → Phase 3A ✅ → Phase 3B ✅ → Phase 3C ✅ → Phase 3D 🔄 → Phase 3E 📋 → Phase 3F 📋
-  Manual       CLI Tools     Web UI       Full Hybrid    Production    Deep Analysis   Knowledge     WebMCP
-  MACP         & Schemas     Prototype    WebMCP         Deployment    & GitHub Sync   Graph Viz     Ecosystem
+Phase 1 ✅ → Phase 2 ✅ → Phase 3A ✅ → Phase 3B ✅ → Phase 3C ✅ → Phase 3D 🔧 → Phase 3E 📋 → Phase 3F 📋 → Phase 4 📋
+  Manual       CLI Tools     Web UI       Full Hybrid    Production    Foundation     MACP v2.0     Multi-Agent    WebMCP
+  MACP         & Schemas     Prototype    WebMCP         Deployment    Repair &       Schema &      Research       Ecosystem
+                                                                      GitHub Sync    Deep Analysis  Sync
 ```
+
+See **[ROADMAP.md](ROADMAP.md)** for the full roadmap with sprint details, architecture diagrams, and agent assignment matrix.
 
 ---
 
