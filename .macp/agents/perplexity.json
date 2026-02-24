@@ -1,0 +1,15 @@
+{
+  "agent_id": "perplexity",
+  "name": "Perplexity Sonar",
+  "model": "sonar-pro",
+  "capabilities": ["deep_research", "citation_extraction", "full_text_search"],
+  "strengths": "Real-time web-grounded research with source citations, excellent for discovering new papers and cross-referencing claims against current literature",
+  "cost_tier": "paid",
+  "api_endpoint": "https://api.perplexity.ai/chat/completions",
+  "env_key": "SONAR_API_KEY",
+  "registered_at": "2026-02-24",
+  "config": {
+    "model": "sonar-pro",
+    "search_recency_filter": "month"
+  }
+}

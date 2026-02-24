@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MACP Research Schema v2.0",
+  "description": "Multi-Agent Communication Protocol for AI Research — canonical directory and data specification. Any AI agent reading this file can understand the entire .macp/ repository structure.",
+  "version": "2.0.0",
+  "created_at": "2026-02-24",
+  "maintained_by": "FLYWHEEL TEAM (CSO R + CTO RNA)",
+  "repository": "https://github.com/creator35lwb-web/macp-research-assistant",
+
+  "directory_structure": {
+    "schema.json": "Self-describing specification for the entire .macp/ directory",
+    "manifest.json": "Master index tracking all papers, analyses, notes, and agents",
+    "papers/{arxiv_id}.json": "Paper metadata — one file per paper",
+    "analyses/{arxiv_id}/{agent_id}_{YYYYMMDD}.json": "Per-agent analysis — one file per agent per paper per date",
+    "analyses/{arxiv_id}/consensus.json": "Multi-agent consensus synthesis — derived from individual analyses",
+    "notes/note_{uuid}.md": "Research notes in Markdown format",
+    "agents/{agent_id}.json": "Agent capability and configuration registry",
+    "graph/knowledge-graph.json": "Citation and topic relationship graph",
+    "handoffs/{date}_{author}_{topic}.md": "FLYWHEEL TEAM handoff documents"
+  },
+
+  "status_lifecycle": {
+    "discovered": "Paper found via search but not yet saved",
+    "saved": "Paper saved to library by user",
+    "analyzed": "At least one abstract-level analysis exists",
+    "deep_analyzed": "At least one deep (full-text) analysis exists"
+  },
+
+  "analysis_types": {
+    "abstract": "Analysis based on title, abstract, and metadata only",
+    "deep": "Analysis based on full PDF text extraction (PyMuPDF)",
+    "comparative": "Cross-paper comparison within a research topic",
+    "methodological": "Focused analysis on methodology and reproducibility"
+  },
+
+  "agent_capabilities": [
+    "abstract_analysis",
+    "deep_analysis",
+    "comparative_analysis",
+    "citation_extraction",
+    "full_text_search",
+    "knowledge_graph",
+    "consensus_synthesis",
+    "deep_research"
+  ],
+
+  "consensus_rules": {
+    "minimum_agents": 2,
+    "same_type_required": true,
+    "agreement_scoring": {
+      "key_findings_overlap_weight": 0.4,
+      "relevance_score_alignment_weight": 0.3,
+      "methodology_consistency_weight": 0.3
+    },
+    "bias_cross_check_required": true
+  }
+}

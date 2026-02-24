@@ -1,0 +1,15 @@
+{
+  "agent_id": "manus",
+  "name": "Manus AI (CSO R)",
+  "model": "manus-agent",
+  "capabilities": ["consensus_synthesis", "knowledge_graph", "comparative_analysis"],
+  "strengths": "Strategic analysis, multi-agent orchestration, documentation, GitHub bridge operations, consensus synthesis across agent outputs",
+  "cost_tier": "enterprise",
+  "api_endpoint": "https://manus.im",
+  "env_key": null,
+  "registered_at": "2026-02-24",
+  "config": {
+    "role": "CSO R — Chief Strategy Officer, Research",
+    "team": "FLYWHEEL TEAM"
+  }
+}
