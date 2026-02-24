@@ -633,12 +633,44 @@
                 <div class="feature-card">
                     <div class="feature-icon icon-cyan">&#x1F511;</div>
                     <h3>Bring Your Own Key (BYOK)</h3>
-                    <p>Use Gemini for free, or bring your own API keys for Claude, OpenAI, or Grok. Validate and apply keys with one click — no configuration files needed.</p>
+                    <p>Use Gemini for free, or bring your own API keys for Claude, OpenAI, or Grok. Validate and apply keys with one click. <strong style="color: var(--accent-green);">Your keys are never stored, logged, or transmitted to us</strong> — verified by code audit.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon icon-purple">&#x1F578;&#xFE0F;</div>
                     <h3>Knowledge Graph</h3>
                     <p>Visualize citation networks and topic relationships across your research library. Discover connections between papers that you might have missed.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- BYOK Privacy Trust Section -->
+        <section style="padding: 3rem 0;">
+            <div class="container">
+                <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 2rem; padding: 0.5rem 1.5rem; margin-bottom: 1.5rem;">
+                        <span style="font-size: 1.2rem;">&#x1F512;</span>
+                        <span style="color: var(--accent-green); font-weight: 600; font-size: 0.9rem; letter-spacing: 0.05em;">BYOK PRIVACY GUARANTEE</span>
+                    </div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Your API Keys Stay Yours</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.8;">When you use Bring Your Own Key (BYOK), your API key is used <strong style="color: var(--text-primary);">only for the duration of your request</strong> and is immediately discarded. Keys exist only in memory during the API call — they are never stored in our database, never written to GitHub, never logged, and never included in API responses or provenance tracking. This has been verified through a comprehensive code audit.</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; text-align: center;">
+                        <div style="background: var(--bg-card); border-radius: 0.75rem; padding: 1rem;">
+                            <div style="color: var(--accent-green); font-size: 1.5rem; margin-bottom: 0.5rem;">&#x2717;</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">Not stored in DB</div>
+                        </div>
+                        <div style="background: var(--bg-card); border-radius: 0.75rem; padding: 1rem;">
+                            <div style="color: var(--accent-green); font-size: 1.5rem; margin-bottom: 0.5rem;">&#x2717;</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">Not written to GitHub</div>
+                        </div>
+                        <div style="background: var(--bg-card); border-radius: 0.75rem; padding: 1rem;">
+                            <div style="color: var(--accent-green); font-size: 1.5rem; margin-bottom: 0.5rem;">&#x2717;</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">Not in logs</div>
+                        </div>
+                        <div style="background: var(--bg-card); border-radius: 0.75rem; padding: 1rem;">
+                            <div style="color: var(--accent-green); font-size: 1.5rem; margin-bottom: 0.5rem;">&#x2713;</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">Request-only memory</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

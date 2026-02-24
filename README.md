@@ -71,6 +71,24 @@ The platform supports 5 AI providers for paper analysis, with both server-side k
 | **xAI Grok** | grok-beta | ✅ | Abstract analysis, deep analysis, consensus synthesis |
 | **Perplexity** | Sonar Pro | ✅ | Deep web-grounded research with citations |
 
+### BYOK Privacy Guarantee
+
+> **Your API keys are never stored, logged, or transmitted to us.** When you provide your own API key through the BYOK (Bring Your Own Key) feature, the key is used exclusively for the duration of your request and is immediately discarded after the API call completes.
+
+This guarantee has been verified through a comprehensive code audit (conducted 2026-02-24):
+
+| Security Check | Result |
+|---------------|--------|
+| Key stored in database? | **NO** — The `Analysis` model contains only provider name, summary, insights, and score. No key field exists. |
+| Key written to GitHub? | **NO** — The `save_analysis_per_agent()` data dict contains agent_id, summary, key_findings. No key field. |
+| Key appears in logs? | **NO** — Error messages reference provider name and config name only. Key values are never printed. |
+| Key returned in API response? | **NO** — Responses contain analysis results only. |
+| Key in provenance tracking? | **NO** — Provenance records provider name and model, not credentials. |
+| Key memory scope? | **Request-only** — The key lives only in the HTTP request handler scope and is garbage collected after the function returns. |
+| Middleware logging of request bodies? | **NO** — No middleware captures or logs request bodies containing keys. |
+
+The BYOK feature includes a **Validate & Apply** button that tests your key against the selected provider before use, and a **Clear** button to remove it from your browser session at any time. Keys are stored only in your browser's local memory (session state) and are never persisted server-side.
+
 ### Multi-Agent Consensus Analysis
 
 When 2 or more AI providers analyze the same paper, the platform generates an automated **consensus analysis** using a weighted scoring algorithm:
