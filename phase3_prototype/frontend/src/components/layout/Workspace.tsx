@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react";
-import type { Note, ViewMode } from "../../api/types";
+import type { Note, ViewMode, DeepAnalysis, Consensus } from "../../api/types";
 import { useAuth } from "../../hooks/useAuth";
 import { usePapers } from "../../hooks/usePapers";
 import { useGraph } from "../../hooks/useGraph";
 import { useGitHub } from "../../hooks/useGitHub";
-import { mcpAddNote, mcpListNotes, mcpSave, validateApiKey } from "../../api/client";
+import { mcpAddNote, mcpListNotes, mcpSave, validateApiKey, analyzeDeep, generateConsensus } from "../../api/client";
 import { Sidebar } from "./Sidebar";
 import { MainPanel } from "./MainPanel";
 import { DetailPanel } from "./DetailPanel";
@@ -35,6 +35,10 @@ export function Workspace() {
   const [byokValidating, setByokValidating] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const [notesLoading, setNotesLoading] = useState(false);
+  const [deepAnalyses, setDeepAnalyses] = useState<Record<string, { analysis: DeepAnalysis; pageCount: number; sectionsExtracted: number }>>({});
+  const [analyzingDeep, setAnalyzingDeep] = useState(false);
+  const [consensusResults, setConsensusResults] = useState<Record<string, Consensus>>({});
+  const [generatingConsensus, setGeneratingConsensus] = useState(false);
 
   const fetchNotes = useCallback(async () => {
     setNotesLoading(true);
@@ -132,6 +136,41 @@ export function Workspace() {
     setByokValidated(false);
   };
 
+  const handleAnalyzeDeep = async (paperId: string) => {
+    setAnalyzingDeep(true);
+    try {
+      const data = await analyzeDeep(paperId, provider, apiKey || undefined);
+      setDeepAnalyses((prev) => ({
+        ...prev,
+        [paperId]: {
+          analysis: data.analysis,
+          pageCount: data.page_count,
+          sectionsExtracted: data.sections_extracted,
+        },
+      }));
+      showToast("success", "Deep analysis complete");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Deep analysis failed";
+      showToast("error", msg);
+    } finally {
+      setAnalyzingDeep(false);
+    }
+  };
+
+  const handleGenerateConsensus = async (paperId: string) => {
+    setGeneratingConsensus(true);
+    try {
+      const data = await generateConsensus(paperId, provider, apiKey || undefined);
+      setConsensusResults((prev) => ({ ...prev, [paperId]: data.consensus }));
+      showToast("success", `Consensus generated (${data.consensus.agreement_score.toFixed(0)}% agreement)`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Consensus generation failed";
+      showToast("error", msg);
+    } finally {
+      setGeneratingConsensus(false);
+    }
+  };
+
   if (authLoading) {
     return <div className="workspace" style={{ placeItems: "center", display: "grid" }}>Loading...</div>;
   }
@@ -197,6 +236,12 @@ export function Workspace() {
       <DetailPanel
         paper={selectedPaper}
         analysis={selectedPaper ? analyses[selectedPaper.id] : undefined}
+        deepAnalysis={selectedPaper ? deepAnalyses[selectedPaper.id] : undefined}
+        consensus={selectedPaper ? consensusResults[selectedPaper.id] : undefined}
+        onAnalyzeDeep={handleAnalyzeDeep}
+        onGenerateConsensus={handleGenerateConsensus}
+        analyzingDeep={analyzingDeep}
+        generatingConsensus={generatingConsensus}
       />
     </div>
   );

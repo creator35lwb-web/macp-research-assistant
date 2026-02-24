@@ -482,6 +482,124 @@
 .byok-status.validated { background: rgba(34,197,94,0.15); color: var(--color-success); }
 .byok-status.error { background: rgba(239,68,68,0.15); color: var(--color-error); }
 
+/* ========== Detail Actions ========== */
+.detail-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin: var(--space-sm) 0;
+}
+
+/* ========== Consensus ========== */
+.consensus-header {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-md);
+}
+
+.consensus-score {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.consensus-score-value {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.consensus-score-bar {
+  flex: 1;
+  max-width: 120px;
+  height: 8px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.consensus-score-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.consensus-score-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.consensus-agents {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+.consensus-agent-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(168, 85, 247, 0.15);
+  color: var(--color-graph);
+  font-family: var(--font-mono);
+}
+
+.consensus-convergence li::before {
+  background: var(--color-success);
+}
+
+/* ========== Divergence ========== */
+.divergence-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+
+.divergence-topic {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.divergence-positions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.divergence-position {
+  display: flex;
+  gap: var(--space-sm);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.divergence-agent {
+  font-family: var(--font-mono);
+  color: var(--color-graph);
+  font-weight: 500;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.divergence-text {
+  color: var(--text-secondary);
+}
+
+.divergence-resolution {
+  margin-top: var(--space-xs);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-style: italic;
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--border-subtle);
+}
+
 /* ========== Provenance ========== */
 .provenance {
   font-size: 11px;

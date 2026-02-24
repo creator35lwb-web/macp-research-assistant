@@ -39,19 +39,34 @@ export const analyzePaper = (paper_id: string, provider = "gemini", api_key?: st
     body: JSON.stringify({ paper_id, provider, ...(api_key ? { api_key } : {}) }),
   });
 
+// Helper to unwrap MCP response format { content: [{ type: "text", text: "{...}" }] }
+function parseMcpResponse<T>(data: { content?: { type: string; text: string }[]; isError?: boolean }): T {
+  if (data.isError) {
+    const msg = data.content?.[0]?.text || "MCP request failed";
+    throw new Error(msg);
+  }
+  const text = data.content?.[0]?.text;
+  if (text) return JSON.parse(text) as T;
+  return data as unknown as T;
+}
+
 // Deep Analysis (Phase 3E)
-export const analyzeDeep = (paper_id: string, provider = "gemini", api_key?: string) =>
-  request<import("./types").DeepAnalysisResponse>("/api/mcp/analyze-deep", {
+export const analyzeDeep = async (paper_id: string, provider = "gemini", api_key?: string) => {
+  const raw = await request<Record<string, unknown>>("/api/mcp/analyze-deep", {
     method: "POST",
     body: JSON.stringify({ paper_id, provider, ...(api_key ? { api_key } : {}) }),
   });
+  return parseMcpResponse<import("./types").DeepAnalysisResponse>(raw);
+};
 
 // Consensus Analysis (Phase 3E)
-export const generateConsensus = (paper_id: string, provider = "gemini", api_key?: string) =>
-  request<import("./types").ConsensusResponse>("/api/mcp/consensus", {
+export const generateConsensus = async (paper_id: string, provider = "gemini", api_key?: string) => {
+  const raw = await request<Record<string, unknown>>("/api/mcp/consensus", {
     method: "POST",
     body: JSON.stringify({ paper_id, provider, ...(api_key ? { api_key } : {}) }),
   });
+  return parseMcpResponse<import("./types").ConsensusResponse>(raw);
+};
 
 // Agent Registry (Phase 3E)
 export const getAgents = () =>

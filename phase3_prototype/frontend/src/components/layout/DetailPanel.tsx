@@ -1,14 +1,24 @@
-import type { Analysis, Paper } from "../../api/types";
-import { AnalysisView } from "../analysis/AnalysisView";
+import type { Analysis, DeepAnalysis, Consensus, Paper } from "../../api/types";
+import { AnalysisView, DeepAnalysisView, ConsensusView } from "../analysis/AnalysisView";
 import { PdfPreview } from "../analysis/PdfPreview";
 import { EmptyState } from "../common/EmptyState";
 
 interface DetailPanelProps {
   paper: Paper | null;
   analysis: Analysis | undefined;
+  deepAnalysis?: { analysis: DeepAnalysis; pageCount: number; sectionsExtracted: number } | null;
+  consensus?: Consensus | null;
+  onAnalyzeDeep?: (paperId: string) => void;
+  onGenerateConsensus?: (paperId: string) => void;
+  analyzingDeep?: boolean;
+  generatingConsensus?: boolean;
 }
 
-export function DetailPanel({ paper, analysis }: DetailPanelProps) {
+export function DetailPanel({
+  paper, analysis, deepAnalysis, consensus,
+  onAnalyzeDeep, onGenerateConsensus,
+  analyzingDeep, generatingConsensus,
+}: DetailPanelProps) {
   if (!paper) {
     return (
       <aside className="detail-panel empty">
@@ -40,12 +50,61 @@ export function DetailPanel({ paper, analysis }: DetailPanelProps) {
         </div>
       )}
 
+      {/* Action buttons */}
+      {analysis && (
+        <div className="detail-actions">
+          {onAnalyzeDeep && !deepAnalysis && (
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => onAnalyzeDeep(paper.id)}
+              disabled={analyzingDeep}
+            >
+              {analyzingDeep ? "Analyzing..." : "Deep Analysis"}
+            </button>
+          )}
+          {onGenerateConsensus && (
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => onGenerateConsensus(paper.id)}
+              disabled={generatingConsensus}
+            >
+              {generatingConsensus ? "Generating..." : "Consensus"}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Abstract analysis */}
       {analysis && (
         <div style={{ marginTop: 16 }}>
           <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: "var(--color-analyses)" }}>
             AI Analysis
           </h3>
           <AnalysisView analysis={analysis} />
+        </div>
+      )}
+
+      {/* Deep analysis */}
+      {deepAnalysis && (
+        <div style={{ marginTop: 16 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: "var(--color-papers)" }}>
+            Deep Analysis
+          </h3>
+          <DeepAnalysisView
+            analysis={deepAnalysis.analysis}
+            pageCount={deepAnalysis.pageCount}
+            sectionsExtracted={deepAnalysis.sectionsExtracted}
+          />
+        </div>
+      )}
+
+      {/* Consensus */}
+      {consensus && (
+        <div style={{ marginTop: 16 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: "var(--color-graph)" }}>
+            Multi-Agent Consensus
+          </h3>
+          <ConsensusView consensus={consensus} />
         </div>
       )}
 
