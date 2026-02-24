@@ -217,7 +217,7 @@ async def mcp_search(
         db = SessionLocal()
         try:
             for p in papers:
-                upsert_paper(db, p, user_id=user.id if user else None)
+                upsert_paper(db, p, user_id=None)
         finally:
             db.close()
 
@@ -336,13 +336,15 @@ async def mcp_analyze_deep(
         try:
             pdf_path = download_pdf(arxiv_id)
         except (RuntimeError, ImportError) as e:
-            return mcp_response(f"PDF download failed: {e}", is_error=True)
+            logger.warning("PDF download failed for %s: %s", arxiv_id, e)
+            return mcp_response("PDF download failed. The paper may not have a PDF available.", is_error=True)
 
         # Step 2: Extract text
         try:
             extracted = extract_text(pdf_path)
         except (RuntimeError, ImportError) as e:
-            return mcp_response(f"PDF extraction failed: {e}", is_error=True)
+            logger.warning("PDF extraction failed for %s: %s", arxiv_id, e)
+            return mcp_response("PDF text extraction failed.", is_error=True)
 
         sections = extracted.get("sections", [])
         if not sections:
@@ -493,7 +495,10 @@ async def mcp_library(user: User = Depends(require_user)):
     """List all saved papers in user's library. Auto-hydrates from GitHub on cold start."""
     db = SessionLocal()
     try:
-        papers = db.query(Paper).filter(Paper.user_id == user.id).all()
+        papers = db.query(Paper).filter(
+            Paper.user_id == user.id,
+            Paper.status == "saved",
+        ).all()
 
         # Auto-hydrate from GitHub if DB is empty but user has a connected repo
         if not papers and user.connected_repo:
@@ -756,7 +761,6 @@ async def mcp_consensus(
         agreement_score = compute_agreement_score(analysis_dicts, weights)
 
         # Generate LLM synthesis
-        authors = json.loads(paper.authors) if paper.authors else []
         synthesis = generate_consensus_synthesis(
             title=paper.title,
             analyses=analysis_dicts,

@@ -11,7 +11,6 @@ are persisted to GitHub or the database.
 import json
 import logging
 import os
-from datetime import datetime, timezone
 from typing import Optional
 
 logger = logging.getLogger(__name__)

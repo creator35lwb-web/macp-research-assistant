@@ -16,7 +16,6 @@ import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from datetime import datetime, date
-from pathlib import Path
 from typing import Optional
 
 import jsonschema
