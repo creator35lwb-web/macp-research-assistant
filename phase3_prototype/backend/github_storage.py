@@ -27,6 +27,7 @@ import httpx
 
 from database import SessionLocal, User, Paper, Analysis, Note
 from github_auth import decrypt_token
+from schema_validator import validate_paper_data, validate_analysis_data, validate_consensus_data
 
 logger = logging.getLogger(__name__)
 
@@ -158,9 +159,12 @@ class GitHubStorageService:
     # -----------------------------------------------------------------------
 
     async def save_paper(self, paper: Paper) -> bool:
-        """Save a paper to GitHub."""
+        """Save a paper to GitHub with MACP v2.0 schema validation."""
         arxiv_id = paper.arxiv_id.replace(":", "_")
         data = paper.to_dict()
+        result = validate_paper_data(data)
+        if not result:
+            logger.warning("Paper validation failed for %s: %s", arxiv_id, result.errors)
         return await self._put_file(
             f"{REPO_PREFIX}/papers/{arxiv_id}.json",
             json.dumps(data, indent=2),
@@ -192,18 +196,47 @@ class GitHubStorageService:
         filename = f"{provider}_{date_str}.json"
 
         data = {
+            "arxiv_id": paper.arxiv_id,
             "paper_id": paper.arxiv_id,
             "title": paper.title,
+            "agent_id": provider,
             "provider": provider,
+            "type": full_analysis.get("_meta", {}).get("analysis_type", "abstract"),
             "analysis_type": full_analysis.get("_meta", {}).get("analysis_type", "abstract"),
             "model": full_analysis.get("_meta", {}).get("model", ""),
             "analyzed_at": datetime.now(timezone.utc).isoformat(),
+            "summary": full_analysis.get("summary", ""),
+            "key_findings": full_analysis.get("key_insights") or full_analysis.get("key_contributions", []),
+            "methodology": full_analysis.get("methodology") or full_analysis.get("methodology_detail", ""),
+            "relevance_score": (full_analysis.get("strength_score", 5) or 5) / 10.0,
+            "bias_disclaimer": full_analysis.get("_meta", {}).get("bias_disclaimer", "AI-generated analysis."),
             "analysis": full_analysis,
         }
+
+        result = validate_analysis_data(data)
+        if not result:
+            logger.warning("Analysis validation failed for %s/%s: %s", arxiv_id, provider, result.errors)
+
         return await self._put_file(
             f"{REPO_PREFIX}/analyses/{arxiv_id}/{filename}",
             json.dumps(data, indent=2),
             f"Save {provider} analysis: {paper.title[:50]}",
+        )
+
+    async def save_consensus(self, arxiv_id: str, consensus_data: dict) -> bool:
+        """Save a consensus analysis to GitHub (MACP v2.0).
+
+        Path: .macp/analyses/{arxiv_id}/consensus.json
+        """
+        result = validate_consensus_data(consensus_data)
+        if not result:
+            logger.warning("Consensus validation failed for %s: %s", arxiv_id, result.errors)
+
+        file_id = arxiv_id.replace(":", "_")
+        return await self._put_file(
+            f"{REPO_PREFIX}/analyses/{file_id}/consensus.json",
+            json.dumps(consensus_data, indent=2),
+            f"Save consensus analysis: {arxiv_id}",
         )
 
     async def save_note(self, note: Note) -> bool:

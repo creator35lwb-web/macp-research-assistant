@@ -46,6 +46,17 @@ export const analyzeDeep = (paper_id: string, provider = "gemini", api_key?: str
     body: JSON.stringify({ paper_id, provider, ...(api_key ? { api_key } : {}) }),
   });
 
+// Consensus Analysis (Phase 3E)
+export const generateConsensus = (paper_id: string, provider = "gemini", api_key?: string) =>
+  request<import("./types").ConsensusResponse>("/api/mcp/consensus", {
+    method: "POST",
+    body: JSON.stringify({ paper_id, provider, ...(api_key ? { api_key } : {}) }),
+  });
+
+// Agent Registry (Phase 3E)
+export const getAgents = () =>
+  request<{ content: { type: string; text: string }[] }>("/api/mcp/agents");
+
 // WebMCP endpoints
 export const mcpLibrary = () =>
   request<{ content: { type: string; text: string }[] }>("/api/mcp/library");

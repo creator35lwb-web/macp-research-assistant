@@ -29,7 +29,14 @@ from github_storage import get_storage_service
 # Add tools dir for imports
 sys.path.insert(0, os.path.abspath(TOOLS_DIR))
 from paper_fetcher import fetch_by_id, fetch_by_query, fetch_from_hysts, download_pdf, extract_text
-from llm_providers import analyze_paper as _analyze_paper, analyze_paper_deep as _analyze_deep, PROVIDERS
+from llm_providers import (
+    analyze_paper as _analyze_paper,
+    analyze_paper_deep as _analyze_deep,
+    compute_agreement_score,
+    generate_consensus_synthesis,
+    PROVIDERS,
+)
+from schema_validator import get_consensus_weights, get_consensus_min_agents
 
 logger = logging.getLogger(__name__)
 mcp_router = APIRouter(prefix="/api/mcp", tags=["WebMCP"])
@@ -64,6 +71,12 @@ class McpAnalyzeRequest(BaseModel):
 class McpAnalyzeDeepRequest(BaseModel):
     paper_id: str = Field(..., min_length=1)
     provider: str = Field(default="gemini")
+    api_key: Optional[str] = Field(default=None)
+
+
+class McpConsensusRequest(BaseModel):
+    paper_id: str = Field(..., min_length=1)
+    provider: str = Field(default="gemini", description="LLM provider for synthesis generation")
     api_key: Optional[str] = Field(default=None)
 
 
@@ -143,13 +156,26 @@ async def mcp_discovery():
             "method": "GET",
         },
         {
+            "name": "macp.consensus",
+            "description": "Generate multi-agent consensus analysis for a paper (requires 2+ existing analyses)",
+            "endpoint": "/api/mcp/consensus",
+            "method": "POST",
+            "inputSchema": McpConsensusRequest.model_json_schema(),
+        },
+        {
+            "name": "macp.agents",
+            "description": "List all registered agents with capabilities",
+            "endpoint": "/api/mcp/agents",
+            "method": "GET",
+        },
+        {
             "name": "macp.sync",
             "description": "Force sync between database and GitHub repository",
             "endpoint": "/api/mcp/sync",
             "method": "POST",
         },
     ]
-    return {"tools": tools, "count": len(tools), "version": "0.3.0"}
+    return {"tools": tools, "count": len(tools), "version": "0.4.0"}
 
 
 # ---------------------------------------------------------------------------
@@ -606,7 +632,155 @@ async def mcp_graph(user: Optional[User] = Depends(get_current_user)):
 
 
 # ---------------------------------------------------------------------------
-# 8. Sync
+# 8. Consensus Analysis (Phase 3E — Multi-Agent Convergence)
+# ---------------------------------------------------------------------------
+
+@mcp_router.post("/consensus")
+async def mcp_consensus(
+    request: Request,
+    req: McpConsensusRequest,
+    background_tasks: BackgroundTasks,
+    user: Optional[User] = Depends(get_current_user),
+):
+    """Generate multi-agent consensus analysis for a paper.
+
+    Requires at least 2 existing analyses for the paper.
+    Agreement score uses 40/30/30 weighting from MACP v2.0 schema.
+    """
+    db = SessionLocal()
+    try:
+        if not req.paper_id.startswith("arxiv:"):
+            req.paper_id = f"arxiv:{req.paper_id}"
+        paper = db.query(Paper).filter(Paper.arxiv_id == req.paper_id).first()
+        if not paper:
+            return mcp_response(f"Paper {req.paper_id} not found", is_error=True)
+
+        # Load all existing analyses for this paper
+        db_analyses = db.query(Analysis).filter(Analysis.paper_id == paper.id).all()
+        min_agents = get_consensus_min_agents()
+        if len(db_analyses) < min_agents:
+            return mcp_response(
+                f"Need at least {min_agents} analyses for consensus, found {len(db_analyses)}",
+                is_error=True,
+            )
+
+        # Convert DB analyses to dicts for scoring
+        analysis_dicts = []
+        agents_compared = []
+        for a in db_analyses:
+            agent_id = a.provider or "unknown"
+            if agent_id not in agents_compared:
+                agents_compared.append(agent_id)
+            analysis_dicts.append({
+                "agent_id": agent_id,
+                "summary": a.summary or "",
+                "key_findings": json.loads(a.key_insights) if a.key_insights else [],
+                "methodology": a.methodology or "",
+                "relevance_score": (a.score or 5) / 10.0 if a.score and a.score > 1 else (a.score or 0.5),
+                "strength_score": a.score or 5,
+            })
+
+        # Compute agreement score with schema-defined weights
+        weights = get_consensus_weights()
+        agreement_score = compute_agreement_score(analysis_dicts, weights)
+
+        # Generate LLM synthesis
+        authors = json.loads(paper.authors) if paper.authors else []
+        synthesis = generate_consensus_synthesis(
+            title=paper.title,
+            analyses=analysis_dicts,
+            provider_id=req.provider,
+            api_key_override=req.api_key,
+        )
+
+        # Build consensus object per MACP v2.0 schema
+        now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+        consensus = {
+            "arxiv_id": paper.arxiv_id,
+            "agents_compared": agents_compared,
+            "generated_at": now.isoformat(),
+            "generated_by": req.provider,
+            "agreement_score": agreement_score,
+            "synthesized_summary": (synthesis or {}).get("synthesized_summary", ""),
+            "convergence_points": (synthesis or {}).get("convergence_points", []),
+            "divergence_points": (synthesis or {}).get("divergence_points", []),
+            "recommended_action": (synthesis or {}).get("recommended_action", "read_full_paper"),
+            "bias_cross_check": (synthesis or {}).get("bias_cross_check", ""),
+            "confidence_distribution": {
+                a["agent_id"]: a["relevance_score"] for a in analysis_dicts
+            },
+        }
+
+        # If LLM synthesis failed, build a basic consensus from analysis data
+        if not synthesis:
+            all_findings = []
+            for a in analysis_dicts:
+                all_findings.extend(a.get("key_findings", []))
+            # Deduplicate findings
+            seen = set()
+            unique_findings = []
+            for f in all_findings:
+                f_lower = f.lower().strip()
+                if f_lower not in seen:
+                    seen.add(f_lower)
+                    unique_findings.append(f)
+            consensus["synthesized_summary"] = f"Consensus from {len(agents_compared)} agents. Agreement score: {agreement_score:.2f}."
+            consensus["convergence_points"] = unique_findings[:5]
+
+        # GitHub dual-write
+        if user:
+            storage = get_storage_service(user)
+            if storage:
+                async def _sync_consensus():
+                    await storage.save_consensus(paper.arxiv_id, consensus)
+                    await storage.update_manifest_entry("analyses", paper.arxiv_id, {
+                        "consensus": {
+                            "agreement_score": agreement_score,
+                            "agents": agents_compared,
+                            "generated_at": now.isoformat(),
+                        },
+                    })
+                background_tasks.add_task(_sync_consensus)
+
+        return mcp_response({
+            "paper_id": paper.arxiv_id,
+            "consensus": consensus,
+        })
+
+    except Exception as e:
+        logger.exception("Consensus generation failed")
+        return mcp_response("Consensus generation failed. Please try again.", is_error=True)
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# 9. Agents Registry
+# ---------------------------------------------------------------------------
+
+@mcp_router.get("/agents")
+async def mcp_agents():
+    """List all registered agents from .macp/agents/ directory."""
+    agents_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        ".macp", "agents",
+    )
+    agents = []
+    if os.path.isdir(agents_dir):
+        for fname in sorted(os.listdir(agents_dir)):
+            if fname.endswith(".json"):
+                try:
+                    with open(os.path.join(agents_dir, fname), "r", encoding="utf-8") as f:
+                        agent_data = json.load(f)
+                    agents.append(agent_data)
+                except (json.JSONDecodeError, OSError) as e:
+                    logger.warning("Failed to load agent %s: %s", fname, e)
+
+    return mcp_response({"agents": agents, "count": len(agents)})
+
+
+# ---------------------------------------------------------------------------
+# 10. Sync
 # ---------------------------------------------------------------------------
 
 @mcp_router.post("/sync")

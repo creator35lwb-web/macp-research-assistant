@@ -113,4 +113,42 @@ export interface DeepAnalysisResponse {
   analysis: DeepAnalysis;
 }
 
+export interface DivergencePoint {
+  topic: string;
+  positions: Record<string, string>;
+  resolution?: string;
+}
+
+export interface Consensus {
+  arxiv_id: string;
+  agents_compared: string[];
+  generated_at: string;
+  generated_by: string;
+  agreement_score: number;
+  synthesized_summary: string;
+  convergence_points: string[];
+  divergence_points: DivergencePoint[];
+  recommended_action?: string;
+  bias_cross_check?: string;
+  confidence_distribution?: Record<string, number>;
+}
+
+export interface ConsensusResponse {
+  paper_id: string;
+  consensus: Consensus;
+}
+
+export interface Agent {
+  agent_id: string;
+  name: string;
+  model: string;
+  capabilities: string[];
+  strengths: string;
+  cost_tier: "free" | "freemium" | "paid" | "enterprise";
+  api_endpoint?: string;
+  env_key?: string | null;
+  registered_at: string;
+  config?: Record<string, unknown>;
+}
+
 export type ViewMode = "search" | "library" | "graph" | "notes";
