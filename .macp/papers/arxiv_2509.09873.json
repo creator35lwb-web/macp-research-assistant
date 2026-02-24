@@ -1,0 +1,16 @@
+{
+  "id": "arxiv:2509.09873",
+  "title": "From Hugging Face to GitHub: Tracing License Drift in the Open-Source AI Ecosystem",
+  "authors": [
+    "James Jewitt",
+    "Hao Li",
+    "Bram Adams",
+    "Gopi Krishnan Rajbahadur",
+    "Ahmed E. Hassan"
+  ],
+  "abstract": "Hidden license conflicts in the open-source AI ecosystem pose serious legal and ethical risks, exposing organizations to potential litigation and users to undisclosed risk. However, the field lacks a data-driven understanding of how frequently these conflicts occur, where they originate, and which communities are most affected. We present the first end-to-end audit of licenses for datasets and models on Hugging Face, as well as their downstream integration into open-source software applications, covering 364 thousand datasets, 1.6 million models, and 140 thousand GitHub projects. Our empirical analysis reveals systemic non-compliance in which 35.5% of model-to-application transitions eliminate restrictive license clauses by relicensing under permissive terms. In addition, we prototype an extensible rule engine that encodes almost 200 SPDX and model-specific clauses for detecting license conflicts, which can solve 86.4% of license conflicts in software applications. To support future research, we release our dataset and the prototype engine. Our study highlights license compliance as a critical governance challenge in open-source AI and provides both the data and tools necessary to enable automated, AI-aware compliance at scale.",
+  "url": "https://huggingface.co/papers/2509.09873",
+  "status": "saved",
+  "source": "hysts_dataset",
+  "added_at": "2026-02-24T14:49:12.810521"
+}
