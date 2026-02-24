@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Analysis, DeepAnalysis, Consensus, Paper } from "../../api/types";
 import { AnalysisView, DeepAnalysisView, ConsensusView } from "../analysis/AnalysisView";
 import { PdfPreview } from "../analysis/PdfPreview";
@@ -19,6 +20,8 @@ export function DetailPanel({
   onAnalyzeDeep, onGenerateConsensus,
   analyzingDeep, generatingConsensus,
 }: DetailPanelProps) {
+  const [overviewCollapsed, setOverviewCollapsed] = useState(false);
+
   if (!paper) {
     return (
       <aside className="detail-panel empty">
@@ -29,26 +32,37 @@ export function DetailPanel({
 
   return (
     <aside className="detail-panel">
-      <h2 style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.4, marginBottom: 8 }}>
-        {paper.title}
-      </h2>
+      {/* Paper Overview — collapsible */}
+      <div className="detail-card detail-card--overview">
+        <button
+          className="detail-card-header"
+          onClick={() => setOverviewCollapsed(!overviewCollapsed)}
+          aria-expanded={!overviewCollapsed}
+        >
+          <h2 className="detail-card-title">{paper.title}</h2>
+          <span className="detail-card-toggle">{overviewCollapsed ? "+" : "\u2212"}</span>
+        </button>
 
-      <span className={`status-badge status-${paper.status}`} style={{ marginBottom: 12, display: "inline-block" }}>
-        {paper.status}
-      </span>
+        {!overviewCollapsed && (
+          <div className="detail-card-body">
+            <div className="detail-meta-row">
+              <span className={`status-badge status-${paper.status}`}>{paper.status}</span>
+              <code className="detail-paper-id">{paper.id}</code>
+            </div>
 
-      {paper.authors.length > 0 && (
-        <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16 }}>
-          {paper.authors.join(", ")}
-        </div>
-      )}
+            {paper.authors.length > 0 && (
+              <div className="detail-authors">{paper.authors.join(", ")}</div>
+            )}
 
-      {paper.abstract && (
-        <div className="analysis-section">
-          <h4>Abstract</h4>
-          <p className="analysis-summary">{paper.abstract}</p>
-        </div>
-      )}
+            {paper.abstract && (
+              <div className="detail-abstract">
+                <h4>Abstract</h4>
+                <p className="analysis-summary">{paper.abstract}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Action buttons */}
       {analysis && (
@@ -74,22 +88,24 @@ export function DetailPanel({
         </div>
       )}
 
-      {/* Abstract analysis */}
+      {/* Abstract analysis — boxed */}
       {analysis && (
-        <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: "var(--color-analyses)" }}>
+        <div className="detail-card detail-card--analysis">
+          <div className="detail-card-label">
+            <span className="detail-card-dot" style={{ background: "var(--color-analyses)" }} />
             AI Analysis
-          </h3>
+          </div>
           <AnalysisView analysis={analysis} />
         </div>
       )}
 
-      {/* Deep analysis */}
+      {/* Deep analysis — boxed */}
       {deepAnalysis && (
-        <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: "var(--color-papers)" }}>
+        <div className="detail-card detail-card--deep">
+          <div className="detail-card-label">
+            <span className="detail-card-dot" style={{ background: "var(--color-papers)" }} />
             Deep Analysis
-          </h3>
+          </div>
           <DeepAnalysisView
             analysis={deepAnalysis.analysis}
             pageCount={deepAnalysis.pageCount}
@@ -98,17 +114,22 @@ export function DetailPanel({
         </div>
       )}
 
-      {/* Consensus */}
+      {/* Consensus — boxed */}
       {consensus && (
-        <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: "var(--color-graph)" }}>
+        <div className="detail-card detail-card--consensus">
+          <div className="detail-card-label">
+            <span className="detail-card-dot" style={{ background: "var(--color-graph)" }} />
             Multi-Agent Consensus
-          </h3>
+          </div>
           <ConsensusView consensus={consensus} />
         </div>
       )}
 
-      <div style={{ marginTop: 16 }}>
+      <div className="detail-card detail-card--pdf">
+        <div className="detail-card-label">
+          <span className="detail-card-dot" style={{ background: "var(--text-tertiary)" }} />
+          PDF Preview
+        </div>
         <PdfPreview arxivId={paper.id} />
       </div>
     </aside>

@@ -26,6 +26,7 @@ const NAV_ITEMS: { id: ViewMode; label: string; color: string }[] = [
   { id: "library", label: "My Library", color: "var(--color-papers)" },
   { id: "graph", label: "Knowledge Graph", color: "var(--color-graph)" },
   { id: "notes", label: "Research Notes", color: "var(--color-notes)" },
+  { id: "agents", label: "Agent Registry", color: "var(--color-graph)" },
 ];
 
 export function Sidebar({

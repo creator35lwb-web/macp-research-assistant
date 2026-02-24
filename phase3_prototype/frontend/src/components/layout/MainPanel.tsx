@@ -1,10 +1,11 @@
-import type { Paper, ViewMode, Note } from "../../api/types";
+import type { Paper, ViewMode, Note, Agent } from "../../api/types";
 import type { Analysis } from "../../api/types";
 import { SearchBar } from "../search/SearchBar";
 import { PaperCard } from "../search/PaperCard";
 import { PaperSkeleton } from "../common/Skeleton";
 import { EmptyState } from "../common/EmptyState";
 import { NoteEditor } from "../notes/NoteEditor";
+import { AgentRegistry } from "../agents/AgentRegistry";
 
 interface MainPanelProps {
   view: ViewMode;
@@ -46,6 +47,10 @@ interface MainPanelProps {
   // Notes
   notes?: Note[];
   notesLoading?: boolean;
+  // Agents
+  agents?: Agent[];
+  agentsLoading?: boolean;
+  onFetchAgents?: () => void;
 }
 
 export function MainPanel({
@@ -57,6 +62,7 @@ export function MainPanel({
   byokValidated, byokValidating, onValidateKey, onClearKey,
   hasMore, onLoadMore, loadingMore,
   notes, notesLoading,
+  agents, agentsLoading, onFetchAgents,
 }: MainPanelProps) {
   if (view === "search") {
     return (
@@ -208,6 +214,18 @@ export function MainPanel({
             </div>
           </div>
         ))}
+      </main>
+    );
+  }
+
+  if (view === "agents") {
+    return (
+      <main className="main-panel">
+        <AgentRegistry
+          agents={agents || []}
+          loading={agentsLoading || false}
+          onRefresh={onFetchAgents || (() => {})}
+        />
       </main>
     );
   }

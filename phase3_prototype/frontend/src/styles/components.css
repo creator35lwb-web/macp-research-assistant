@@ -482,11 +482,119 @@
 .byok-status.validated { background: rgba(34,197,94,0.15); color: var(--color-success); }
 .byok-status.error { background: rgba(239,68,68,0.15); color: var(--color-error); }
 
+/* ========== Detail Cards (boxed sections) ========== */
+.detail-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.detail-card--overview {
+  background: var(--bg-primary);
+  border-color: var(--border-default);
+}
+
+.detail-card--analysis { border-left: 3px solid var(--color-analyses); }
+.detail-card--deep { border-left: 3px solid var(--color-papers); }
+.detail-card--consensus { border-left: 3px solid var(--color-graph); }
+.detail-card--pdf { border-left: 3px solid var(--text-tertiary); }
+
+.detail-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+}
+
+.detail-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.detail-card-toggle {
+  font-size: 18px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+  line-height: 1;
+}
+
+.detail-card-body {
+  margin-top: var(--space-sm);
+}
+
+.detail-card-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.detail-card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.detail-meta-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.detail-paper-id {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.detail-authors {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+  line-height: 1.5;
+}
+
+.detail-abstract {
+  margin-top: var(--space-sm);
+}
+
+.detail-abstract h4 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-sm);
+}
+
 /* ========== Detail Actions ========== */
 .detail-actions {
   display: flex;
   gap: var(--space-sm);
-  margin: var(--space-sm) 0;
+  margin-bottom: var(--space-md);
 }
 
 /* ========== Consensus ========== */
@@ -598,6 +706,87 @@
   font-style: italic;
   padding-top: var(--space-xs);
   border-top: 1px solid var(--border-subtle);
+}
+
+/* ========== Agent Registry ========== */
+.agent-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.agent-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  transition: border-color 0.15s;
+}
+
+.agent-card:hover {
+  border-color: var(--color-graph);
+}
+
+.agent-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
+.agent-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.agent-cost-badge {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.agent-model {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-sm);
+}
+
+.agent-strengths {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: var(--space-sm);
+}
+
+.agent-capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+
+.agent-capability-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(168, 85, 247, 0.12);
+  color: var(--color-graph);
+}
+
+.agent-footer {
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.agent-key-hint {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
 }
 
 /* ========== Provenance ========== */

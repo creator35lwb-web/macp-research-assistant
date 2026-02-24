@@ -86,18 +86,27 @@
   gap: var(--space-md);
 }
 
-/* Detail Panel */
+/* Detail Panel — resizable */
 .detail-panel {
   background: var(--bg-secondary);
   border-left: 1px solid var(--border-subtle);
   overflow-y: auto;
   padding: var(--space-lg);
+  min-width: 320px;
+  max-width: 700px;
+  resize: horizontal;
+  direction: rtl;          /* puts the resize handle on the left edge */
+}
+
+.detail-panel > * {
+  direction: ltr;          /* reset text direction for children */
 }
 
 .detail-panel.empty {
   display: flex;
   align-items: center;
   justify-content: center;
+  resize: none;
 }
 
 /* Responsive: collapse to single column */

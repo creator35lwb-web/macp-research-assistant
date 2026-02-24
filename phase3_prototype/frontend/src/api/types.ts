@@ -151,4 +151,4 @@ export interface Agent {
   config?: Record<string, unknown>;
 }
 
-export type ViewMode = "search" | "library" | "graph" | "notes";
+export type ViewMode = "search" | "library" | "graph" | "notes" | "agents";

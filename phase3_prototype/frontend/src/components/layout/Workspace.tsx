@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react";
-import type { Note, ViewMode, DeepAnalysis, Consensus } from "../../api/types";
+import type { Note, ViewMode, DeepAnalysis, Consensus, Agent } from "../../api/types";
 import { useAuth } from "../../hooks/useAuth";
 import { usePapers } from "../../hooks/usePapers";
 import { useGraph } from "../../hooks/useGraph";
 import { useGitHub } from "../../hooks/useGitHub";
-import { mcpAddNote, mcpListNotes, mcpSave, validateApiKey, analyzeDeep, generateConsensus } from "../../api/client";
+import { mcpAddNote, mcpListNotes, mcpSave, validateApiKey, analyzeDeep, generateConsensus, getAgents } from "../../api/client";
 import { Sidebar } from "./Sidebar";
 import { MainPanel } from "./MainPanel";
 import { DetailPanel } from "./DetailPanel";
@@ -39,6 +39,8 @@ export function Workspace() {
   const [analyzingDeep, setAnalyzingDeep] = useState(false);
   const [consensusResults, setConsensusResults] = useState<Record<string, Consensus>>({});
   const [generatingConsensus, setGeneratingConsensus] = useState(false);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [agentsLoading, setAgentsLoading] = useState(false);
 
   const fetchNotes = useCallback(async () => {
     setNotesLoading(true);
@@ -53,6 +55,22 @@ export function Workspace() {
       setNotes([]);
     } finally {
       setNotesLoading(false);
+    }
+  }, []);
+
+  const fetchAgents = useCallback(async () => {
+    setAgentsLoading(true);
+    try {
+      const data = await getAgents();
+      const text = data.content?.[0]?.text;
+      if (text) {
+        const parsed = JSON.parse(text);
+        setAgents(parsed.agents || []);
+      }
+    } catch {
+      setAgents([]);
+    } finally {
+      setAgentsLoading(false);
     }
   }, []);
 
@@ -87,6 +105,9 @@ export function Workspace() {
     }
     if (view === "notes" && user) {
       fetchNotes();
+    }
+    if (view === "agents") {
+      fetchAgents();
     }
   };
 
@@ -229,6 +250,9 @@ export function Workspace() {
             loadingMore={loadingMore}
             notes={notes}
             notesLoading={notesLoading}
+            agents={agents}
+            agentsLoading={agentsLoading}
+            onFetchAgents={fetchAgents}
           />
         )}
       </ErrorBoundary>
