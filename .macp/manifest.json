@@ -2,9 +2,15 @@
   "version": "2.0",
   "schema": "macp-research",
   "created_at": "2026-02-24T14:48:20.958936+00:00",
-  "updated_at": "2026-02-24T14:48:20.958951+00:00",
+  "updated_at": "2026-02-24T14:51:41.855426+00:00",
   "owner": "creator35lwb-web",
-  "papers": {},
+  "papers": {
+    "arxiv:2509.09873": {
+      "title": "From Hugging Face to GitHub: Tracing License Drift in the Open-Source AI Ecosyst",
+      "saved_at": "2026-02-24T14:51:40.071577+00:00",
+      "status": "saved"
+    }
+  },
   "analyses": {},
   "notes": {}
 }
