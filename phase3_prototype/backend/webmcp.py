@@ -222,7 +222,7 @@ async def mcp_search(
             db.close()
 
         return mcp_response({"results": papers, "count": len(papers)})
-    except Exception as e:
+    except Exception:
         logger.exception("Search failed")
         return mcp_response("Search failed. Please try again.", is_error=True)
 
@@ -299,7 +299,7 @@ async def mcp_analyze(
 
         return mcp_response({"paper_id": paper.arxiv_id, "analysis": analysis})
 
-    except Exception as e:
+    except Exception:
         logger.exception("Analysis failed")
         return mcp_response("Analysis failed. Please try again.", is_error=True)
     finally:
@@ -409,7 +409,7 @@ async def mcp_analyze_deep(
             "analysis": analysis,
         })
 
-    except Exception as e:
+    except Exception:
         logger.exception("Deep analysis failed")
         return mcp_response("Deep analysis failed. Please try again.", is_error=True)
     finally:
@@ -686,7 +686,7 @@ async def mcp_deep_research(
             "research": result,
         })
 
-    except Exception as e:
+    except Exception:
         logger.exception("Deep research failed")
         return mcp_response("Deep research failed. Please try again.", is_error=True)
     finally:
@@ -822,7 +822,7 @@ async def mcp_consensus(
             "consensus": consensus,
         })
 
-    except Exception as e:
+    except Exception:
         logger.exception("Consensus generation failed")
         return mcp_response("Consensus generation failed. Please try again.", is_error=True)
     finally:
