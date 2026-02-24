@@ -2,9 +2,15 @@
   "version": "2.0",
   "schema": "macp-research",
   "created_at": "2026-02-24T20:15:46.898959+00:00",
-  "updated_at": "2026-02-24T20:15:46.898977+00:00",
+  "updated_at": "2026-02-24T20:17:34.954571+00:00",
   "owner": "creator35lwb-web",
-  "papers": {},
+  "papers": {
+    "arxiv:2412.12004": {
+      "title": "The Open Source Advantage in Large Language Models (LLMs)",
+      "saved_at": "2026-02-24T20:17:32.354214+00:00",
+      "status": "saved"
+    }
+  },
   "analyses": {},
   "notes": {}
 }
