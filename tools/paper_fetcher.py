@@ -16,10 +16,21 @@ import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from datetime import datetime, date
+from pathlib import Path
 from typing import Optional
 
 import jsonschema
 import requests
+
+try:
+    import fitz  # PyMuPDF
+except ImportError:
+    fitz = None
+
+try:
+    import httpx as _httpx
+except ImportError:
+    _httpx = None
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -516,6 +527,166 @@ def fetch_hysts_by_date(target_date: str, limit: int = 50) -> list[dict]:
             extra=extra if extra else None,
         ))
     return papers
+
+
+# ---------------------------------------------------------------------------
+# PDF Download & Text Extraction (Phase 3E — Deep Analysis)
+# ---------------------------------------------------------------------------
+
+ARXIV_PDF_URL = "https://arxiv.org/pdf/{arxiv_id}"
+MAX_PDF_PAGES = 50
+MAX_SECTION_BYTES = 100_000  # 100KB per section
+
+# Common section headings in academic papers
+_SECTION_HEADINGS = [
+    "abstract", "introduction", "related work", "background",
+    "method", "methodology", "approach", "model", "architecture",
+    "experiments", "experimental setup", "evaluation",
+    "results", "discussion", "analysis",
+    "conclusion", "conclusions", "future work",
+    "limitations", "acknowledgments", "acknowledgements", "references",
+]
+
+# Regex: line that looks like a section heading (numbered or unnumbered, title case or all caps)
+_HEADING_RE = re.compile(
+    r"^(?:\d+\.?\s+)?"  # optional numbering: "1. " or "3 "
+    r"("
+    + "|".join(re.escape(h) for h in _SECTION_HEADINGS)
+    + r")"
+    r"[\s:]*$",
+    re.IGNORECASE,
+)
+
+
+def download_pdf(arxiv_id: str, dest_dir: str | None = None) -> str:
+    """
+    Download a PDF from arXiv.
+
+    Args:
+        arxiv_id: Validated arXiv identifier (e.g. "2602.06570").
+        dest_dir: Directory to save the PDF. Defaults to system temp dir.
+
+    Returns:
+        Path to the downloaded PDF file.
+
+    Raises:
+        RuntimeError: If download fails.
+        ImportError: If httpx is not available.
+    """
+    arxiv_id = validate_arxiv_id(arxiv_id)
+
+    if _httpx is None:
+        raise ImportError("httpx is required for PDF download. Install with: pip install httpx")
+
+    url = ARXIV_PDF_URL.format(arxiv_id=arxiv_id)
+    dest_dir = dest_dir or tempfile.gettempdir()
+    os.makedirs(dest_dir, exist_ok=True)
+    pdf_path = os.path.join(dest_dir, f"{arxiv_id.replace('/', '_')}.pdf")
+
+    # Skip download if already cached
+    if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 1000:
+        return pdf_path
+
+    try:
+        with _httpx.Client(timeout=120, follow_redirects=True) as client:
+            resp = client.get(url)
+            resp.raise_for_status()
+            with open(pdf_path, "wb") as f:
+                f.write(resp.content)
+    except Exception as e:
+        raise RuntimeError(f"Failed to download PDF for {arxiv_id}: {e}") from e
+
+    if not os.path.exists(pdf_path) or os.path.getsize(pdf_path) < 1000:
+        raise RuntimeError(f"Downloaded PDF for {arxiv_id} is too small or missing")
+
+    return pdf_path
+
+
+def extract_text(pdf_path: str) -> dict:
+    """
+    Extract structured text from a PDF using PyMuPDF.
+
+    Args:
+        pdf_path: Path to a PDF file.
+
+    Returns:
+        {
+            "sections": [{"title": str, "content": str}],
+            "full_text": str,
+            "page_count": int
+        }
+
+    Raises:
+        ImportError: If PyMuPDF (fitz) is not installed.
+        RuntimeError: If extraction fails.
+    """
+    if fitz is None:
+        raise ImportError("PyMuPDF is required for PDF extraction. Install with: pip install PyMuPDF")
+
+    try:
+        doc = fitz.open(pdf_path)
+    except Exception as e:
+        raise RuntimeError(f"Failed to open PDF: {e}") from e
+
+    page_count = len(doc)
+    if page_count > MAX_PDF_PAGES:
+        print(f"[WARN] PDF has {page_count} pages, truncating to {MAX_PDF_PAGES}", file=sys.stderr)
+
+    # Extract text from all pages (up to limit)
+    all_text = []
+    for page_num in range(min(page_count, MAX_PDF_PAGES)):
+        page = doc[page_num]
+        all_text.append(page.get_text("text"))
+    doc.close()
+
+    full_text = "\n".join(all_text)
+
+    # Split into sections by detecting headings
+    sections = _split_into_sections(full_text)
+
+    return {
+        "sections": sections,
+        "full_text": full_text[:MAX_SECTION_BYTES * 10],  # cap total at ~1MB
+        "page_count": page_count,
+    }
+
+
+def _split_into_sections(text: str) -> list[dict]:
+    """Split extracted text into sections based on heading detection."""
+    lines = text.split("\n")
+    sections = []
+    current_title = "Preamble"
+    current_content = []
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            current_content.append("")
+            continue
+
+        match = _HEADING_RE.match(stripped)
+        if match:
+            # Save previous section
+            content = "\n".join(current_content).strip()
+            if content:
+                sections.append({
+                    "title": current_title,
+                    "content": content[:MAX_SECTION_BYTES],
+                })
+            current_title = stripped.rstrip(":")
+            current_content = []
+        else:
+            current_content.append(line)
+
+    # Save final section
+    content = "\n".join(current_content).strip()
+    if content:
+        sections.append({
+            "title": current_title,
+            "content": content[:MAX_SECTION_BYTES],
+        })
+
+    return sections
 
 
 # ---------------------------------------------------------------------------

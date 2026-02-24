@@ -81,4 +81,36 @@ export interface GitHubRepo {
   description: string;
 }
 
+export interface SectionAnalysis {
+  pass: "overview" | "methodology" | "results";
+  data: Record<string, unknown>;
+}
+
+export interface DeepAnalysis {
+  summary: string;
+  methodology_detail: string;
+  key_contributions: string[];
+  limitations: string[];
+  future_work: string[];
+  strength_score: number;
+  relevance_tags: string[];
+  research_gaps: string[];
+  section_analyses: SectionAnalysis[];
+  _meta?: {
+    bias_disclaimer: string;
+    analysis_type: string;
+    provider: string;
+    model: string;
+    passes: number;
+  };
+}
+
+export interface DeepAnalysisResponse {
+  paper_id: string;
+  analysis_type: "deep";
+  page_count: number;
+  sections_extracted: number;
+  analysis: DeepAnalysis;
+}
+
 export type ViewMode = "search" | "library" | "graph" | "notes";

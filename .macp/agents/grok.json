@@ -1,0 +1,15 @@
+{
+  "agent_id": "grok",
+  "name": "xAI Grok",
+  "model": "grok-3",
+  "capabilities": ["abstract_analysis", "deep_analysis"],
+  "strengths": "Real-time knowledge, contrarian perspectives, strong at identifying unconventional research angles",
+  "cost_tier": "paid",
+  "api_endpoint": "https://api.x.ai/v1",
+  "env_key": "GROK_API_KEY",
+  "registered_at": "2026-02-24",
+  "config": {
+    "temperature": 0.3,
+    "max_tokens": 4096
+  }
+}

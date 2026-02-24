@@ -168,7 +168,7 @@ class GitHubStorageService:
         )
 
     async def save_analysis(self, paper: Paper, analysis: Analysis) -> bool:
-        """Save an analysis to GitHub."""
+        """Save an analysis to GitHub (legacy single-file format)."""
         arxiv_id = paper.arxiv_id.replace(":", "_")
         data = {
             "paper": paper.to_dict(),
@@ -179,6 +179,31 @@ class GitHubStorageService:
             f"{REPO_PREFIX}/analyses/{arxiv_id}.json",
             json.dumps(data, indent=2),
             f"Save analysis: {paper.title[:60]}",
+        )
+
+    async def save_analysis_per_agent(self, paper: Paper, db_analysis: Analysis, full_analysis: dict) -> bool:
+        """Save an analysis to per-agent path (MACP v2.0).
+
+        Path: .macp/analyses/{arxiv_id}/{provider}_{YYYYMMDD}.json
+        """
+        arxiv_id = paper.arxiv_id.replace(":", "_")
+        provider = db_analysis.provider or "unknown"
+        date_str = datetime.now(timezone.utc).strftime("%Y%m%d")
+        filename = f"{provider}_{date_str}.json"
+
+        data = {
+            "paper_id": paper.arxiv_id,
+            "title": paper.title,
+            "provider": provider,
+            "analysis_type": full_analysis.get("_meta", {}).get("analysis_type", "abstract"),
+            "model": full_analysis.get("_meta", {}).get("model", ""),
+            "analyzed_at": datetime.now(timezone.utc).isoformat(),
+            "analysis": full_analysis,
+        }
+        return await self._put_file(
+            f"{REPO_PREFIX}/analyses/{arxiv_id}/{filename}",
+            json.dumps(data, indent=2),
+            f"Save {provider} analysis: {paper.title[:50]}",
         )
 
     async def save_note(self, note: Note) -> bool:

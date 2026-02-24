@@ -28,8 +28,8 @@ from github_storage import get_storage_service
 
 # Add tools dir for imports
 sys.path.insert(0, os.path.abspath(TOOLS_DIR))
-from paper_fetcher import fetch_by_id, fetch_by_query, fetch_from_hysts
-from llm_providers import analyze_paper as _analyze_paper, PROVIDERS
+from paper_fetcher import fetch_by_id, fetch_by_query, fetch_from_hysts, download_pdf, extract_text
+from llm_providers import analyze_paper as _analyze_paper, analyze_paper_deep as _analyze_deep, PROVIDERS
 
 logger = logging.getLogger(__name__)
 mcp_router = APIRouter(prefix="/api/mcp", tags=["WebMCP"])
@@ -56,6 +56,12 @@ class McpSearchRequest(BaseModel):
 
 
 class McpAnalyzeRequest(BaseModel):
+    paper_id: str = Field(..., min_length=1)
+    provider: str = Field(default="gemini")
+    api_key: Optional[str] = Field(default=None)
+
+
+class McpAnalyzeDeepRequest(BaseModel):
     paper_id: str = Field(..., min_length=1)
     provider: str = Field(default="gemini")
     api_key: Optional[str] = Field(default=None)
@@ -96,6 +102,13 @@ async def mcp_discovery():
             "endpoint": "/api/mcp/analyze",
             "method": "POST",
             "inputSchema": McpAnalyzeRequest.model_json_schema(),
+        },
+        {
+            "name": "macp.analyze-deep",
+            "description": "Deep full-text analysis of a paper using PDF extraction and multi-pass LLM",
+            "endpoint": "/api/mcp/analyze-deep",
+            "method": "POST",
+            "inputSchema": McpAnalyzeDeepRequest.model_json_schema(),
         },
         {
             "name": "macp.save",
@@ -228,16 +241,19 @@ async def mcp_analyze(
         paper.status = "analyzed"
         db.commit()
 
-        # GitHub dual-write: save analysis + update manifest
+        # GitHub dual-write: save analysis with per-agent path (MACP v2.0)
         if user:
             storage = get_storage_service(user)
             if storage:
                 async def _sync_analysis():
-                    await storage.save_analysis(paper, db_analysis)
+                    await storage.save_analysis_per_agent(paper, db_analysis, analysis)
                     await storage.update_manifest_entry("analyses", paper.arxiv_id, {
-                        "provider": req.provider,
-                        "analyzed_at": __import__("datetime").datetime.now(
-                            __import__("datetime").timezone.utc).isoformat(),
+                        "providers": [{
+                            "provider": req.provider,
+                            "type": "abstract",
+                            "analyzed_at": __import__("datetime").datetime.now(
+                                __import__("datetime").timezone.utc).isoformat(),
+                        }],
                     })
                 background_tasks.add_task(_sync_analysis)
 
@@ -246,6 +262,114 @@ async def mcp_analyze(
     except Exception as e:
         logger.exception("Analysis failed")
         return mcp_response("Analysis failed. Please try again.", is_error=True)
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# 2b. Deep Analysis (Phase 3E — full-text multi-pass)
+# ---------------------------------------------------------------------------
+
+@mcp_router.post("/analyze-deep")
+async def mcp_analyze_deep(
+    request: Request,
+    req: McpAnalyzeDeepRequest,
+    background_tasks: BackgroundTasks,
+    user: Optional[User] = Depends(get_current_user),
+):
+    """Deep full-text analysis: download PDF, extract text, multi-pass LLM analysis."""
+    db = SessionLocal()
+    try:
+        if not req.paper_id.startswith("arxiv:"):
+            req.paper_id = f"arxiv:{req.paper_id}"
+        paper = db.query(Paper).filter(Paper.arxiv_id == req.paper_id).first()
+        if not paper:
+            return mcp_response(f"Paper {req.paper_id} not found", is_error=True)
+
+        if req.provider not in PROVIDERS:
+            return mcp_response(f"Unknown provider: {req.provider}", is_error=True)
+
+        # Extract arXiv ID for PDF download
+        arxiv_id = paper.arxiv_id.replace("arxiv:", "")
+
+        # Step 1: Download PDF
+        try:
+            pdf_path = download_pdf(arxiv_id)
+        except (RuntimeError, ImportError) as e:
+            return mcp_response(f"PDF download failed: {e}", is_error=True)
+
+        # Step 2: Extract text
+        try:
+            extracted = extract_text(pdf_path)
+        except (RuntimeError, ImportError) as e:
+            return mcp_response(f"PDF extraction failed: {e}", is_error=True)
+
+        sections = extracted.get("sections", [])
+        if not sections:
+            return mcp_response("No text could be extracted from PDF", is_error=True)
+
+        # Step 3: Multi-pass deep analysis
+        config = PROVIDERS[req.provider]
+        authors = json.loads(paper.authors) if paper.authors else []
+
+        analysis = _analyze_deep(
+            title=paper.title,
+            authors=authors,
+            sections=sections,
+            provider_id=req.provider,
+            api_key_override=req.api_key,
+        )
+
+        if not analysis:
+            return mcp_response("Deep analysis returned empty result", is_error=True)
+
+        # Step 4: Save to DB
+        provenance = json.dumps({
+            "provider": req.provider, "model": config["model"],
+            "type": "deep", "page_count": extracted.get("page_count", 0),
+        })
+        db_analysis = Analysis(
+            paper_id=paper.id, user_id=user.id if user else None,
+            provider=req.provider,
+            summary=analysis.get("summary", ""),
+            key_insights=json.dumps(analysis.get("key_contributions", [])),
+            methodology=analysis.get("methodology_detail", ""),
+            research_gaps=json.dumps(analysis.get("research_gaps", [])),
+            relevance_tags=json.dumps(analysis.get("relevance_tags", [])),
+            score=analysis.get("strength_score", 0),
+            provenance=provenance,
+        )
+        db.add(db_analysis)
+        paper.status = "analyzed"
+        db.commit()
+
+        # Step 5: GitHub dual-write with per-agent path (MACP v2.0)
+        if user:
+            storage = get_storage_service(user)
+            if storage:
+                async def _sync_deep_analysis():
+                    await storage.save_analysis_per_agent(paper, db_analysis, analysis)
+                    await storage.update_manifest_entry("analyses", paper.arxiv_id, {
+                        "providers": [{
+                            "provider": req.provider,
+                            "type": "deep",
+                            "analyzed_at": __import__("datetime").datetime.now(
+                                __import__("datetime").timezone.utc).isoformat(),
+                        }],
+                    })
+                background_tasks.add_task(_sync_deep_analysis)
+
+        return mcp_response({
+            "paper_id": paper.arxiv_id,
+            "analysis_type": "deep",
+            "page_count": extracted.get("page_count", 0),
+            "sections_extracted": len(sections),
+            "analysis": analysis,
+        })
+
+    except Exception as e:
+        logger.exception("Deep analysis failed")
+        return mcp_response("Deep analysis failed. Please try again.", is_error=True)
     finally:
         db.close()
 

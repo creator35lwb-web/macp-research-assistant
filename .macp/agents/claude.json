@@ -1,0 +1,15 @@
+{
+  "agent_id": "anthropic",
+  "name": "Anthropic Claude",
+  "model": "claude-sonnet-4-5-20250929",
+  "capabilities": ["abstract_analysis", "deep_analysis"],
+  "strengths": "Excellent reasoning, nuanced analysis, strong at identifying limitations and ethical considerations",
+  "cost_tier": "paid",
+  "api_endpoint": "https://api.anthropic.com/v1",
+  "env_key": "ANTHROPIC_API_KEY",
+  "registered_at": "2026-02-24",
+  "config": {
+    "temperature": 0.3,
+    "max_tokens": 4096
+  }
+}

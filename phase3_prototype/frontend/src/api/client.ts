@@ -39,6 +39,13 @@ export const analyzePaper = (paper_id: string, provider = "gemini", api_key?: st
     body: JSON.stringify({ paper_id, provider, ...(api_key ? { api_key } : {}) }),
   });
 
+// Deep Analysis (Phase 3E)
+export const analyzeDeep = (paper_id: string, provider = "gemini", api_key?: string) =>
+  request<import("./types").DeepAnalysisResponse>("/api/mcp/analyze-deep", {
+    method: "POST",
+    body: JSON.stringify({ paper_id, provider, ...(api_key ? { api_key } : {}) }),
+  });
+
 // WebMCP endpoints
 export const mcpLibrary = () =>
   request<{ content: { type: string; text: string }[] }>("/api/mcp/library");

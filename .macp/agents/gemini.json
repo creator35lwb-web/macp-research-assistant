@@ -1,0 +1,15 @@
+{
+  "agent_id": "gemini",
+  "name": "Google Gemini",
+  "model": "gemini-2.5-flash",
+  "capabilities": ["abstract_analysis", "deep_analysis"],
+  "strengths": "Fast, free-tier available, strong at summarization and multi-turn reasoning",
+  "cost_tier": "free",
+  "api_endpoint": "https://generativelanguage.googleapis.com/v1beta",
+  "env_key": "GEMINI_API_KEY",
+  "registered_at": "2026-02-24",
+  "config": {
+    "temperature": 0.3,
+    "max_output_tokens": 4096
+  }
+}

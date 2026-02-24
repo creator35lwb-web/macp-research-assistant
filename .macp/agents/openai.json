@@ -1,0 +1,15 @@
+{
+  "agent_id": "openai",
+  "name": "OpenAI",
+  "model": "gpt-4o-mini",
+  "capabilities": ["abstract_analysis", "deep_analysis"],
+  "strengths": "Reliable structured output, good at following JSON schemas, broad knowledge base",
+  "cost_tier": "paid",
+  "api_endpoint": "https://api.openai.com/v1",
+  "env_key": "OPENAI_API_KEY",
+  "registered_at": "2026-02-24",
+  "config": {
+    "temperature": 0.3,
+    "max_tokens": 4096
+  }
+}
