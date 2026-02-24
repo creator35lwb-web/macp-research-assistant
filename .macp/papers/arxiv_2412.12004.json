@@ -1,0 +1,15 @@
+{
+  "id": "arxiv:2412.12004",
+  "title": "The Open Source Advantage in Large Language Models (LLMs)",
+  "authors": [
+    "Jiya Manchanda",
+    "Laura Boettcher",
+    "Matheus Westphalen",
+    "Jasser Jasser"
+  ],
+  "abstract": "Large language models (LLMs) mark a key shift in natural language processing (NLP), having advanced text generation, translation, and domain-specific reasoning. Closed-source models like GPT-4, powered by proprietary datasets and extensive computational resources, lead with state-of-the-art performance today. However, they face criticism for their \"black box\" nature and for limiting accessibility in a manner that hinders reproducibility and equitable AI development. By contrast, open-source initiatives like LLaMA and BLOOM prioritize democratization through community-driven development and computational efficiency. These models have significantly reduced performance gaps, particularly in linguistic diversity and domain-specific applications, while providing accessible tools for global researchers and developers. Notably, both paradigms rely on foundational architectural innovations, such as the Transformer framework by Vaswani et al. (2017). Closed-source models excel by scaling effectively, while open-source models adapt to real-world applications in underrepresented languages and domains. Techniques like Low-Rank Adaptation (LoRA) and instruction-tuning datasets enable open-source models to achieve competitive results despite limited resources. To be sure, the tension between closed-source and open-source approaches underscores a broader debate on transparency versus proprietary control in AI. Ethical considerations further highlight this divide. Closed-source systems restrict external scrutiny, while open-source models promote reproducibility and collaboration but lack standardized auditing documentation frameworks to mitigate biases. Hybrid approaches that leverage the strengths of both paradigms are likely to shape the future of LLM innovation, ensuring accessibility, competitive technical performance, and ethical deployment.",
+  "url": "https://huggingface.co/papers/2412.12004",
+  "status": "saved",
+  "source": "hysts_dataset",
+  "added_at": "2026-02-24T20:16:41.720390"
+}
