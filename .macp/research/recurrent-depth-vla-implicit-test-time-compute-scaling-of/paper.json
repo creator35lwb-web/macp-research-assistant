@@ -1,0 +1,34 @@
+{
+  "id": "arxiv:2602.07845",
+  "title": "Recurrent-Depth VLA: Implicit Test-Time Compute Scaling of Vision-Language-Action Models via Latent Iterative Reasoning",
+  "authors": [
+    "Yalcin Tur",
+    "Jalal Naghiyev",
+    "Haoquan Fang",
+    "Wei-Chuan Tsai",
+    "Jiafei Duan",
+    "Dieter Fox",
+    "Ranjay Krishna"
+  ],
+  "url": "https://huggingface.co/papers/2602.07845",
+  "abstract": "Current Vision-Language-Action (VLA) models rely on fixed computational depth, expending the same amount of compute on simple adjustments and complex multi-step manipulation. While Chain-of-Thought (CoT) prompting enables variable computation, it scales memory linearly and is ill-suited for continuous action spaces. We introduce Recurrent-Depth VLA (RD-VLA), an architecture that achieves computational adaptivity via latent iterative refinement rather than explicit token generation. RD-VLA employs a recurrent, weight-tied action head that supports arbitrary inference depth with a constant memory footprint. The model is trained using truncated backpropagation through time (TBPTT) to efficiently supervise the refinement process. At inference, RD-VLA dynamically allocates compute using an adaptive stopping criterion based on latent convergence. Experiments on challenging manipulation tasks show that recurrent depth is critical: tasks that fail entirely (0 percent success) with single-iteration inference exceed 90 percent success with four iterations, while simpler tasks saturate rapidly. RD-VLA provides a scalable path to test-time compute in robotics, replacing token-based reasoning with latent reasoning to achieve constant memory usage and up to 80x inference speedup over prior reasoning-based VLA models. Project page: https://rd-vla.github.io/",
+  "discovered_by": "hf_daily_papers",
+  "discovered_date": "2026-02-10",
+  "status": "discovered",
+  "insights": [],
+  "_meta": {
+    "hf_upvotes": 67,
+    "github_repo": "https://github.com/rd-vla/rd-vla",
+    "ai_keywords": [
+      "Vision-Language-Action models",
+      "Chain-of-Thought prompting",
+      "recurrent architecture",
+      "weight-tied action head",
+      "truncated backpropagation through time",
+      "latent iterative refinement",
+      "adaptive stopping criterion",
+      "latent convergence",
+      "computational adaptivity"
+    ]
+  }
+}

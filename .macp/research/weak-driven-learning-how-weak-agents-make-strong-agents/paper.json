@@ -1,0 +1,41 @@
+{
+  "id": "arxiv:2602.08222",
+  "title": "Weak-Driven Learning: How Weak Agents make Strong Agents Stronger",
+  "authors": [
+    "Zehao Chen",
+    "Gongxun Li",
+    "Tianxiang Ai",
+    "Yifei Li",
+    "Zixuan Huang",
+    "Wang Zhou",
+    "Fuzhen Zhuang",
+    "Xianglong Liu",
+    "Jianxin Li",
+    "Deqing Wang",
+    "Yikun Ban"
+  ],
+  "url": "https://huggingface.co/papers/2602.08222",
+  "abstract": "As post-training optimization becomes central to improving large language models, we observe a persistent saturation bottleneck: once models grow highly confident, further training yields diminishing returns. While existing methods continue to reinforce target predictions, we find that informative supervision signals remain latent in models' own historical weak states. Motivated by this observation, we propose WMSS (Weak Agents Can Make Strong Agents Stronger), a post-training paradigm that leverages weak checkpoints to guide continued optimization. By identifying recoverable learning gaps via entropy dynamics and reinforcing them through compensatory learning, WMSS enables strong agents to improve beyond conventional post-training saturation. Experiments on mathematical reasoning and code generation datasets show that agents trained with our approach achieve effective performance improvements, while incurring zero additional inference cost.",
+  "discovered_by": "hf_daily_papers",
+  "discovered_date": "2026-02-10",
+  "status": "analyzed",
+  "insights": [
+    "Models experience saturation bottlenecks in post-training when they become overly confident, leading to diminishing returns from continued training",
+    "Historical weak checkpoints of a model contain valuable information about recoverable learning gaps that can guide further optimization",
+    "Using entropy dynamics to identify where weak and strong model versions differ enables targeted compensatory learning",
+    "The approach achieves performance improvements on mathematical reasoning and code generation tasks without increasing inference costs"
+  ],
+  "_meta": {
+    "hf_upvotes": 253,
+    "github_repo": "https://github.com/chenzehao82/Weak-Driven-Learning",
+    "ai_keywords": [
+      "post-training optimization",
+      "large language models",
+      "saturation bottleneck",
+      "weak checkpoints",
+      "entropy dynamics",
+      "compensatory learning",
+      "learning gaps"
+    ]
+  }
+}

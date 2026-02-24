@@ -1,0 +1,42 @@
+{
+  "id": "arxiv:2602.07055",
+  "title": "Theory of Space: Can Foundation Models Construct Spatial Beliefs through Active Exploration?",
+  "authors": [
+    "Pingyue Zhang",
+    "Zihan Huang",
+    "Yue Wang",
+    "Jieyu Zhang",
+    "Letian Xue",
+    "Zihan Wang",
+    "Qineng Wang",
+    "Keshigeyan Chandrasegaran",
+    "Ruohan Zhang",
+    "Yejin Choi",
+    "Ranjay Krishna",
+    "Jiajun Wu",
+    "Li Fei-Fei",
+    "Manling Li"
+  ],
+  "url": "https://huggingface.co/papers/2602.07055",
+  "abstract": "Spatial embodied intelligence requires agents to act to acquire information under partial observability. While multimodal foundation models excel at passive perception, their capacity for active, self-directed exploration remains understudied. We propose Theory of Space, defined as an agent's ability to actively acquire information through self-directed, active exploration and to construct, revise, and exploit a spatial belief from sequential, partial observations. We evaluate this through a benchmark where the goal is curiosity-driven exploration to build an accurate cognitive map. A key innovation is spatial belief probing, which prompts models to reveal their internal spatial representations at each step. Our evaluation of state-of-the-art models reveals several critical bottlenecks. First, we identify an Active-Passive Gap, where performance drops significantly when agents must autonomously gather information. Second, we find high inefficiency, as models explore unsystematically compared to program-based proxies. Through belief probing, we diagnose that while perception is an initial bottleneck, global beliefs suffer from instability that causes spatial knowledge to degrade over time. Finally, using a false belief paradigm, we uncover Belief Inertia, where agents fail to update obsolete priors with new evidence. This issue is present in text-based agents but is particularly severe in vision-based models. Our findings suggest that current foundation models struggle to maintain coherent, revisable spatial beliefs during active exploration.",
+  "discovered_by": "hf_daily_papers",
+  "discovered_date": "2026-02-10",
+  "status": "discovered",
+  "insights": [],
+  "_meta": {
+    "hf_upvotes": 21,
+    "github_repo": "https://github.com/mll-lab-nu/Theory-of-Space",
+    "ai_keywords": [
+      "spatial embodied intelligence",
+      "multimodal foundation models",
+      "active exploration",
+      "spatial belief",
+      "cognitive mapping",
+      "spatial belief probing",
+      "Active-Passive Gap",
+      "belief inertia",
+      "vision-based models",
+      "text-based agents"
+    ]
+  }
+}

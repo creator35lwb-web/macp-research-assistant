@@ -1,0 +1,51 @@
+{
+  "id": "arxiv:2602.07837",
+  "title": "RLinf-USER: A Unified and Extensible System for Real-World Online Policy Learning in Embodied AI",
+  "authors": [
+    "Hongzhi Zang",
+    "Shu'ang Yu",
+    "Hao Lin",
+    "Tianxing Zhou",
+    "Zefang Huang",
+    "Zhen Guo",
+    "Xin Xu",
+    "Jiakai Zhou",
+    "Yuze Sheng",
+    "Shizhe Zhang",
+    "Feng Gao",
+    "Wenhao Tang",
+    "Yufeng Yue",
+    "Quanlu Zhang",
+    "Xinlei Chen",
+    "Chao Yu",
+    "Yu Wang"
+  ],
+  "url": "https://huggingface.co/papers/2602.07837",
+  "abstract": "Online policy learning directly in the physical world is a promising yet challenging direction for embodied intelligence. Unlike simulation, real-world systems cannot be arbitrarily accelerated, cheaply reset, or massively replicated, which makes scalable data collection, heterogeneous deployment, and long-horizon effective training difficult. These challenges suggest that real-world policy learning is not only an algorithmic issue but fundamentally a systems problem. We present USER, a Unified and extensible SystEm for Real-world online policy learning. USER treats physical robots as first-class hardware resources alongside GPUs through a unified hardware abstraction layer, enabling automatic discovery, management, and scheduling of heterogeneous robots. To address cloud-edge communication, USER introduces an adaptive communication plane with tunneling-based networking, distributed data channels for traffic localization, and streaming-multiprocessor-aware weight synchronization to regulate GPU-side overhead. On top of this infrastructure, USER organizes learning as a fully asynchronous framework with a persistent, cache-aware buffer, enabling efficient long-horizon experiments with robust crash recovery and reuse of historical data. In addition, USER provides extensible abstractions for rewards, algorithms, and policies, supporting online imitation or reinforcement learning of CNN/MLP, generative policies, and large vision-language-action (VLA) models within a unified pipeline. Results in both simulation and the real world show that USER enables multi-robot coordination, heterogeneous manipulators, edge-cloud collaboration with large models, and long-running asynchronous training, offering a unified and extensible systems foundation for real-world online policy learning.",
+  "discovered_by": "hf_daily_papers",
+  "discovered_date": "2026-02-10",
+  "status": "discovered",
+  "insights": [],
+  "_meta": {
+    "hf_upvotes": 53,
+    "ai_keywords": [
+      "online policy learning",
+      "embodied intelligence",
+      "real-world systems",
+      "heterogeneous robots",
+      "hardware abstraction layer",
+      "adaptive communication plane",
+      "tunneling-based networking",
+      "distributed data channels",
+      "streaming-multiprocessor-aware weight synchronization",
+      "asynchronous framework",
+      "cache-aware buffer",
+      "crash recovery",
+      "reinforcement learning",
+      "imitation learning",
+      "vision-language-action models",
+      "multi-robot coordination",
+      "edge-cloud collaboration"
+    ]
+  }
+}

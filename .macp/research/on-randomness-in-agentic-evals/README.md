@@ -1,0 +1,21 @@
+# On Randomness in Agentic Evals
+
+**arXiv ID:** `arxiv:2602.07150`
+**URL:** https://huggingface.co/papers/2602.07150
+**Status:** discovered
+**Discovered:** 2026-02-10
+
+## Authors
+
+Bjarni Haukur Bjarnason, André Silva, Martin Monperrus
+
+## Abstract
+
+Agentic systems are evaluated on benchmarks where agents interact with environments to solve tasks. Most papers report a pass@1 score computed from a single run per task, assuming this gives a reliable performance estimate. We test this assumption by collecting 60,000 agentic trajectories on SWE-Bench-Verified, spanning three models and two scaffolds. We find substantial variance: single-run pass@1 estimates vary by 2.2 to 6.0 percentage points depending on which run is selected, with standard deviations exceeding 1.5 percentage points even at temperature 0. This variance has critical implications: reported improvements of 2--3 percentage points may reflect evaluation noise rather than genuine algorithmic progress. Through token-level analysis, we show that trajectories diverge early, often within the first few percent of tokens, and that these small differences cascade into different solution strategies. To enable reliable evaluation of agentic systems, we recommend three concrete practices: (1) estimate pass@1 from multiple independent runs per task, especially when measuring small improvements, (2) use statistical power analysis to determine the number of runs needed to detect expected effect sizes, and (3) consider metrics like pass@k (optimistic bound) and pass^k (pessimistic bound) with k>1 to better characterize the full performance envelope. While these practices increase evaluation cost, they are essential for distinguishing genuine scientific progress from statistical noise.
+
+## Files
+
+- `paper.json`
+
+---
+*Part of MACP Research Knowledge Tree*

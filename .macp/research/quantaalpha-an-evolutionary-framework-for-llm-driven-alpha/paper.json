@@ -1,0 +1,40 @@
+{
+  "id": "arxiv:2602.07085",
+  "title": "QuantaAlpha: An Evolutionary Framework for LLM-Driven Alpha Mining",
+  "authors": [
+    "Jun Han",
+    "Shuo Zhang",
+    "Wei Li",
+    "Zhi Yang",
+    "Yifan Dong",
+    "Tu Hu",
+    "Jialuo Yuan",
+    "Xiaomin Yu",
+    "Yumo Zhu",
+    "Fangqi Lou",
+    "Xin Guo",
+    "Zhaowei Liu",
+    "Tianyi Jiang",
+    "Ruichuan An",
+    "Jingping Liu",
+    "Biao Wu",
+    "Rongze Chen",
+    "Kunyi Wang",
+    "Yifan Wang",
+    "Sen Hu",
+    "Xinbing Kong",
+    "Liwen Zhang",
+    "Ronghao Chen",
+    "Huacan Wang"
+  ],
+  "url": "https://huggingface.co/papers/2602.07085",
+  "abstract": "Financial markets are noisy and non-stationary, making alpha mining highly sensitive to noise in backtesting results and sudden market regime shifts. While recent agentic frameworks improve alpha mining automation, they often lack controllable multi-round search and reliable reuse of validated experience. To address these challenges, we propose QuantaAlpha, an evolutionary alpha mining framework that treats each end-to-end mining run as a trajectory and improves factors through trajectory-level mutation and crossover operations. QuantaAlpha localizes suboptimal steps in each trajectory for targeted revision and recombines complementary high-reward segments to reuse effective patterns, enabling structured exploration and refinement across mining iterations. During factor generation, QuantaAlpha enforces semantic consistency across the hypothesis, factor expression, and executable code, while constraining the complexity and redundancy of the generated factor to mitigate crowding. Extensive experiments on the China Securities Index 300 (CSI 300) demonstrate consistent gains over strong baseline models and prior agentic systems. When utilizing GPT-5.2, QuantaAlpha achieves an Information Coefficient (IC) of 0.1501, with an Annualized Rate of Return (ARR) of 27.75% and a Maximum Drawdown (MDD) of 7.98%. Moreover, factors mined on CSI 300 transfer effectively to the China Securities Index 500 (CSI 500) and the Standard & Poor's 500 Index (S&P 500), delivering 160% and 137% cumulative excess return over four years, respectively, which indicates strong robustness of QuantaAlpha under market distribution shifts.",
+  "discovered_by": "hf_daily_papers",
+  "discovered_date": "2026-02-10",
+  "status": "discovered",
+  "insights": [],
+  "_meta": {
+    "hf_upvotes": 180,
+    "github_repo": "https://github.com/QuantaAlpha/QuantaAlpha"
+  }
+}

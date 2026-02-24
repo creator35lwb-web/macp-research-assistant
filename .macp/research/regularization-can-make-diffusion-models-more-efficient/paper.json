@@ -1,0 +1,14 @@
+{
+  "id": "arxiv:2502.09151",
+  "title": "Regularization can make diffusion models more efficient",
+  "authors": [
+    "Mahsa Taheri",
+    "Johannes Lederer"
+  ],
+  "url": "https://arxiv.org/abs/2502.09151",
+  "abstract": "Diffusion models are one of the key architectures of generative AI. Their main drawback, however, is the computational costs. This study indicates that the concept of sparsity, well known especially in statistics, can provide a pathway to more efficient diffusion pipelines. Our mathematical guarantees prove that sparsity can reduce the input dimension's influence on the computational complexity to that of a much smaller intrinsic dimension of the data. Our empirical findings confirm that inducing sparsity can indeed lead to better samples at a lower cost.",
+  "discovered_by": "arxiv_api",
+  "discovered_date": "2025-02-13",
+  "status": "discovered",
+  "insights": []
+}

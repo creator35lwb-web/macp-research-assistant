@@ -175,14 +175,14 @@ The application is deployed on **Google Cloud Run** with:
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | React 18, TypeScript, Vite, Geist UI |
+| **Frontend** | React 18, TypeScript, Vite, Geist UI, Agent Registry, Consensus Comparison UI |
 | **Backend** | FastAPI, Python 3.12, Pydantic |
 | **Database** | SQLite (local cache), GitHub (source of truth) |
 | **Auth** | GitHub OAuth 2.0, JWT sessions |
 | **LLM** | Google Gemini, Anthropic Claude, OpenAI GPT-4o, xAI Grok, Perplexity Sonar |
 | **PDF Processing** | PyMuPDF (full-text extraction, section chunking) |
 | **Schema** | MACP v2.0 (`schema.json` — self-describing repository standard) |
-| **Deployment** | Docker, Google Cloud Run, GitHub Actions CI/CD |
+| **Deployment** | Docker, Google Cloud Run (revision 00022), GitHub Actions CI/CD (all green) |
 | **Security** | CSP, HSTS, non-root container, input sanitization, prompt injection protection |
 
 ---
@@ -410,28 +410,27 @@ Any AI agent can read `schema.json` to understand the entire directory structure
 | **Phase 3C** | Production Deployment | GCP Cloud Run, CI/CD, security hardening, multi-provider LLM, Load More |
 | **Phase 3D** | Foundation Repair & GitHub Integration | Save pipeline fix, BYOK UX (Validate & Apply), GitHub-first persistence, .gitignore fix |
 | **Phase 3E** | MACP v2.0 Schema & Deep Analysis | Schema validation, deep PDF analysis (4-pass), multi-agent consensus (40/30/30), Perplexity deep research, agent registry (6 agents), 13 MCP endpoints |
+| **Phase 3F** | Deployment & UI Polish | Cloud Run revision 00022, Agent Registry UI, Consensus Comparison UI, Deep Analysis View, resizable detail panel, 10/10 Dependabot PRs closed, CI #28 all green, 0 code scanning alerts |
 
-### Current: Phase 3F — Deployment & UI Polish
+### Current: Phase 4 — WebMCP Ecosystem & External Integrations
 
-- Deploy Phase 3E code to Cloud Run
-- Multi-agent consensus comparison UI component
-- Deep analysis view in frontend
-- Address 10 dependabot security PRs
-
-### Next: Phase 4 — WebMCP Ecosystem & External Integrations
-
-- Knowledge graph visualization in web UI
-- n8n workflow integration (daily paper digest, trend alerts)
-- Research templates for different domains
-- Collaborative notes (multi-agent + human)
-- Full-text search across all analyses
+| Item | Status | Notes |
+|------|--------|-------|
+| Agent Registry UI | ✅ Done | Built in Phase 3F (card grid, cost tiers, capability chips) |
+| Knowledge Graph visualization | 📋 Planned | Backend tool exists, frontend UI pending |
+| n8n workflow integration | 📋 Planned | Daily paper digest, trend alerts |
+| Research templates | 📋 Planned | Domain-specific research workflows |
+| Collaborative notes | 📋 Planned | Multi-agent + human annotation |
+| Full-text search | 📋 Planned | Search across all analyses |
+| Mobile responsive | 📋 Planned | Detail panel as slide-over |
+| Keyboard shortcuts | 📋 Planned | Panel navigation hotkeys |
 
 ---
 
 ## Roadmap
 
 ```
-Phase 1 ✅ → Phase 2 ✅ → Phase 3A ✅ → Phase 3B ✅ → Phase 3C ✅ → Phase 3D ✅ → Phase 3E ✅ → Phase 3F 🔧 → Phase 4 📋
+Phase 1 ✅ → Phase 2 ✅ → Phase 3A ✅ → Phase 3B ✅ → Phase 3C ✅ → Phase 3D ✅ → Phase 3E ✅ → Phase 3F ✅ → Phase 4 🔧
   Manual       CLI Tools     Web UI       Full Hybrid    Production    Foundation     MACP v2.0     Deploy &       WebMCP
   MACP         & Schemas     Prototype    WebMCP         Deployment    Repair &       Schema &      UI Polish      Ecosystem
                                                                       GitHub Sync    Deep Analysis
@@ -600,7 +599,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 - Improve documentation and examples
 - Report bugs and suggest features
-- Build Phase 3F/4 features
+- Build Phase 4 features (knowledge graph UI, research templates)
 - Add new LLM provider integrations
 - Create research workflow templates
 - Build knowledge graph visualizations

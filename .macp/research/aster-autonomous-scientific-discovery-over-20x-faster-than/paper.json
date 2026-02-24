@@ -1,0 +1,25 @@
+{
+  "id": "arxiv:2602.07040",
+  "title": "Aster: Autonomous Scientific Discovery over 20x Faster Than Existing Methods",
+  "authors": [
+    "Emmett Bicker"
+  ],
+  "url": "https://huggingface.co/papers/2602.07040",
+  "abstract": "We introduce Aster, an AI agent for autonomous scientific discovery capable of operating over 20 times faster than existing frameworks. Given a task, an initial program, and a script to evaluate the performance of the program, Aster iteratively improves the program, often leading to new state-of-the-art performances. Aster's significant reduction in the number of iterations required for novel discovery expands the domain of tractable problems to include tasks with long evaluation durations, such as multi-hour machine learning training runs.\n  We applied Aster to problems in mathematics, GPU kernel engineering, biology, neuroscience, and language model training. More specifically: the Erdos minimum overlap problem, optimizing the TriMul kernel, a single-cell analysis denoising problem, training a neural activity prediction model to perform well on ZAPBench, and the NanoGPT Speedrun Competition. Aster attains SOTA results in every task, except for ZAPBench, where it matches the performance of the best human solution with less than 1/190th of the compute.\n  Aster is accessible via a web interface and API at asterlab.ai.",
+  "discovered_by": "hf_daily_papers",
+  "discovered_date": "2026-02-10",
+  "status": "discovered",
+  "insights": [],
+  "_meta": {
+    "hf_upvotes": 2,
+    "ai_keywords": [
+      "AI agent",
+      "autonomous scientific discovery",
+      "iterative program improvement",
+      "state-of-the-art performance",
+      "computational efficiency",
+      "web interface",
+      "API"
+    ]
+  }
+}
