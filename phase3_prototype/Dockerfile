@@ -31,6 +31,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY phase3_prototype/backend/ ./
 COPY tools/ /app/tools/
 
+# Copy MACP schema and agent registry
+COPY .macp/schema.json /app/.macp/schema.json
+COPY .macp/agents/ /app/.macp/agents/
+
 # Copy frontend build output
 COPY --from=frontend-build /app/frontend/dist /app/static
 

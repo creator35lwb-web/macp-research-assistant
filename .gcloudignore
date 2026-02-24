@@ -1,0 +1,18 @@
+# Cloud Build ignore — exclude non-essential files from upload
+.git
+.github
+.macp/handoffs
+.macp/validation
+.macp/papers
+.macp/analyses
+.macp/notes
+.macp/graph
+docs
+node_modules
+__pycache__
+*.pyc
+.env
+.env.*
+*.md
+!phase3_prototype/backend/requirements.txt
+phase3_prototype/frontend/node_modules

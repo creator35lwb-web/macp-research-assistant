@@ -16,11 +16,12 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# Path to the .macp/schema.json relative to the project root
-_SCHEMA_PATH = os.path.join(
+# Path to the .macp/schema.json — use MACP_DIR env var if set (Docker), else relative
+_MACP_DIR = os.getenv("MACP_DIR", os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    ".macp", "schema.json",
-)
+    ".macp",
+))
+_SCHEMA_PATH = os.path.join(_MACP_DIR, "schema.json")
 
 _schema_cache: Optional[dict] = None
 

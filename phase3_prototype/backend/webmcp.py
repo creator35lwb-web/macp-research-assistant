@@ -14,7 +14,7 @@ from typing import Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from pydantic import BaseModel, Field
 
-from config import TOOLS_DIR
+from config import TOOLS_DIR, MACP_DIR
 from database import (
     Analysis,
     Note,
@@ -832,10 +832,7 @@ async def mcp_consensus(
 @mcp_router.get("/agents")
 async def mcp_agents():
     """List all registered agents from .macp/agents/ directory."""
-    agents_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        ".macp", "agents",
-    )
+    agents_dir = os.path.join(MACP_DIR, "agents")
     agents = []
     if os.path.isdir(agents_dir):
         for fname in sorted(os.listdir(agents_dir)):
