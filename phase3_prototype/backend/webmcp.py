@@ -34,6 +34,7 @@ from llm_providers import (
     analyze_paper_deep as _analyze_deep,
     compute_agreement_score,
     generate_consensus_synthesis,
+    deep_research as _deep_research,
     PROVIDERS,
 )
 from schema_validator import get_consensus_weights, get_consensus_min_agents
@@ -78,6 +79,12 @@ class McpConsensusRequest(BaseModel):
     paper_id: str = Field(..., min_length=1)
     provider: str = Field(default="gemini", description="LLM provider for synthesis generation")
     api_key: Optional[str] = Field(default=None)
+    analysis_type: str = Field(default="abstract", pattern="^(abstract|deep)$", description="Compare only analyses of this type")
+
+
+class McpDeepResearchRequest(BaseModel):
+    paper_id: str = Field(..., min_length=1)
+    api_key: Optional[str] = Field(default=None, description="Perplexity SONAR_API_KEY")
 
 
 class McpSaveRequest(BaseModel):
@@ -161,6 +168,13 @@ async def mcp_discovery():
             "endpoint": "/api/mcp/consensus",
             "method": "POST",
             "inputSchema": McpConsensusRequest.model_json_schema(),
+        },
+        {
+            "name": "macp.deep-research",
+            "description": "Perplexity-powered deep research: citations, related work, code repos, impact assessment",
+            "endpoint": "/api/mcp/deep-research",
+            "method": "POST",
+            "inputSchema": McpDeepResearchRequest.model_json_schema(),
         },
         {
             "name": "macp.agents",
@@ -632,7 +646,50 @@ async def mcp_graph(user: Optional[User] = Depends(get_current_user)):
 
 
 # ---------------------------------------------------------------------------
-# 8. Consensus Analysis (Phase 3E — Multi-Agent Convergence)
+# 8. Deep Research (Phase 3E — Perplexity Web-Grounded)
+# ---------------------------------------------------------------------------
+
+@mcp_router.post("/deep-research")
+async def mcp_deep_research(
+    request: Request,
+    req: McpDeepResearchRequest,
+    user: Optional[User] = Depends(get_current_user),
+):
+    """Perplexity-powered deep research: citations, related work, code, impact."""
+    db = SessionLocal()
+    try:
+        if not req.paper_id.startswith("arxiv:"):
+            req.paper_id = f"arxiv:{req.paper_id}"
+        paper = db.query(Paper).filter(Paper.arxiv_id == req.paper_id).first()
+        if not paper:
+            return mcp_response(f"Paper {req.paper_id} not found", is_error=True)
+
+        authors = json.loads(paper.authors) if paper.authors else []
+        result = _deep_research(
+            title=paper.title,
+            authors=authors,
+            abstract=paper.abstract or "",
+            api_key_override=req.api_key,
+        )
+
+        if not result:
+            return mcp_response("Deep research failed — check SONAR_API_KEY", is_error=True)
+
+        return mcp_response({
+            "paper_id": paper.arxiv_id,
+            "title": paper.title,
+            "research": result,
+        })
+
+    except Exception as e:
+        logger.exception("Deep research failed")
+        return mcp_response("Deep research failed. Please try again.", is_error=True)
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# 9. Consensus Analysis (Phase 3E — Multi-Agent Convergence)
 # ---------------------------------------------------------------------------
 
 @mcp_router.post("/consensus")
@@ -657,17 +714,31 @@ async def mcp_consensus(
 
         # Load all existing analyses for this paper
         db_analyses = db.query(Analysis).filter(Analysis.paper_id == paper.id).all()
+
+        # CSO R rule: "Same paper, same type" — filter by analysis type
+        filtered_analyses = []
+        for a in db_analyses:
+            provenance = json.loads(a.provenance) if a.provenance else {}
+            a_type = provenance.get("type", "abstract")
+            if a_type == req.analysis_type:
+                filtered_analyses.append(a)
+
+        # If no type-matched analyses found, fall back to all analyses
+        if len(filtered_analyses) < 2 and len(db_analyses) >= 2:
+            filtered_analyses = db_analyses
+
         min_agents = get_consensus_min_agents()
-        if len(db_analyses) < min_agents:
+        if len(filtered_analyses) < min_agents:
             return mcp_response(
-                f"Need at least {min_agents} analyses for consensus, found {len(db_analyses)}",
+                f"Need at least {min_agents} {req.analysis_type} analyses for consensus, "
+                f"found {len(filtered_analyses)} (total: {len(db_analyses)})",
                 is_error=True,
             )
 
         # Convert DB analyses to dicts for scoring
         analysis_dicts = []
         agents_compared = []
-        for a in db_analyses:
+        for a in filtered_analyses:
             agent_id = a.provider or "unknown"
             if agent_id not in agents_compared:
                 agents_compared.append(agent_id)
