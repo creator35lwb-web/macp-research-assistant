@@ -322,23 +322,22 @@ TOOL_HANDLERS = {
 # Authentication
 # ---------------------------------------------------------------------------
 
-_authenticated = False
+_auth_state = {"authenticated": False}
 
 
 def _check_auth(params: dict) -> bool:
     """Check if the request includes a valid API key in _meta.auth."""
-    global _authenticated
     if not MACP_API_KEY:
         # No key configured — open mode
         return True
-    if _authenticated:
+    if _auth_state["authenticated"]:
         return True
     meta = params.get("_meta", {})
     token = meta.get("auth", "")
     if token.startswith("Bearer "):
         token = token[7:]
     if verify_api_key(token):
-        _authenticated = True
+        _auth_state["authenticated"] = True
         return True
     return False
 

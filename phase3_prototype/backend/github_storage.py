@@ -19,6 +19,7 @@ import asyncio
 import base64
 import json
 import logging
+import re
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -32,13 +33,23 @@ logger = logging.getLogger(__name__)
 GITHUB_API = "https://api.github.com"
 REPO_PREFIX = ".macp"  # MACP v2.0 standard
 
+# Strict validation: owner/repo must be alphanumeric, hyphens, underscores, dots only
+_REPO_PATTERN = re.compile(r"^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$")
+
+
+def _validate_repo(repo: str) -> str:
+    """Validate and sanitize a GitHub repo identifier to prevent SSRF."""
+    if not repo or not _REPO_PATTERN.match(repo):
+        raise ValueError(f"Invalid GitHub repo format: {repo!r}")
+    return repo
+
 
 class GitHubStorageService:
     """Manages dual-write to a user's connected GitHub repository."""
 
     def __init__(self, user: User):
         self.user = user
-        self.repo = user.connected_repo  # "owner/repo"
+        self.repo = _validate_repo(user.connected_repo) if user.connected_repo else ""
         self._token = decrypt_token(user.github_access_token) if user.github_access_token else ""
 
     def _headers(self) -> dict:

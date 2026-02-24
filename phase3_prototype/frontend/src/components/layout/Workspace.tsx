@@ -29,8 +29,8 @@ export function Workspace() {
 
   const [activeView, setActiveView] = useState<ViewMode>("search");
   const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
-  const [provider, setProvider] = useState(() => localStorage.getItem("byok_provider") || "gemini");
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem("byok_key") || "");
+  const [provider, setProvider] = useState(() => sessionStorage.getItem("byok_provider") || "gemini");
+  const [apiKey, setApiKey] = useState(() => sessionStorage.getItem("byok_key") || "");
   const [byokValidated, setByokValidated] = useState(false);
   const [byokValidating, setByokValidating] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -106,8 +106,8 @@ export function Workspace() {
     try {
       const result = await validateApiKey(provider, apiKey);
       if (result.valid) {
-        localStorage.setItem("byok_key", apiKey);
-        localStorage.setItem("byok_provider", provider);
+        sessionStorage.setItem("byok_key", apiKey);
+        sessionStorage.setItem("byok_provider", provider);
         setByokValidated(true);
         showToast("success", `Key validated for ${result.provider} (${result.model})`);
       } else {
@@ -126,8 +126,8 @@ export function Workspace() {
   const handleClearKey = () => {
     setApiKey("");
     setByokValidated(false);
-    localStorage.removeItem("byok_key");
-    localStorage.removeItem("byok_provider");
+    sessionStorage.removeItem("byok_key");
+    sessionStorage.removeItem("byok_provider");
     showToast("info", "API key cleared — using server default");
   };
 

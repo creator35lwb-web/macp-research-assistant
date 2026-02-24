@@ -344,7 +344,6 @@ def analyze_paper(
         analysis = json.loads(text)
     except json.JSONDecodeError:
         # Try to extract JSON from the response
-        import re
         match = re.search(r"\{[\s\S]*\}", text)
         if match:
             try:

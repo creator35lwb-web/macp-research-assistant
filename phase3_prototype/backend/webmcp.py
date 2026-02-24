@@ -6,6 +6,7 @@ Response format follows MCP tool result convention.
 """
 
 import json
+import logging
 import os
 import sys
 from typing import Optional
@@ -30,6 +31,7 @@ sys.path.insert(0, os.path.abspath(TOOLS_DIR))
 from paper_fetcher import fetch_by_id, fetch_by_query, fetch_from_hysts
 from llm_providers import analyze_paper as _analyze_paper, PROVIDERS
 
+logger = logging.getLogger(__name__)
 mcp_router = APIRouter(prefix="/api/mcp", tags=["WebMCP"])
 
 
@@ -168,7 +170,8 @@ async def mcp_search(
 
         return mcp_response({"results": papers, "count": len(papers)})
     except Exception as e:
-        return mcp_response(f"Search failed: {e}", is_error=True)
+        logger.exception("Search failed")
+        return mcp_response("Search failed. Please try again.", is_error=True)
 
 
 # ---------------------------------------------------------------------------
@@ -241,7 +244,8 @@ async def mcp_analyze(
         return mcp_response({"paper_id": paper.arxiv_id, "analysis": analysis})
 
     except Exception as e:
-        return mcp_response(f"Analysis failed: {e}", is_error=True)
+        logger.exception("Analysis failed")
+        return mcp_response("Analysis failed. Please try again.", is_error=True)
     finally:
         db.close()
 

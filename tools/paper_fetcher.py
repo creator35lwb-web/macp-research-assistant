@@ -143,8 +143,8 @@ def atomic_write_json(filepath: str, data: dict) -> None:
         # Clean up temp file on failure
         try:
             os.unlink(tmp_path)
-        except OSError:
-            pass
+        except OSError as cleanup_err:
+            print(f"[WARN] Failed to clean up temp file: {cleanup_err}", file=sys.stderr)
         raise
 
 
@@ -438,7 +438,7 @@ def fetch_from_hysts(query: str, limit: int = 10, offset: int = 0) -> list[dict]
             try:
                 discovered_date = pub_date[:10]
             except (IndexError, TypeError):
-                pass
+                discovered_date = None  # Date parsing failed — non-critical
 
         extra = {}
         if github:

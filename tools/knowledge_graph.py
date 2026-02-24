@@ -219,8 +219,8 @@ def _atomic_write_json(filepath: str, data: dict) -> None:
     except Exception:
         try:
             os.unlink(tmp_path)
-        except OSError:
-            pass
+        except OSError as cleanup_err:
+            print(f"[WARN] Failed to clean up temp file: {cleanup_err}", file=sys.stderr)
         raise
 
 
@@ -393,8 +393,8 @@ def main():
     except Exception:
         try:
             os.unlink(tmp_path)
-        except OSError:
-            pass
+        except OSError as cleanup_err:
+            print(f"[WARN] Failed to clean up temp file: {cleanup_err}", file=sys.stderr)
         raise
     print(f"\n--- Mermaid diagram saved to: {mermaid_file} ---")
 

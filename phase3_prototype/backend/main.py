@@ -424,12 +424,12 @@ async def validate_api_key(req: ValidateKeyRequest):
     from llm_providers import _call_gemini, _call_anthropic, _call_openai
     callers = {"gemini": _call_gemini, "anthropic": _call_anthropic, "openai": _call_openai}
 
-    # Check for grok caller
+    # Check for grok caller (optional — may not be available in all builds)
     try:
         from llm_providers import _call_grok
         callers["grok"] = _call_grok
     except ImportError:
-        pass
+        log_audit(event="provider_info", message="Grok provider not available", level="DEBUG")
 
     caller = callers.get(req.provider)
     if not caller:
@@ -441,11 +441,13 @@ async def validate_api_key(req: ValidateKeyRequest):
             return {"valid": True, "provider": config["name"], "model": config["model"]}
         return {"valid": False, "provider": config["name"], "model": config["model"], "error": "Empty response from provider"}
     except Exception as e:
-        error_msg = str(e)
-        if "401" in error_msg or "403" in error_msg:
+        raw_msg = str(e)
+        if "401" in raw_msg or "403" in raw_msg:
             error_msg = "Invalid API key"
-        elif "429" in error_msg:
+        elif "429" in raw_msg:
             error_msg = "Rate limited — key is valid but try again later"
+        else:
+            error_msg = "Validation failed — check your key and provider"
         return {"valid": False, "provider": config["name"], "model": config["model"], "error": error_msg}
 
 
@@ -700,7 +702,11 @@ if os.path.isdir(_static_dir):
 
     @app.get("/{path:path}")
     async def serve_frontend(path: str):
-        file_path = os.path.join(_static_dir, path)
+        # Resolve and verify the path stays within _static_dir (prevent path traversal)
+        safe_base = os.path.realpath(_static_dir)
+        file_path = os.path.realpath(os.path.join(_static_dir, path))
+        if not file_path.startswith(safe_base):
+            return FileResponse(os.path.join(_static_dir, "index.html"))
         if os.path.isfile(file_path):
             return FileResponse(file_path)
         return FileResponse(os.path.join(_static_dir, "index.html"))
