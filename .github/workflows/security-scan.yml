@@ -114,7 +114,7 @@ jobs:
       - name: Run npm audit
         run: |
           cd phase3_prototype/frontend
-          npm ci
+          npm ci --legacy-peer-deps
           npm audit --omit=dev || true
 
       - name: npm audit summary

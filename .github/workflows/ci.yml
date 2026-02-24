@@ -54,6 +54,9 @@ jobs:
           python -m py_compile phase3_prototype/backend/guest.py
           python -m py_compile tools/llm_providers.py
           python -m py_compile tools/paper_fetcher.py
+          python -m py_compile tools/knowledge_graph.py
+          python -m py_compile phase3_prototype/backend/webmcp.py
+          python -m py_compile phase3_prototype/backend/schema_validator.py
 
   frontend-build:
     name: Frontend Build & Lint
@@ -70,7 +73,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd phase3_prototype/frontend
-          npm ci
+          npm ci --legacy-peer-deps
 
       - name: TypeScript type check
         run: |
