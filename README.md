@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://macpresearch.ysenseai.org"><img src="https://img.shields.io/badge/Live%20Demo-macpresearch.ysenseai.org-00D4FF?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Live Demo" /></a>
+  <a href="https://creator35lwb-web.github.io/macp-research-assistant/"><img src="https://img.shields.io/badge/Landing%20Page-GitHub%20Pages-8B5CF6?style=for-the-badge&logo=github&logoColor=white" alt="Landing Page" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License" /></a>
   <a href="https://doi.org/10.5281/zenodo.18651799"><img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.18651799-blue?style=for-the-badge" alt="DOI" /></a>
 </p>
@@ -20,6 +21,7 @@
   <a href="#architecture">Architecture</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#webmcp-integration">WebMCP</a> •
+  <a href="#verifimind-peas-v050-integration">VerifiMind-PEAS</a> •
   <a href="#roadmap">Roadmap</a>
 </p>
 
@@ -27,11 +29,11 @@
 
 ## Overview
 
-The **MACP Research Assistant** is a production-deployed web application that brings the [Multi-Agent Collaboration Protocol (MACP v2.0)](https://github.com/creator35lwb-web/LegacyEvolve) to life as an interactive research platform. It enables researchers, developers, and AI practitioners to discover papers from arXiv and HuggingFace Daily Papers, analyze them with AI (Gemini, Anthropic, OpenAI, Grok), save findings to a personal library, and sync research projects to GitHub repositories — all with complete provenance tracking.
+The **MACP Research Assistant** is a production-deployed web application that brings the [Multi-Agent Collaboration Protocol (MACP v2.0)](https://github.com/creator35lwb-web/LegacyEvolve) to life as an interactive research platform. It enables researchers, developers, and AI practitioners to discover papers from arXiv and HuggingFace Daily Papers (12,800+ papers searchable), analyze them with multiple AI providers, generate multi-agent consensus analyses, conduct deep web-grounded research via Perplexity, save findings to a personal library, and sync research projects to GitHub repositories — all with complete provenance tracking.
 
 Built by the **FLYWHEEL TEAM** (a multi-agent collaboration between Manus AI and Claude Code), this project demonstrates the MACP protocol's real-world application: AI agents collaborating with human researchers to accelerate knowledge discovery.
 
-This project is a foundational protocol within the broader **YSenseAI Ecosystem**. For the operational command hub, see the [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp) repository.
+This project is **Tool Suite 2** within the broader **VerifiMind-PEAS v0.5.0** architecture. For the operational command hub, see the [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp) repository.
 
 ---
 
@@ -41,42 +43,64 @@ This project is a foundational protocol within the broader **YSenseAI Ecosystem*
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| **Paper Discovery** | Search arXiv and HuggingFace Daily Papers with real-time results | ✅ Live |
-| **AI Analysis** | Multi-provider LLM analysis with summary, key insights, methodology, research gaps, and strength scoring | ✅ Live |
-| **PDF Preview** | View and download paper PDFs directly in the workspace | ✅ Live |
+| **Paper Discovery** | Search 12,800+ papers from arXiv and HuggingFace Daily Papers with real-time results | ✅ Live |
+| **AI Analysis (Abstract)** | Multi-provider LLM analysis with summary, key insights, methodology, research gaps, and strength scoring | ✅ Live |
+| **Deep PDF Analysis** | Full-text 4-pass analysis using PyMuPDF extraction with section chunking | ✅ Built |
+| **Multi-Agent Consensus** | Automated consensus generation when 2+ agents analyze the same paper (40/30/30 scoring) | ✅ Built |
+| **Deep Research (Perplexity)** | Web-grounded investigation with citations, related work, code repos, and impact assessment | ✅ Built |
 | **Personal Library** | Save papers with notes and organize by research project | ✅ Live |
+| **BYOK Support** | Bring Your Own Key with Validate & Apply UX for any supported provider | ✅ Live |
+| **PDF Preview** | View and download paper PDFs directly in the workspace | ✅ Live |
 | **BibTeX Export** | Export citations in BibTeX format for LaTeX integration | ✅ Live |
 | **Research Notes** | Create and manage research notes linked to papers | ✅ Live |
 | **GitHub Sync** | Connect repositories for version-controlled research persistence | ✅ Live |
 | **Load More** | Paginated search results with progressive loading | ✅ Live |
-| **BYOK Support** | Bring Your Own Key for any supported LLM provider | ✅ Live |
-| **Knowledge Graph** | Visualize paper relationships and citation networks | 📋 Phase 3E |
+| **Schema Validation** | All saves validated against MACP v2.0 `schema.json` before persistence | ✅ Built |
+| **Agent Registry** | Dynamic agent capability registry with 6 registered agents | ✅ Built |
+| **Knowledge Graph** | Visualize paper relationships and citation networks | 📋 Phase 4 |
 
 ### Multi-Provider LLM Support
 
-The platform supports multiple AI providers for paper analysis, with both server-side keys and user-provided BYOK (Bring Your Own Key):
+The platform supports 5 AI providers for paper analysis, with both server-side keys and user-provided BYOK (Bring Your Own Key):
 
-| Provider | Model | BYOK Support | Notes |
-|----------|-------|:------------:|-------|
-| **Google Gemini** | gemini-2.5-flash | ✅ | Free tier available at [aistudio.google.com](https://aistudio.google.com/app/apikey) |
-| **Anthropic** | Claude 3.5 Sonnet | ✅ | Requires paid API key |
-| **OpenAI** | GPT-4o | ✅ | Requires paid API key |
-| **xAI Grok** | grok-beta | ✅ | Requires paid API key |
+| Provider | Model | BYOK Support | Capabilities |
+|----------|-------|:------------:|-------------|
+| **Google Gemini** | gemini-2.5-flash | ✅ | Abstract analysis, deep analysis, consensus synthesis |
+| **Anthropic** | Claude 3.5 Sonnet | ✅ | Abstract analysis, deep analysis, consensus synthesis |
+| **OpenAI** | GPT-4o | ✅ | Abstract analysis, deep analysis, consensus synthesis |
+| **xAI Grok** | grok-beta | ✅ | Abstract analysis, deep analysis, consensus synthesis |
+| **Perplexity** | Sonar Pro | ✅ | Deep web-grounded research with citations |
+
+### Multi-Agent Consensus Analysis
+
+When 2 or more AI providers analyze the same paper, the platform generates an automated **consensus analysis** using a weighted scoring algorithm:
+
+| Component | Weight | Metric |
+|-----------|--------|--------|
+| **Key Findings Overlap** | 40% | Jaccard word similarity between extracted findings |
+| **Relevance Score Alignment** | 30% | 1 − normalized variance of provider scores |
+| **Methodology Consistency** | 30% | Word overlap in methodology assessments |
+
+The consensus output includes convergence points, divergence points (with each agent's position), an agreement score (0–1), and a `bias_cross_check` field that assesses whether agent biases cancel out or compound.
 
 ### WebMCP Integration
 
-The platform exposes 8 WebMCP endpoints, enabling AI agents (Claude Desktop, Cursor, etc.) to interact with the research assistant programmatically:
+The platform exposes **13 MCP endpoints**, enabling AI agents (Claude Desktop, Cursor, etc.) to interact with the research assistant programmatically:
 
 ```
-GET  /api/mcp/                    → Tool discovery
-POST /api/mcp/search_papers       → Search arXiv/HuggingFace
-POST /api/mcp/analyze_paper       → AI-powered analysis
-POST /api/mcp/save_paper          → Save to library
+GET  /api/mcp/                    → Tool discovery (13 tools)
+POST /api/mcp/search_papers       → Search 12,800+ papers (arXiv/HuggingFace)
+POST /api/mcp/analyze_paper       → Abstract-level AI analysis
+POST /api/mcp/analyze-deep        → Full-text 4-pass deep PDF analysis
+POST /api/mcp/consensus           → Multi-agent consensus generation
+POST /api/mcp/deep-research       → Perplexity web-grounded research
+POST /api/mcp/save_paper          → Save to library + GitHub sync
 POST /api/mcp/get_library         → Retrieve saved papers
 POST /api/mcp/create_note         → Create research note
 POST /api/mcp/get_knowledge_graph → Get paper relationships
 POST /api/mcp/export_citations    → Export BibTeX citations
 POST /api/mcp/get_paper_details   → Get full paper metadata
+GET  /api/mcp/agents              → Agent registry (6 agents)
 ```
 
 ---
@@ -84,6 +108,8 @@ POST /api/mcp/get_paper_details   → Get full paper metadata
 ## Live Demo
 
 **Production URL:** [https://macpresearch.ysenseai.org](https://macpresearch.ysenseai.org)
+
+**Landing Page:** [https://creator35lwb-web.github.io/macp-research-assistant/](https://creator35lwb-web.github.io/macp-research-assistant/)
 
 The application is deployed on **Google Cloud Run** with:
 
@@ -93,36 +119,38 @@ The application is deployed on **Google Cloud Run** with:
 - Non-root Docker container
 - CI/CD pipeline via GitHub Actions
 - Input sanitization with XML structural delimiters for LLM prompts
+- MACP v2.0 schema validation on all data writes
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Frontend (React + Vite)               │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐  │
-│  │  Search   │ │  Library │ │  Notes   │ │ Knowledge │  │
-│  │  Papers   │ │  Manager │ │  Editor  │ │   Graph   │  │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬─────┘  │
-│       └─────────────┴────────────┴─────────────┘        │
-│                         │ API Client                     │
-└─────────────────────────┼───────────────────────────────┘
-                          │ HTTPS
-┌─────────────────────────┼───────────────────────────────┐
-│                  Backend (FastAPI + Python)               │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐  │
-│  │  Search   │ │ Analyze  │ │  WebMCP  │ │  GitHub   │  │
-│  │  Engine   │ │  Engine  │ │  Server  │ │  Storage  │  │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬─────┘  │
-│       │             │            │              │        │
-│  ┌────┴─────┐ ┌─────┴────┐ ┌────┴─────┐ ┌─────┴─────┐  │
-│  │  arXiv   │ │  Gemini  │ │  SQLite  │ │  GitHub   │  │
-│  │  HF API  │ │  Claude  │ │    DB    │ │   API     │  │
-│  │          │ │  GPT-4o  │ │          │ │           │  │
-│  │          │ │  Grok    │ │          │ │           │  │
-│  └──────────┘ └──────────┘ └──────────┘ └───────────┘  │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Frontend (React + Vite)                        │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐ ┌────────┐  │
+│  │  Search   │ │  Library │ │  Notes   │ │ Knowledge │ │  Deep  │  │
+│  │  Papers   │ │  Manager │ │  Editor  │ │   Graph   │ │Analysis│  │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬─────┘ └───┬────┘  │
+│       └─────────────┴────────────┴─────────────┴───────────┘       │
+│                              │ API Client                           │
+└──────────────────────────────┼──────────────────────────────────────┘
+                               │ HTTPS
+┌──────────────────────────────┼──────────────────────────────────────┐
+│                    Backend (FastAPI + Python)                        │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐ ┌────────┐  │
+│  │  Search   │ │ Analyze  │ │  WebMCP  │ │  GitHub   │ │ Schema │  │
+│  │  Engine   │ │  Engine  │ │  Server  │ │  Storage  │ │Validate│  │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬─────┘ └───┬────┘  │
+│       │             │            │              │            │       │
+│  ┌────┴─────┐ ┌─────┴────┐ ┌────┴─────┐ ┌─────┴─────┐ ┌───┴────┐  │
+│  │  arXiv   │ │  Gemini  │ │  SQLite  │ │  GitHub   │ │ MACP   │  │
+│  │  HF API  │ │  Claude  │ │    DB    │ │   API     │ │ v2.0   │  │
+│  │  (12.8K) │ │  GPT-4o  │ │          │ │           │ │ Schema │  │
+│  │          │ │  Grok    │ │          │ │           │ │        │  │
+│  │          │ │Perplexity│ │          │ │           │ │        │  │
+│  └──────────┘ └──────────┘ └──────────┘ └───────────┘ └────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Technology Stack
@@ -131,9 +159,11 @@ The application is deployed on **Google Cloud Run** with:
 |-------|-----------|
 | **Frontend** | React 18, TypeScript, Vite, Geist UI |
 | **Backend** | FastAPI, Python 3.12, Pydantic |
-| **Database** | SQLite (local), PostgreSQL (planned) |
+| **Database** | SQLite (local cache), GitHub (source of truth) |
 | **Auth** | GitHub OAuth 2.0, JWT sessions |
-| **LLM** | Google Gemini, Anthropic Claude, OpenAI GPT-4o, xAI Grok |
+| **LLM** | Google Gemini, Anthropic Claude, OpenAI GPT-4o, xAI Grok, Perplexity Sonar |
+| **PDF Processing** | PyMuPDF (full-text extraction, section chunking) |
+| **Schema** | MACP v2.0 (`schema.json` — self-describing repository standard) |
 | **Deployment** | Docker, Google Cloud Run, GitHub Actions CI/CD |
 | **Security** | CSP, HSTS, non-root container, input sanitization, prompt injection protection |
 
@@ -181,6 +211,7 @@ GEMINI_API_KEY=your-gemini-api-key          # Free tier: https://aistudio.google
 ANTHROPIC_API_KEY=your-anthropic-api-key     # Optional
 OPENAI_API_KEY=your-openai-api-key           # Optional
 XAI_API_KEY=your-xai-api-key                 # Optional
+SONAR_API_KEY=your-perplexity-api-key        # Optional: deep research
 
 # Optional
 CORS_ORIGINS=http://localhost:5173
@@ -211,6 +242,7 @@ When conducting research using multiple AI assistants (ChatGPT, Claude, Perplexi
 - **No traceability** — Don't know which AI contributed which insight
 - **Scattered citations** — References lost across platforms
 - **Disconnected knowledge** — Can't see relationships between papers
+- **No consensus** — Different AIs give different conclusions with no way to reconcile
 
 **Result:** Wasted time re-discovering information and lost research provenance.
 
@@ -221,10 +253,12 @@ When conducting research using multiple AI assistants (ChatGPT, Claude, Perplexi
 - **Complete traceability** — Know which AI analyzed which paper when
 - **Easy recall** — "What have I learned about X?" queries work instantly
 - **Citation provenance** — Every citation linked to AI handoffs
+- **Multi-agent consensus** — Automated reconciliation when agents disagree (40/30/30 scoring)
+- **Deep research** — Perplexity-powered web-grounded investigation with citations
 - **Knowledge graphs** — See relationships between papers and concepts
-- **Multi-AI coordination** — Seamless handoffs between AI assistants
+- **Schema validation** — Every data write validated against MACP v2.0 specification
 
-**Result:** Research with complete provenance, easy recall, and transparent methodology.
+**Result:** Research with complete provenance, multi-agent consensus, and transparent methodology.
 
 ---
 
@@ -232,36 +266,114 @@ When conducting research using multiple AI assistants (ChatGPT, Claude, Perplexi
 
 ```
 ┌─────────────────┐
-│ 1. Discovery    │  Find papers (arXiv, HuggingFace)
+│ 1. Discovery    │  Search 12,800+ papers (arXiv, HuggingFace)
 │    (Search)     │  → Paper metadata + abstracts
 └────────┬────────┘
          │
          ↓
 ┌─────────────────┐
-│ 2. Analysis     │  AI-powered analysis (Gemini/Claude/GPT-4o/Grok)
-│  (Analyze)      │  → Summary, insights, methodology, gaps, score
+│ 2. Analysis     │  Abstract analysis (Gemini/Claude/GPT-4o/Grok)
+│  (Analyze)      │  Deep PDF analysis (4-pass full-text)
+│                 │  Deep research (Perplexity web-grounded)
 └────────┬────────┘
          │
          ↓
 ┌─────────────────┐
-│ 3. Library      │  Save to personal library with notes
+│ 3. Consensus    │  Multi-agent consensus (40/30/30 scoring)
+│  (Synthesize)   │  → Convergence, divergence, agreement score
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│ 4. Library      │  Save to personal library with notes
 │   (Save)        │  → Organized, searchable collection
 └────────┬────────┘
          │
          ↓
 ┌─────────────────┐
-│ 4. Export       │  BibTeX citations, knowledge graph
+│ 5. Export       │  BibTeX citations, knowledge graph
 │   (Cite)        │  → Ready for papers and projects
 └────────┬────────┘
          │
          ↓
 ┌─────────────────┐
-│ 5. Sync         │  Push to GitHub repository
-│   (Persist)     │  → Version-controlled research
+│ 6. Sync         │  Push to GitHub repository (MACP v2.0 format)
+│   (Persist)     │  → Version-controlled, schema-validated research
 └─────────────────┘
 ```
 
-**Key Innovation:** Every step maintains complete provenance — who discovered it, when it was analyzed, which AI was used, and how it connects to your research.
+**Key Innovation:** Every step maintains complete provenance — who discovered it, when it was analyzed, which AI was used, and how it connects to your research. All data is validated against the MACP v2.0 schema before persistence.
+
+---
+
+## VerifiMind-PEAS v0.5.0 Integration
+
+The MACP Research Assistant serves as **Tool Suite 2** within the VerifiMind-PEAS v0.5.0 architecture:
+
+```
+VerifiMind-PEAS v0.5.0
+├── Tool Suite 1: PEAS Validation Engine (X/Z/CS Trinity)
+│   └── Traffic classification, content validation, report generation
+│
+└── Tool Suite 2: MACP Research Engine (this project)
+    └── Paper search, multi-agent analysis, consensus, deep research
+```
+
+The two tool suites create a **research-validation feedback loop**: the Research Engine discovers and analyzes papers to inform validation methodology, while the Validation Engine generates evidence that becomes research material. MCP tool wrappers for VerifiMind-PEAS integration are available in the [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp) repository.
+
+### Available MCP Tools for VerifiMind-PEAS
+
+| Tool | Description |
+|------|-------------|
+| `macp_search` | Search 12,800+ ML/AI papers |
+| `macp_analyze` | Abstract-level AI analysis |
+| `macp_analyze_deep` | Full-text 4-pass deep analysis |
+| `macp_consensus` | Multi-agent consensus (40/30/30 scoring) |
+| `macp_deep_research` | Perplexity web-grounded research |
+| `macp_agents` | List registered agents |
+
+---
+
+## MACP v2.0 Schema
+
+The repository follows the **MACP v2.0 Directory Standard**, defined in `.macp/schema.json`:
+
+```
+.macp/
+├── manifest.json              ← Master index of all papers, analyses, notes
+├── schema.json                ← MACP v2.0 self-describing schema (v2.0.0)
+│
+├── papers/                    ← One JSON file per paper
+│   ├── arxiv_2405.19888.json
+│   └── ...
+│
+├── analyses/                  ← One folder per paper, one file per agent
+│   ├── arxiv_2405.19888/
+│   │   ├── gemini_20260222.json
+│   │   ├── claude_20260223.json
+│   │   ├── perplexity_20260224.json
+│   │   └── consensus.json     ← Multi-agent consensus summary
+│   └── ...
+│
+├── research/                  ← Research data (papers, analyses from CLI tools)
+│   └── ...
+│
+├── agents/                    ← Agent registry (6 agents)
+│   ├── gemini.json
+│   ├── claude.json
+│   ├── openai.json
+│   ├── grok.json
+│   ├── perplexity.json
+│   └── manus.json
+│
+├── handoffs/                  ← Agent-to-agent communication
+│   └── ...
+│
+└── validation/                ← Trinity Validation reports
+    └── ...
+```
+
+Any AI agent can read `schema.json` to understand the entire directory structure, data formats, and contribution rules. This makes the repository **self-describing** — a new agent joining the project can orient itself without human guidance.
 
 ---
 
@@ -278,26 +390,22 @@ When conducting research using multiple AI assistants (ChatGPT, Claude, Perplexi
 | **Phase 3A** | Web UI Prototype | React frontend, FastAPI backend, 2 WebMCP tools |
 | **Phase 3B** | Full Hybrid Implementation | All 8 WebMCP tools, GitHub OAuth, paper library |
 | **Phase 3C** | Production Deployment | GCP Cloud Run, CI/CD, security hardening, multi-provider LLM, Load More |
+| **Phase 3D** | Foundation Repair & GitHub Integration | Save pipeline fix, BYOK UX (Validate & Apply), GitHub-first persistence, .gitignore fix |
+| **Phase 3E** | MACP v2.0 Schema & Deep Analysis | Schema validation, deep PDF analysis (4-pass), multi-agent consensus (40/30/30), Perplexity deep research, agent registry (6 agents), 13 MCP endpoints |
 
-### Current: Phase 3D — Foundation Repair & GitHub Integration
+### Current: Phase 3F — Deployment & UI Polish
 
-- Fix save-to-library pipeline (broken in production)
-- Fix BYOK UX (add validation, apply button, error feedback)
-- Implement GitHub-first persistence (GitHub as source of truth, SQLite as cache)
-- End-to-end pipeline: Search → Save → Library → GitHub Sync → Cold Restart → Hydrate
+- Deploy Phase 3E code to Cloud Run
+- Multi-agent consensus comparison UI component
+- Deep analysis view in frontend
+- Address 10 dependabot security PRs
 
-### Next: Phase 3E — MACP v2.0 Schema & Deep Analysis
+### Next: Phase 4 — WebMCP Ecosystem & External Integrations
 
-- Define MACP v2.0 `schema.json` (self-describing repository standard)
-- Deep PDF analysis (full-text extraction, section chunking)
-- Multi-agent analysis files (one file per agent per paper)
 - Knowledge graph visualization in web UI
-
-### Future: Phase 3F — Multi-Agent Research Sync
-
-- Perplexity API integration for deep research with citations
-- Multi-agent consensus generation
-- Agent registry (`.macp/agents/`)
+- n8n workflow integration (daily paper digest, trend alerts)
+- Research templates for different domains
+- Collaborative notes (multi-agent + human)
 - Full-text search across all analyses
 
 ---
@@ -305,10 +413,10 @@ When conducting research using multiple AI assistants (ChatGPT, Claude, Perplexi
 ## Roadmap
 
 ```
-Phase 1 ✅ → Phase 2 ✅ → Phase 3A ✅ → Phase 3B ✅ → Phase 3C ✅ → Phase 3D 🔧 → Phase 3E 📋 → Phase 3F 📋 → Phase 4 📋
-  Manual       CLI Tools     Web UI       Full Hybrid    Production    Foundation     MACP v2.0     Multi-Agent    WebMCP
-  MACP         & Schemas     Prototype    WebMCP         Deployment    Repair &       Schema &      Research       Ecosystem
-                                                                      GitHub Sync    Deep Analysis  Sync
+Phase 1 ✅ → Phase 2 ✅ → Phase 3A ✅ → Phase 3B ✅ → Phase 3C ✅ → Phase 3D ✅ → Phase 3E ✅ → Phase 3F 🔧 → Phase 4 📋
+  Manual       CLI Tools     Web UI       Full Hybrid    Production    Foundation     MACP v2.0     Deploy &       WebMCP
+  MACP         & Schemas     Prototype    WebMCP         Deployment    Repair &       Schema &      UI Polish      Ecosystem
+                                                                      GitHub Sync    Deep Analysis
 ```
 
 See **[ROADMAP.md](ROADMAP.md)** for the full roadmap with sprint details, architecture diagrams, and agent assignment matrix.
@@ -320,6 +428,7 @@ See **[ROADMAP.md](ROADMAP.md)** for the full roadmap with sprint details, archi
 This project follows security best practices aligned with the [Claude Code Security](https://claude.com/solutions/claude-code-security) framework and the CS Agent v3.1 Multi-Stage Verification Protocol:
 
 - **Input Sanitization:** All user inputs validated via Pydantic models with XML structural delimiters for LLM prompts
+- **Schema Validation:** All data writes validated against MACP v2.0 `schema.json` before persistence
 - **Authentication:** GitHub OAuth 2.0 with JWT session tokens (configurable expiry)
 - **Container Security:** Non-root user in Docker, `.dockerignore` for sensitive files
 - **Headers:** CSP, HSTS, X-Frame-Options, X-Content-Type-Options
@@ -333,7 +442,7 @@ For security concerns, please see [SECURITY.md](SECURITY.md) or contact the main
 
 ## WebMCP Integration
 
-The MACP Research Assistant implements the **Web-based Model Context Protocol (WebMCP)**, enabling AI agents to interact with the platform programmatically. This is a key differentiator — your AI assistant can search, analyze, and save papers on your behalf.
+The MACP Research Assistant implements the **Web-based Model Context Protocol (WebMCP)**, enabling AI agents to interact with the platform programmatically. This is a key differentiator — your AI assistant can search, analyze, generate consensus, and save papers on your behalf.
 
 ### Claude Desktop Configuration
 
@@ -352,17 +461,35 @@ The MACP Research Assistant implements the **Web-based Model Context Protocol (W
 ```python
 import requests
 
+BASE = "https://macpresearch.ysenseai.org/api/mcp"
+
 # Search for papers
-results = requests.post("https://macpresearch.ysenseai.org/api/mcp/search_papers", json={
+results = requests.post(f"{BASE}/search_papers", json={
     "query": "multi-agent reinforcement learning",
-    "source": "daily_papers",
+    "source": "hysts",
     "limit": 20
 })
 
-# Analyze a paper
-analysis = requests.post("https://macpresearch.ysenseai.org/api/mcp/analyze_paper", json={
+# Analyze a paper (abstract)
+analysis = requests.post(f"{BASE}/analyze_paper", json={
     "arxiv_id": "2503.16408",
     "provider": "gemini"
+})
+
+# Deep PDF analysis (4-pass full-text)
+deep = requests.post(f"{BASE}/analyze-deep", json={
+    "arxiv_id": "2503.16408",
+    "provider": "gemini"
+})
+
+# Generate multi-agent consensus
+consensus = requests.post(f"{BASE}/consensus", json={
+    "arxiv_id": "2503.16408"
+})
+
+# Deep research via Perplexity
+research = requests.post(f"{BASE}/deep-research", json={
+    "arxiv_id": "2503.16408"
 })
 ```
 
@@ -370,12 +497,12 @@ analysis = requests.post("https://macpresearch.ysenseai.org/api/mcp/analyze_pape
 
 ## Ecosystem Alignment
 
-This project is a foundational protocol within the broader **YSenseAI Ecosystem**:
+This project is **Tool Suite 2** within the broader **YSenseAI Ecosystem**:
 
-- **Command Central Hub:** [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp)
+- **Command Central Hub:** [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp) (PRIVATE)
 - **Unified Ecosystem Roadmap:** [YSenseAI Ecosystem Map & Unified Roadmap](https://github.com/creator35lwb-web/verifimind-genesis-mcp/blob/main/ecosystem/YSenseAIEcosystemMap%26UnifiedRoadmap(Feb2026).md)
-
-The MACP specification used here is based on MACP v2.0 from the [LegacyEvolve](https://github.com/creator35lwb-web/LegacyEvolve) project.
+- **MACP Specification:** [LegacyEvolve](https://github.com/creator35lwb-web/LegacyEvolve) (MACP v2.0 origin)
+- **VerifiMind-PEAS:** [VerifiMind-PEAS](https://github.com/creator35lwb-web/VerifiMind-PEAS) (Tool Suite 1)
 
 ---
 
@@ -383,7 +510,12 @@ The MACP specification used here is based on MACP v2.0 from the [LegacyEvolve](h
 
 ```
 macp-research-assistant/
-├── .macp/                        # MACP protocol directory
+├── .macp/                        # MACP v2.0 protocol directory
+│   ├── schema.json               # MACP v2.0 self-describing schema
+│   ├── manifest.json             # Master index of all papers/analyses
+│   ├── agents/                   # Agent registry (6 agents)
+│   ├── research/                 # Research data (papers, analyses)
+│   ├── analyses/                 # Per-agent analysis files
 │   ├── validation/               # Trinity Validation reports
 │   ├── handoffs/                 # FLYWHEEL TEAM handoff documents
 │   └── security/                 # Security assessment reports
@@ -395,22 +527,25 @@ macp-research-assistant/
 │   │   ├── models.py             # Pydantic models
 │   │   ├── auth.py               # GitHub OAuth + JWT
 │   │   ├── security.py           # Security headers middleware
-│   │   └── webmcp.py             # WebMCP endpoint handlers
+│   │   ├── webmcp.py             # WebMCP endpoint handlers (13 tools)
+│   │   ├── schema_validator.py   # MACP v2.0 schema validation
+│   │   └── github_storage.py     # GitHub-first persistence + per-agent storage
 │   ├── frontend/                 # React + Vite frontend
 │   │   └── src/
-│   │       ├── components/       # UI components
+│   │       ├── components/       # UI components (DeepAnalysisView, etc.)
 │   │       ├── hooks/            # Custom React hooks
-│   │       └── services/         # API client
+│   │       └── services/         # API client (13 endpoints)
 │   ├── Dockerfile                # Multi-stage Docker build
 │   └── deploy-cloudrun.sh        # GCP Cloud Run deployment
 │
 ├── tools/                        # Phase 2 CLI tools
-│   ├── paper_fetcher.py          # 3-pipeline paper discovery
+│   ├── paper_fetcher.py          # 3-pipeline paper discovery + PDF extraction
 │   ├── macp_cli.py               # CLI orchestrator
 │   ├── knowledge_graph.py        # Knowledge graph generator
-│   └── llm_providers.py          # Multi-provider LLM integration
+│   └── llm_providers.py          # 5-provider LLM integration + consensus scoring
 │
-├── docs/                         # Documentation
+├── docs/                         # Documentation + GitHub Pages landing page
+│   ├── index.html                # Landing page (GitHub Pages)
 │   ├── assets/                   # Logo and images
 │   ├── QUICK_START.md
 │   ├── MACP_SPECIFICATION.md
@@ -420,6 +555,7 @@ macp-research-assistant/
 ├── examples/                     # Usage examples
 ├── peas/                         # VerifiMind-PEAS validation reports
 ├── iteration/                    # Development iteration logs
+├── ROADMAP.md                    # Detailed development roadmap
 └── README.md                     # This file
 ```
 
@@ -432,6 +568,7 @@ macp-research-assistant/
 | [Quick Start Guide](docs/QUICK_START.md) | Get started in 5 minutes |
 | [MACP Specification](docs/MACP_SPECIFICATION.md) | MACP v2.0 protocol details |
 | [Architecture](docs/ARCHITECTURE.md) | System design and data flow |
+| [Roadmap](ROADMAP.md) | Detailed development roadmap with sprint breakdowns |
 | [Best Practices](docs/BEST_PRACTICES.md) | Tips for effective research workflows |
 | [FAQ](docs/FAQ.md) | Common questions and answers |
 
@@ -445,9 +582,10 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 - Improve documentation and examples
 - Report bugs and suggest features
-- Build Phase 3D/3E/3F features
+- Build Phase 3F/4 features
 - Add new LLM provider integrations
 - Create research workflow templates
+- Build knowledge graph visualizations
 
 ---
 
@@ -471,7 +609,8 @@ If you use MACP Research Assistant in your research, please cite:
 
 | Project | Description |
 |---------|-------------|
-| [VerifiMind-PEAS](https://github.com/creator35lwb-web/VerifiMind-PEAS) | Ethical AI verification methodology with CS Agent v3.1 |
+| [VerifiMind-PEAS](https://github.com/creator35lwb-web/VerifiMind-PEAS) | Ethical AI verification methodology with CS Agent v3.1 (Tool Suite 1) |
+| [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp) | Command Central Hub for VerifiMind-PEAS v0.5.0 |
 | [GODELAI](https://github.com/creator35lwb-web/godelai) | AI alignment research project |
 | [LegacyEvolve](https://github.com/creator35lwb-web/LegacyEvolve) | MACP v2.0 specification and protocol |
 
@@ -490,8 +629,8 @@ If you use MACP Research Assistant in your research, please cite:
 ## Acknowledgments
 
 - **MACP Protocol:** Based on MACP v2.0 from the LegacyEvolve project
-- **FLYWHEEL TEAM:** Built through multi-agent collaboration (Manus AI + Claude Code)
-- **Data Sources:** arXiv API, HuggingFace Daily Papers API
+- **FLYWHEEL TEAM:** Built through multi-agent collaboration (Manus AI as CSO R + Claude Code as CTO RNA)
+- **Data Sources:** arXiv API, HuggingFace Daily Papers API (12,800+ papers), Perplexity Sonar API
 - **Security:** Aligned with Claude Code Security framework and CS Agent v3.1 protocol
 
 ---
