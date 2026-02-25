@@ -29,6 +29,8 @@ export function Workspace() {
 
   const [activeView, setActiveView] = useState<ViewMode>("search");
   const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [provider, setProvider] = useState("gemini");
   const [apiKey, setApiKey] = useState("");
   const [byokValidated, setByokValidated] = useState(false);
@@ -196,8 +198,50 @@ export function Workspace() {
     return <div className="workspace" style={{ placeItems: "center", display: "grid" }}>Loading...</div>;
   }
 
+  const handleSelectPaper = (paper: Paper) => {
+    setSelectedPaper(paper);
+    setMobileDetailOpen(true);
+  };
+
+  const handleMobileViewChange = (view: ViewMode) => {
+    handleViewChange(view);
+    setMobileSidebarOpen(false);
+  };
+
   return (
     <div className="workspace">
+      {/* Mobile header — visible only on small screens */}
+      <header className="mobile-header">
+        <button className="mobile-menu-btn" onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}>
+          <span className="mobile-menu-icon" />
+        </button>
+        <span className="sidebar-logo">MACP Research</span>
+        {user && <img className="mobile-avatar" src={user.github_avatar_url} alt="" />}
+      </header>
+
+      {/* Mobile sidebar overlay */}
+      {mobileSidebarOpen && (
+        <div className="mobile-sidebar-overlay" onClick={() => setMobileSidebarOpen(false)}>
+          <div className="mobile-sidebar" onClick={(e) => e.stopPropagation()}>
+            <Sidebar
+              user={user}
+              loginUrl={loginUrl}
+              onLogout={logout}
+              activeView={activeView}
+              onViewChange={handleMobileViewChange}
+              repos={repos}
+              connected={connected}
+              connectedRepo={connectedRepo}
+              githubLoading={githubLoading}
+              onFetchRepos={fetchRepos}
+              onConnect={connect}
+              onSync={sync}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
       <Sidebar
         user={user}
         loginUrl={loginUrl}
@@ -228,7 +272,7 @@ export function Workspace() {
             searchError={searchError}
             onSearch={handleSearch}
             selectedPaper={selectedPaper}
-            onSelectPaper={setSelectedPaper}
+            onSelectPaper={handleSelectPaper}
             analyses={analyses}
             analyzingId={analyzingId}
             analyzeError={analyzeError}
@@ -257,16 +301,23 @@ export function Workspace() {
         )}
       </ErrorBoundary>
 
-      <DetailPanel
-        paper={selectedPaper}
-        analysis={selectedPaper ? analyses[selectedPaper.id] : undefined}
-        deepAnalysis={selectedPaper ? deepAnalyses[selectedPaper.id] : undefined}
-        consensus={selectedPaper ? consensusResults[selectedPaper.id] : undefined}
-        onAnalyzeDeep={handleAnalyzeDeep}
-        onGenerateConsensus={handleGenerateConsensus}
-        analyzingDeep={analyzingDeep}
-        generatingConsensus={generatingConsensus}
-      />
+      <div className={`detail-panel-wrapper ${mobileDetailOpen && selectedPaper ? "mobile-open" : ""}`}>
+        {mobileDetailOpen && selectedPaper && (
+          <button className="mobile-back-btn" onClick={() => setMobileDetailOpen(false)}>
+            &larr; Back to results
+          </button>
+        )}
+        <DetailPanel
+          paper={selectedPaper}
+          analysis={selectedPaper ? analyses[selectedPaper.id] : undefined}
+          deepAnalysis={selectedPaper ? deepAnalyses[selectedPaper.id] : undefined}
+          consensus={selectedPaper ? consensusResults[selectedPaper.id] : undefined}
+          onAnalyzeDeep={handleAnalyzeDeep}
+          onGenerateConsensus={handleGenerateConsensus}
+          analyzingDeep={analyzingDeep}
+          generatingConsensus={generatingConsensus}
+        />
+      </div>
     </div>
   );
 }
