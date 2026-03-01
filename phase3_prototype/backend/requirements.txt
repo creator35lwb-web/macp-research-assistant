@@ -10,4 +10,4 @@ PyJWT==2.11.0
 httpx==0.28.1
 cryptography==44.0.0
 psycopg2-binary==2.9.11
-PyMuPDF==1.25.3
+PyMuPDF==1.27.1
