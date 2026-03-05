@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Note, ViewMode, DeepAnalysis, Consensus, Agent } from "../../api/types";
 import { useAuth } from "../../hooks/useAuth";
 import { usePapers } from "../../hooks/usePapers";
@@ -77,9 +77,10 @@ export function Workspace() {
   }, []);
 
   // Fetch GitHub status on mount if user is logged in
-  useState(() => {
+  useEffect(() => {
     if (user) fetchStatus();
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const handleSearch = (query: string, source: string) => {
     search(query, 10, source);
