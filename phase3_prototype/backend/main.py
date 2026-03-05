@@ -15,7 +15,10 @@ import sys
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+import logging
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request
+
+logger = logging.getLogger(__name__)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
@@ -181,7 +184,7 @@ limiter = Limiter(key_func=_rate_limit_key)
 app = FastAPI(
     title="MACP Research Assistant API",
     description="Phase 3C — GitHub OAuth, multi-user, WebMCP, security headers.",
-    version="0.3.0",
+    version="1.1.0",
     lifespan=lifespan,
 )
 
@@ -393,6 +396,42 @@ async def github_status(user: User = Depends(require_user)):
 
 
 # ---------------------------------------------------------------------------
+# Background Tasks
+# ---------------------------------------------------------------------------
+
+async def _write_analysis_to_github(
+    user_id: Optional[int],
+    paper_arxiv_id: str,
+    analysis_id: int,
+    full_analysis: dict,
+):
+    """MACP v2.0: Write analysis result to connected GitHub repo (fire-and-forget).
+
+    Path: .macp/analyses/{arxiv_id}/{provider}_{YYYYMMDD}.json
+    This is the Source of Truth write that enables multi-agent collaboration.
+    """
+    if user_id is None:
+        return
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user or not user.connected_repo:
+            return
+        storage = get_storage_service(user)
+        if not storage:
+            return
+        paper = db.query(Paper).filter(Paper.arxiv_id == paper_arxiv_id).first()
+        db_analysis = db.query(Analysis).filter(Analysis.id == analysis_id).first()
+        if paper and db_analysis:
+            ok = await storage.save_analysis_per_agent(paper, db_analysis, full_analysis)
+            logger.info("GitHub write-back: %s/%s → %s", paper_arxiv_id, db_analysis.provider, "ok" if ok else "failed")
+    except Exception as e:
+        logger.warning("GitHub analysis write-back failed for user %s / paper %s: %s", user_id, paper_arxiv_id, e)
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
 # Core Endpoints
 # ---------------------------------------------------------------------------
 
@@ -502,6 +541,7 @@ async def search_papers(
 async def analyze_paper_endpoint(
     request: Request,
     req: AnalyzeRequest,
+    background_tasks: BackgroundTasks,
     user: Optional[User] = Depends(get_current_user),
 ):
     if user is None and not is_authenticated(
@@ -564,6 +604,15 @@ async def analyze_paper_endpoint(
         db.add(db_analysis)
         paper.status = "analyzed"
         db.commit()
+        db.refresh(db_analysis)  # populate db_analysis.id
+
+        # MACP v2.0: fire-and-forget GitHub write-back (Source of Truth)
+        # Runs after response is sent — non-blocking, no user wait
+        if user and user.connected_repo:
+            background_tasks.add_task(
+                _write_analysis_to_github,
+                user.id, paper.arxiv_id, db_analysis.id, analysis,
+            )
 
         log_audit(event="analyze", message=f"paper={paper.arxiv_id} provider={req.provider}",
                   source_ip=get_remote_address(request), user_id=_get_user_id(user), db=db)
