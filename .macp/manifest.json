@@ -2,9 +2,19 @@
   "version": "2.0",
   "schema": "macp-research",
   "created_at": "2026-03-05T05:55:35.772396+00:00",
-  "updated_at": "2026-03-05T05:55:35.772415+00:00",
+  "updated_at": "2026-03-05T06:00:12.473475+00:00",
   "owner": "creator35lwb-web",
   "papers": {},
-  "analyses": {},
+  "analyses": {
+    "arxiv:2405.19888": {
+      "consensus": {
+        "agreement_score": 0.344,
+        "agents": [
+          "gemini"
+        ],
+        "generated_at": "2026-03-05T06:00:08.001634+00:00"
+      }
+    }
+  },
   "notes": {}
 }
