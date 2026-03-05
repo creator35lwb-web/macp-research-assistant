@@ -228,6 +228,11 @@ export function generateMarkdown(
       }
     }
 
+    if (deep._meta?.extraction_warnings && deep._meta.extraction_warnings.length > 0) {
+      L.push(`> ⚠️ **Extraction Warning:** Analysis may be incomplete — PDF text extraction was limited. HTML fallback was used.`);
+      L.push(``);
+    }
+
     if (deep._meta?.bias_disclaimer) {
       L.push(`> ⚠️ *${deep._meta.bias_disclaimer}*`);
       L.push(``);

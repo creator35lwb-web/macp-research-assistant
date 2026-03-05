@@ -184,7 +184,7 @@ limiter = Limiter(key_func=_rate_limit_key)
 app = FastAPI(
     title="MACP Research Assistant API",
     description="Phase 3C — GitHub OAuth, multi-user, WebMCP, security headers.",
-    version="1.1.0",
+    version="1.3.0",
     lifespan=lifespan,
 )
 
