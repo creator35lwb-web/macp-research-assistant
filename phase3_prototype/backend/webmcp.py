@@ -280,6 +280,8 @@ async def mcp_analyze(
         db.add(db_analysis)
         paper.status = "analyzed"
         db.commit()
+        db.refresh(paper)        # reload attrs before session closes (prevents DetachedInstanceError)
+        db.refresh(db_analysis)  # same — background task accesses these after db.close()
 
         # GitHub dual-write: save analysis with per-agent path (MACP v2.0)
         if user:
@@ -384,6 +386,8 @@ async def mcp_analyze_deep(
         db.add(db_analysis)
         paper.status = "analyzed"
         db.commit()
+        db.refresh(paper)        # reload attrs before session closes (prevents DetachedInstanceError)
+        db.refresh(db_analysis)  # same — background task accesses these after db.close()
 
         # Step 5: GitHub dual-write with per-agent path (MACP v2.0)
         if user:
