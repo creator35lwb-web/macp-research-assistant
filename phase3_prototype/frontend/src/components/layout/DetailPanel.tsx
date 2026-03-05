@@ -13,12 +13,15 @@ interface DetailPanelProps {
   onGenerateConsensus?: (paperId: string) => void;
   analyzingDeep?: boolean;
   generatingConsensus?: boolean;
+  focusMode?: boolean;
+  onToggleFocus?: () => void;
 }
 
 export function DetailPanel({
   paper, analysis, deepAnalysis, consensus,
   onAnalyzeDeep, onGenerateConsensus,
   analyzingDeep, generatingConsensus,
+  focusMode, onToggleFocus,
 }: DetailPanelProps) {
   const [overviewCollapsed, setOverviewCollapsed] = useState(false);
 
@@ -32,6 +35,15 @@ export function DetailPanel({
 
   return (
     <aside className="detail-panel">
+      {/* Focus mode toggle */}
+      {onToggleFocus && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+          <button className="btn-focus-toggle" onClick={onToggleFocus}>
+            {focusMode ? "◀ List view" : "⤢ Focus"}
+          </button>
+        </div>
+      )}
+
       {/* Paper Overview — collapsible */}
       <div className="detail-card detail-card--overview">
         <button
