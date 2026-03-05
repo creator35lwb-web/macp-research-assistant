@@ -2,7 +2,7 @@
   "version": "2.0",
   "schema": "macp-research",
   "created_at": "2026-03-05T05:55:35.772396+00:00",
-  "updated_at": "2026-03-05T11:23:40.219220+00:00",
+  "updated_at": "2026-03-05T11:39:50.705568+00:00",
   "owner": "creator35lwb-web",
   "papers": {},
   "analyses": {
@@ -21,6 +21,15 @@
           "provider": "gemini",
           "type": "deep",
           "analyzed_at": "2026-03-05T11:23:38.317798+00:00"
+        }
+      ]
+    },
+    "arxiv:2412.12004": {
+      "providers": [
+        {
+          "provider": "gemini",
+          "type": "deep",
+          "analyzed_at": "2026-03-05T11:39:47.355437+00:00"
         }
       ]
     }
