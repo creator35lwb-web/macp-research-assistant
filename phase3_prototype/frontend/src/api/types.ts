@@ -102,6 +102,8 @@ export interface DeepAnalysis {
     provider: string;
     model: string;
     passes: number;
+    extraction_source?: string;
+    extraction_warnings?: string[];
   };
 }
 
