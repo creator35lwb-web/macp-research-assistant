@@ -4,6 +4,7 @@ import { LoginButton } from "../auth/LoginButton";
 import { UserMenu } from "../auth/UserMenu";
 import { RepoConnect } from "../auth/RepoConnect";
 import type { GitHubRepo } from "../../api/types";
+import { APP_VERSION } from "../../version";
 
 interface SidebarProps {
   user: User | null;
@@ -38,6 +39,7 @@ export function Sidebar({
     <aside className="sidebar">
       <div className="sidebar-header">
         <span className="sidebar-logo">MACP Research</span>
+        <span className="version-badge">{APP_VERSION}</span>
       </div>
 
       {user ? (

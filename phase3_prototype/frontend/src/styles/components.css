@@ -269,6 +269,18 @@
   font-weight: 500;
 }
 
+.version-notice {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.login-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 /* ========== Note Editor ========== */
 .note-editor textarea {
   width: 100%;

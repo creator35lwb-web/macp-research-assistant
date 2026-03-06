@@ -101,6 +101,18 @@
   background-clip: text;
 }
 
+.version-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 1px 5px;
+  letter-spacing: 0.02em;
+  margin-left: auto;
+}
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;
