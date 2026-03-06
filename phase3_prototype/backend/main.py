@@ -71,6 +71,20 @@ from llm_providers import analyze_paper as _analyze_paper, PROVIDERS
 # Rate limiting: 3-tier key function
 # ---------------------------------------------------------------------------
 
+def _get_real_client_ip(request: Request) -> str:
+    """Extract the true client IP from X-Forwarded-For.
+
+    Cloud Run appends the real client IP as the LAST entry in the chain.
+    Reading the first entry is exploitable — attackers can prepend fake IPs
+    to bypass per-IP rate limits. Always use the last entry on Cloud Run.
+    """
+    forwarded_for = request.headers.get("X-Forwarded-For", "")
+    if forwarded_for:
+        ips = [ip.strip() for ip in forwarded_for.split(",")]
+        return ips[-1]  # Last IP = Cloud Run's addition = real client
+    return request.client.host or "unknown"
+
+
 def _rate_limit_key(request: Request) -> str:
     """
     3-tier rate limit key:
@@ -93,9 +107,9 @@ def _rate_limit_key(request: Request) -> str:
                     return f"user:{payload.get('sub', 'unknown')}"
                 except InvalidTokenError:
                     pass
-        return f"apikey:{get_remote_address(request)}"
+        return f"apikey:{_get_real_client_ip(request)}"
 
-    return f"guest:{get_remote_address(request)}"
+    return f"guest:{_get_real_client_ip(request)}"
 
 
 # ---------------------------------------------------------------------------
@@ -184,7 +198,7 @@ limiter = Limiter(key_func=_rate_limit_key)
 app = FastAPI(
     title="MACP Research Assistant API",
     description="Phase 3C — GitHub OAuth, multi-user, WebMCP, security headers.",
-    version="1.3.0",
+    version="1.3.1",
     lifespan=lifespan,
 )
 

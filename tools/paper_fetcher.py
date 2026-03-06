@@ -757,6 +757,9 @@ class _TextExtractor(HTMLParser):
         return "".join(self._parts)
 
 
+_ARXIV_ID_PATTERN = re.compile(r'^\d{4}\.\d{4,5}(v\d+)?$')
+
+
 def fetch_arxiv_html(arxiv_id: str) -> Optional[dict]:
     """
     Fetch the HTML version of an arXiv paper as a fallback when PDF extraction fails.
@@ -768,15 +771,22 @@ def fetch_arxiv_html(arxiv_id: str) -> Optional[dict]:
         Extraction dict (same shape as extract_text()) with source="html_fallback",
         or None if the HTML version is unavailable.
     """
+    # SECURITY: Validate arxiv_id format before constructing outbound URL.
+    # Prevents partial SSRF if a DB record contains a malformed/injected ID.
+    clean_id = arxiv_id.replace("arxiv:", "").strip()
+    if not _ARXIV_ID_PATTERN.match(clean_id):
+        print(f"[SECURITY] Rejected invalid arXiv ID in fetch_arxiv_html: {arxiv_id!r}", file=sys.stderr)
+        return None
+
     if _httpx is None:
         return None
 
-    url = ARXIV_HTML_URL.format(arxiv_id=arxiv_id)
+    url = ARXIV_HTML_URL.format(arxiv_id=clean_id)
     try:
         with _httpx.Client(timeout=30, follow_redirects=True) as client:
             resp = client.get(url)
     except Exception as e:
-        print(f"[WARN] HTML fetch failed for {arxiv_id}: {e}", file=sys.stderr)
+        print(f"[WARN] HTML fetch failed for {clean_id}: {e}", file=sys.stderr)
         return None
 
     if resp.status_code != 200:
@@ -786,7 +796,7 @@ def fetch_arxiv_html(arxiv_id: str) -> Optional[dict]:
     try:
         parser.feed(resp.text)
     except Exception as e:
-        print(f"[WARN] HTML parse failed for {arxiv_id}: {e}", file=sys.stderr)
+        print(f"[WARN] HTML parse failed for {clean_id}: {e}", file=sys.stderr)
         return None
 
     full_text = parser.get_text()
