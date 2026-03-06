@@ -459,7 +459,7 @@ async def health():
     return {
         "status": "ok",
         "engine": "macp-research-assistant",
-        "version": "phase3c",
+        "version": "v1.4.0",
         "papers_in_db": count,
     }
 
