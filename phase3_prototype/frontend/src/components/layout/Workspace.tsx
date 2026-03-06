@@ -10,7 +10,6 @@ import { Sidebar } from "./Sidebar";
 import { MainPanel } from "./MainPanel";
 import { DetailPanel } from "./DetailPanel";
 import { KnowledgeGraph } from "../graph/KnowledgeGraph";
-import { KnowledgeUniverseWidget } from "../graph/KnowledgeUniverseWidget";
 import { ErrorBoundary } from "../common/ErrorBoundary";
 import { showToast } from "../common/Toast";
 import type { Paper } from "../../api/types";
@@ -277,15 +276,6 @@ export function Workspace() {
             <KnowledgeGraph data={graphData} />
           </main>
         ) : (
-          <>
-            {user && activeView === "search" && (
-              <KnowledgeUniverseWidget
-                stats={graphStats}
-                delta={graphDelta}
-                loading={graphStatsLoading}
-                onViewGraph={handleViewGraph}
-              />
-            )}
           <MainPanel
             view={activeView}
             papers={papers}
@@ -320,8 +310,12 @@ export function Workspace() {
             agents={agents}
             agentsLoading={agentsLoading}
             onFetchAgents={fetchAgents}
+            graphStats={graphStats}
+            graphDelta={graphDelta}
+            graphStatsLoading={graphStatsLoading}
+            onViewGraph={handleViewGraph}
+            showGraphWidget={!!user}
           />
-          </>
         )}
       </ErrorBoundary>
 

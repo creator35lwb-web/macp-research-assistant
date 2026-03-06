@@ -6,6 +6,8 @@ import { PaperSkeleton } from "../common/Skeleton";
 import { EmptyState } from "../common/EmptyState";
 import { NoteEditor } from "../notes/NoteEditor";
 import { AgentRegistry } from "../agents/AgentRegistry";
+import { KnowledgeUniverseWidget } from "../graph/KnowledgeUniverseWidget";
+import type { GraphStats, GraphDelta } from "../../hooks/useGraphStats";
 
 interface MainPanelProps {
   view: ViewMode;
@@ -51,6 +53,12 @@ interface MainPanelProps {
   agents?: Agent[];
   agentsLoading?: boolean;
   onFetchAgents?: () => void;
+  // Knowledge Universe Widget
+  graphStats?: GraphStats | null;
+  graphDelta?: GraphDelta | null;
+  graphStatsLoading?: boolean;
+  onViewGraph?: () => void;
+  showGraphWidget?: boolean;
 }
 
 export function MainPanel({
@@ -63,10 +71,19 @@ export function MainPanel({
   hasMore, onLoadMore, loadingMore,
   notes, notesLoading,
   agents, agentsLoading, onFetchAgents,
+  graphStats, graphDelta, graphStatsLoading, onViewGraph, showGraphWidget,
 }: MainPanelProps) {
   if (view === "search") {
     return (
       <main className="main-panel">
+        {showGraphWidget && onViewGraph && (
+          <KnowledgeUniverseWidget
+            stats={graphStats ?? null}
+            delta={graphDelta ?? null}
+            loading={graphStatsLoading ?? false}
+            onViewGraph={onViewGraph}
+          />
+        )}
         <SearchBar onSearch={(q, s) => onSearch(q, s)} searching={searching} />
 
         <div className="config-row">
