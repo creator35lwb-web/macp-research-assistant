@@ -4,11 +4,13 @@ import { useAuth } from "../../hooks/useAuth";
 import { usePapers } from "../../hooks/usePapers";
 import { useGraph } from "../../hooks/useGraph";
 import { useGitHub } from "../../hooks/useGitHub";
+import { useGraphStats } from "../../hooks/useGraphStats";
 import { mcpAddNote, mcpListNotes, mcpSave, validateApiKey, analyzeDeep, generateConsensus, getAgents } from "../../api/client";
 import { Sidebar } from "./Sidebar";
 import { MainPanel } from "./MainPanel";
 import { DetailPanel } from "./DetailPanel";
 import { KnowledgeGraph } from "../graph/KnowledgeGraph";
+import { KnowledgeUniverseWidget } from "../graph/KnowledgeUniverseWidget";
 import { ErrorBoundary } from "../common/ErrorBoundary";
 import { showToast } from "../common/Toast";
 import type { Paper } from "../../api/types";
@@ -22,6 +24,7 @@ export function Workspace() {
     libraryPapers, libraryLoading, fetchLibrary, markSaved,
   } = usePapers();
   const { graphData, loading: graphLoading, fetchGraph } = useGraph();
+  const { stats: graphStats, delta: graphDelta, loading: graphStatsLoading, refetch: refetchGraphStats } = useGraphStats(user?.id);
   const {
     repos, connected, connectedRepo, loading: githubLoading,
     fetchStatus, fetchRepos, connect, sync,
@@ -113,6 +116,15 @@ export function Workspace() {
     if (view === "agents") {
       fetchAgents();
     }
+    if (view === "graph") {
+      fetchGraph();
+    }
+  };
+
+  const handleViewGraph = () => {
+    handleViewChange("graph");
+    fetchGraph();
+    refetchGraphStats();
   };
 
   const handleAddNote = async (content: string, tags: string[], paperId?: string) => {
@@ -265,6 +277,15 @@ export function Workspace() {
             <KnowledgeGraph data={graphData} />
           </main>
         ) : (
+          <>
+            {user && activeView === "search" && (
+              <KnowledgeUniverseWidget
+                stats={graphStats}
+                delta={graphDelta}
+                loading={graphStatsLoading}
+                onViewGraph={handleViewGraph}
+              />
+            )}
           <MainPanel
             view={activeView}
             papers={papers}
@@ -300,6 +321,7 @@ export function Workspace() {
             agentsLoading={agentsLoading}
             onFetchAgents={fetchAgents}
           />
+          </>
         )}
       </ErrorBoundary>
 
