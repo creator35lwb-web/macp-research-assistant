@@ -502,8 +502,17 @@ Respond with valid JSON:
   "limitations": ["limitation 1", "limitation 2"],
   "future_work": ["direction 1", "direction 2"],
   "strength_score": 7,
+  "concepts": ["concept 1", "concept 2", "concept 3"],
+  "methods": ["method 1", "method 2"],
+  "related_themes": ["theme 1", "theme 2"],
   "extraction_warning": null
 }}
+
+Rules for concepts/methods/related_themes:
+- concepts: up to 5 key research concepts (e.g. "constitutional AI", "RLHF", "reward hacking")
+- methods: up to 5 technical methods or algorithms used (e.g. "chain-of-thought prompting", "PPO", "fine-tuning")
+- related_themes: up to 3 broader research themes (e.g. "AI alignment", "value learning")
+- Only include items explicitly present in the text above. Empty arrays are acceptable.
 
 Respond with ONLY the JSON object, no markdown formatting."""
 
