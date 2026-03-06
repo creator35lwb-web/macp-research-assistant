@@ -7,6 +7,70 @@
   overflow: hidden;
   background: var(--bg-primary);
   color: var(--text-primary);
+  transition: grid-template-columns 0.2s ease;
+}
+
+/* Focus mode: compact paper list + expanded detail fills center */
+.workspace--focus {
+  grid-template-columns: var(--sidebar-width) var(--detail-width-focus-list) 1fr;
+}
+
+/* Compact paper list in focus mode */
+.workspace--focus .paper-card {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.workspace--focus .paper-card-abstract,
+.workspace--focus .paper-card-actions,
+.workspace--focus .config-row {
+  display: none;
+}
+
+.workspace--focus .paper-card-meta {
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workspace--focus .paper-card-title {
+  font-size: 13px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Detail panel in focus mode: remove width cap + resize */
+.workspace--focus .detail-panel {
+  max-width: none;
+  resize: none;
+  direction: ltr;
+}
+
+/* Focus toggle button */
+.btn-focus-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.15s;
+}
+
+.btn-focus-toggle:hover {
+  color: var(--text-primary);
+  border-color: var(--border-default);
+  background: var(--bg-hover);
 }
 
 /* Sidebar */
@@ -35,6 +99,18 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.version-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 1px 5px;
+  letter-spacing: 0.02em;
+  margin-left: auto;
 }
 
 .sidebar-nav {

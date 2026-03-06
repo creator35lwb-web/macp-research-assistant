@@ -15,7 +15,10 @@ import sys
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+import logging
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request
+
+logger = logging.getLogger(__name__)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
@@ -68,6 +71,20 @@ from llm_providers import analyze_paper as _analyze_paper, PROVIDERS
 # Rate limiting: 3-tier key function
 # ---------------------------------------------------------------------------
 
+def _get_real_client_ip(request: Request) -> str:
+    """Extract the true client IP from X-Forwarded-For.
+
+    Cloud Run appends the real client IP as the LAST entry in the chain.
+    Reading the first entry is exploitable — attackers can prepend fake IPs
+    to bypass per-IP rate limits. Always use the last entry on Cloud Run.
+    """
+    forwarded_for = request.headers.get("X-Forwarded-For", "")
+    if forwarded_for:
+        ips = [ip.strip() for ip in forwarded_for.split(",")]
+        return ips[-1]  # Last IP = Cloud Run's addition = real client
+    return request.client.host or "unknown"
+
+
 def _rate_limit_key(request: Request) -> str:
     """
     3-tier rate limit key:
@@ -90,9 +107,9 @@ def _rate_limit_key(request: Request) -> str:
                     return f"user:{payload.get('sub', 'unknown')}"
                 except InvalidTokenError:
                     pass
-        return f"apikey:{get_remote_address(request)}"
+        return f"apikey:{_get_real_client_ip(request)}"
 
-    return f"guest:{get_remote_address(request)}"
+    return f"guest:{_get_real_client_ip(request)}"
 
 
 # ---------------------------------------------------------------------------
@@ -181,7 +198,7 @@ limiter = Limiter(key_func=_rate_limit_key)
 app = FastAPI(
     title="MACP Research Assistant API",
     description="Phase 3C — GitHub OAuth, multi-user, WebMCP, security headers.",
-    version="0.3.0",
+    version="1.3.1",
     lifespan=lifespan,
 )
 
@@ -393,6 +410,42 @@ async def github_status(user: User = Depends(require_user)):
 
 
 # ---------------------------------------------------------------------------
+# Background Tasks
+# ---------------------------------------------------------------------------
+
+async def _write_analysis_to_github(
+    user_id: Optional[int],
+    paper_arxiv_id: str,
+    analysis_id: int,
+    full_analysis: dict,
+):
+    """MACP v2.0: Write analysis result to connected GitHub repo (fire-and-forget).
+
+    Path: .macp/analyses/{arxiv_id}/{provider}_{YYYYMMDD}.json
+    This is the Source of Truth write that enables multi-agent collaboration.
+    """
+    if user_id is None:
+        return
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user or not user.connected_repo:
+            return
+        storage = get_storage_service(user)
+        if not storage:
+            return
+        paper = db.query(Paper).filter(Paper.arxiv_id == paper_arxiv_id).first()
+        db_analysis = db.query(Analysis).filter(Analysis.id == analysis_id).first()
+        if paper and db_analysis:
+            ok = await storage.save_analysis_per_agent(paper, db_analysis, full_analysis)
+            logger.info("GitHub write-back: %s/%s → %s", paper_arxiv_id, db_analysis.provider, "ok" if ok else "failed")
+    except Exception as e:
+        logger.warning("GitHub analysis write-back failed for user %s / paper %s: %s", user_id, paper_arxiv_id, e)
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
 # Core Endpoints
 # ---------------------------------------------------------------------------
 
@@ -502,6 +555,7 @@ async def search_papers(
 async def analyze_paper_endpoint(
     request: Request,
     req: AnalyzeRequest,
+    background_tasks: BackgroundTasks,
     user: Optional[User] = Depends(get_current_user),
 ):
     if user is None and not is_authenticated(
@@ -564,6 +618,15 @@ async def analyze_paper_endpoint(
         db.add(db_analysis)
         paper.status = "analyzed"
         db.commit()
+        db.refresh(db_analysis)  # populate db_analysis.id
+
+        # MACP v2.0: fire-and-forget GitHub write-back (Source of Truth)
+        # Runs after response is sent — non-blocking, no user wait
+        if user and user.connected_repo:
+            background_tasks.add_task(
+                _write_analysis_to_github,
+                user.id, paper.arxiv_id, db_analysis.id, analysis,
+            )
 
         log_audit(event="analyze", message=f"paper={paper.arxiv_id} provider={req.provider}",
                   source_ip=get_remote_address(request), user_id=_get_user_id(user), db=db)

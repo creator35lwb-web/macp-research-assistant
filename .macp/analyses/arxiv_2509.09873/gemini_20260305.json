@@ -1,0 +1,116 @@
+{
+  "arxiv_id": "arxiv:2509.09873",
+  "paper_id": "arxiv:2509.09873",
+  "title": "From Hugging Face to GitHub: Tracing License Drift in the Open-Source AI Ecosystem",
+  "agent_id": "gemini",
+  "provider": "gemini",
+  "type": "deep",
+  "analysis_type": "deep",
+  "model": "gemini-2.5-flash",
+  "analyzed_at": "2026-03-05T12:21:32.511082+00:00",
+  "summary": "This paper, \"From Hugging Face to GitHub: Tracing License Drift in the Open-Source AI Ecosystem,\" conducts the first end-to-end audit of the AI supply chain to track license obligations from original datasets to final software applications. It reveals a pervasive disregard for non-permissive license obligations, with nearly all being replaced by permissive licenses in downstream components. The model-to-repository stage acts as a critical filter, causing a near-total collapse in retention rates for restrictive licenses, leading to permissive licenses dominating 91.1% of all repository licenses in chains originating from non-permissive upstream components. Application developers frequently treat complex restrictive licensed models as simple permissive libraries, effectively ignoring their terms, though COPYLEFT models show comparatively higher retention at 25.3%.",
+  "key_findings": [
+    "Conducted the first end-to-end audit of the AI supply chain to trace license obligations from original datasets to final software applications.",
+    "Quantified widespread license drift, showing that nearly all non-permissive license categories are disregarded and replaced by permissive licenses downstream.",
+    "Identified the model-to-repository stage as a critical filter causing a near-total collapse in retention rates for non-permissive licenses.",
+    "Demonstrated the dominance of permissive licenses, accounting for 91.1% of all repository licenses originating from non-permissive upstream components.",
+    "Revealed that application developers often treat complex restrictive licensed models as simple permissive libraries, ignoring their terms.",
+    "Observed that COPYLEFT models exhibit a substantially higher retention rate (25.3%) at the model-to-repository stage compared to other restrictive categories."
+  ],
+  "methodology": "The study employs a formal, replicable, and contradiction-focused model for large-scale computational analysis, building on a deconstruction of license terms into machine-readable Permission, Duty, and Prohibition statuses. Data collection involves a multi-stage process using the Hugging Face API, GitHub Code Search, and ScanCode License Extraction. This logic-based model assesses compatibility by focusing on direct contradictions, enabling automatable, large-scale empirical auditing of the AI supply chain.",
+  "relevance_score": 0.7,
+  "bias_disclaimer": "AI-generated deep analysis may contain inaccuracies or reflect biases from the underlying model. Always perform critical evaluation.",
+  "analysis": {
+    "summary": "This paper, \"From Hugging Face to GitHub: Tracing License Drift in the Open-Source AI Ecosystem,\" conducts the first end-to-end audit of the AI supply chain to track license obligations from original datasets to final software applications. It reveals a pervasive disregard for non-permissive license obligations, with nearly all being replaced by permissive licenses in downstream components. The model-to-repository stage acts as a critical filter, causing a near-total collapse in retention rates for restrictive licenses, leading to permissive licenses dominating 91.1% of all repository licenses in chains originating from non-permissive upstream components. Application developers frequently treat complex restrictive licensed models as simple permissive libraries, effectively ignoring their terms, though COPYLEFT models show comparatively higher retention at 25.3%.",
+    "methodology_detail": "The study employs a formal, replicable, and contradiction-focused model for large-scale computational analysis, building on a deconstruction of license terms into machine-readable Permission, Duty, and Prohibition statuses. Data collection involves a multi-stage process using the Hugging Face API, GitHub Code Search, and ScanCode License Extraction. This logic-based model assesses compatibility by focusing on direct contradictions, enabling automatable, large-scale empirical auditing of the AI supply chain.",
+    "key_contributions": [
+      "Conducted the first end-to-end audit of the AI supply chain to trace license obligations from original datasets to final software applications.",
+      "Quantified widespread license drift, showing that nearly all non-permissive license categories are disregarded and replaced by permissive licenses downstream.",
+      "Identified the model-to-repository stage as a critical filter causing a near-total collapse in retention rates for non-permissive licenses.",
+      "Demonstrated the dominance of permissive licenses, accounting for 91.1% of all repository licenses originating from non-permissive upstream components.",
+      "Revealed that application developers often treat complex restrictive licensed models as simple permissive libraries, ignoring their terms.",
+      "Observed that COPYLEFT models exhibit a substantially higher retention rate (25.3%) at the model-to-repository stage compared to other restrictive categories."
+    ],
+    "limitations": [
+      "Not found in extracted text"
+    ],
+    "future_work": [
+      "Not found in extracted text"
+    ],
+    "strength_score": 7,
+    "relevance_tags": [
+      "Open-Source AI",
+      "License Drift",
+      "Software Licensing",
+      "AI Supply Chain",
+      "Hugging Face",
+      "GitHub",
+      "Copyleft",
+      "Permissive Licenses",
+      "License Compliance"
+    ],
+    "research_gaps": [
+      "The study does not investigate the underlying reasons or motivations for the observed license drift (e.g., developer awareness, tooling limitations, legal ambiguity).",
+      "The paper does not explicitly analyze the potential legal, ethical, or economic implications of widespread license non-compliance for the open-source AI ecosystem.",
+      "No proposed solutions, mitigation strategies, or best practices are discussed to address the identified license drift and improve compliance."
+    ],
+    "section_analyses": [
+      {
+        "pass": "overview",
+        "data": {
+          "summary": "The paper's title, \"From Hugging Face to GitHub: Tracing License Drift in the Open-Source AI Ecosystem,\" indicates a study focused on the evolution or changes in software licenses within the open-source artificial intelligence domain. It specifically highlights the journey of AI projects or components between platforms like Hugging Face and GitHub as a point of investigation for these license changes. The authors are James Jewitt, Hao Li, Bram Adams, Gopi Krishnan Rajbahadur, and Ahmed E. Hassan, all affiliated with the School of Computing at Queen\u2019s University. However, without an abstract or introduction, the specific research goals, methodology, or key findings of this work cannot be determined.",
+          "key_contributions": [],
+          "novelty_assessment": "Not found in extracted text",
+          "extraction_warning": "INSUFFICIENT TEXT - analysis based on limited extraction"
+        }
+      },
+      {
+        "pass": "methodology",
+        "data": {
+          "methodology_detail": "The study conducts the first end-to-end audit of the AI supply chain to trace license obligations from original datasets to final software applications. It adopts a formal, replicable, and contradiction-focused model for large-scale computational analysis, building on Moreau et al.'s deconstruction of license terms into Permission, Duty, and Prohibition statuses. The approach acknowledges the interpretive challenges of software licensing and the limitations of traditional compatibility matrices for novel, AI-specific use-based restrictions.",
+          "technical_approach": "The core technical approach involves a multi-stage data collection process using the Hugging Face API and GitHub Code Search for license extraction, complemented by ScanCode License Extraction. License analysis is based on a logic-based model that categorizes license terms into machine-readable statuses: Permission, Duty, and Prohibition. This model is used to assess compatibility, focusing on direct contradictions rather than cumulative complexity, to enable automatable, large-scale empirical auditing.",
+          "reproducibility": "high",
+          "datasets_used": [
+            "Hugging Face platform",
+            "GitHub repositories"
+          ],
+          "extraction_warning": null
+        }
+      },
+      {
+        "pass": "results",
+        "data": {
+          "key_findings": [
+            "Nearly all non-permissive license categories exhibit disregard for their obligations, frequently being replaced by permissive licenses in downstream components.",
+            "Non-Commercial licenses have a low retention rate of 20.7%, and Share-Alike datasets result in models with the same license category only 3.9% of the time, effectively ignoring copyleft obligations.",
+            "The model \u2192 repository stage acts as a critical filter, causing a near-total collapse in retention rates for non-permissive licenses (e.g., ML License at 0.4%, Non-Commercial at 6.7%, Share-Alike at 1.7%).",
+            "Permissive licenses demonstrate high stability, with 82.8% retention from dataset \u2192 model and 91.9% retention from model \u2192 repository stages.",
+            "Permissive licenses account for 91.1% of all repository licenses in chains originating from non-permissive upstream components, indicating their dominance after license drift.",
+            "Application developers appear to treat complex restrictive licensed models as simple permissive libraries, ignoring their terms at the final point of integration.",
+            "Despite the general collapse of restrictive licenses, COPYLEFT models show a substantially higher retention rate of 25.3% at the model \u2192 repository stage compared to other restrictive categories.",
+            "For 'Dataset' related analysis, 35.5% were non-violations, 50.3% were violations solved by a tool, and 14.2% were violations remaining."
+          ],
+          "limitations": [
+            "Not found in extracted text"
+          ],
+          "future_work": [
+            "Not found in extracted text"
+          ],
+          "strength_score": 7,
+          "extraction_warning": null
+        }
+      }
+    ],
+    "_meta": {
+      "bias_disclaimer": "AI-generated deep analysis may contain inaccuracies or reflect biases from the underlying model. Always perform critical evaluation.",
+      "analysis_type": "deep",
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "passes": 4,
+      "extraction_source": "pdf",
+      "extraction_warnings": [
+        "INSUFFICIENT TEXT - analysis based on limited extraction"
+      ]
+    }
+  }
+}

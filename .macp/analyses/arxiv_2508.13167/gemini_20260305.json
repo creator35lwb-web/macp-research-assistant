@@ -1,0 +1,106 @@
+{
+  "arxiv_id": "arxiv:2508.13167",
+  "paper_id": "arxiv:2508.13167",
+  "title": "Chain-of-Agents: End-to-End Agent Foundation Models via Multi-Agent Distillation and Agentic RL",
+  "agent_id": "gemini",
+  "provider": "gemini",
+  "type": "deep",
+  "analysis_type": "deep",
+  "model": "gemini-2.5-flash",
+  "analyzed_at": "2026-03-05T11:23:36.990003+00:00",
+  "summary": "The paper introduces \"Chain-of-Agents\" (CoA), a novel framework for developing \"End-to-End Agent Foundation Models\" by dynamically orchestrating a unified model with specialized role-playing and tool agents. It integrates \"Multi-Agent Distillation\" and \"Agentic RL\" to achieve this, aiming to create comprehensive, self-contained AI agents. The core idea involves distilling sequential decision-making patterns and agent activation sequences from expert multi-agent systems into 'CoA distillation datasets'. These datasets are then used for Agentic Supervised Fine-tuning, enabling the model to learn adaptive, dynamic multi-agent collaboration within a single inference process, with a focus on computational efficiency evaluation.",
+  "key_findings": [
+    "Proposing \"Chain-of-Agents\" as a novel architectural paradigm for agent development.",
+    "Leveraging \"Multi-Agent Distillation\" as a key technique for training agent foundation models.",
+    "Employing \"Agentic RL\" as a specialized reinforcement learning mechanism.",
+    "Focusing on the \"End-to-End\" development of agent foundation models."
+  ],
+  "methodology": "The Chain-of-Agents (CoA) framework orchestrates a unified model (M\u03b8) with specialized role-playing (e.g., Thinking, Plan, Reflection) and tool agents (e.g., Search, Crawl, Code Generate) to tackle complex queries. Its core technical approach is multi-agent knowledge distillation, which extracts complete execution trajectories (reasoning states, activated agents, observations) from expert multi-agent systems like OAgents. These extracted trajectories form 'CoA distillation datasets' used for Agentic Supervised Fine-tuning, allowing the model to learn dynamic agent orchestration via state transitions, with progressive quality filtering applied to exclude overly simplistic tasks.",
+  "relevance_score": 0.7,
+  "bias_disclaimer": "AI-generated deep analysis may contain inaccuracies or reflect biases from the underlying model. Always perform critical evaluation.",
+  "analysis": {
+    "summary": "The paper introduces \"Chain-of-Agents\" (CoA), a novel framework for developing \"End-to-End Agent Foundation Models\" by dynamically orchestrating a unified model with specialized role-playing and tool agents. It integrates \"Multi-Agent Distillation\" and \"Agentic RL\" to achieve this, aiming to create comprehensive, self-contained AI agents. The core idea involves distilling sequential decision-making patterns and agent activation sequences from expert multi-agent systems into 'CoA distillation datasets'. These datasets are then used for Agentic Supervised Fine-tuning, enabling the model to learn adaptive, dynamic multi-agent collaboration within a single inference process, with a focus on computational efficiency evaluation.",
+    "methodology_detail": "The Chain-of-Agents (CoA) framework orchestrates a unified model (M\u03b8) with specialized role-playing (e.g., Thinking, Plan, Reflection) and tool agents (e.g., Search, Crawl, Code Generate) to tackle complex queries. Its core technical approach is multi-agent knowledge distillation, which extracts complete execution trajectories (reasoning states, activated agents, observations) from expert multi-agent systems like OAgents. These extracted trajectories form 'CoA distillation datasets' used for Agentic Supervised Fine-tuning, allowing the model to learn dynamic agent orchestration via state transitions, with progressive quality filtering applied to exclude overly simplistic tasks.",
+    "key_contributions": [
+      "Proposing \"Chain-of-Agents\" as a novel architectural paradigm for agent development.",
+      "Leveraging \"Multi-Agent Distillation\" as a key technique for training agent foundation models.",
+      "Employing \"Agentic RL\" as a specialized reinforcement learning mechanism.",
+      "Focusing on the \"End-to-End\" development of agent foundation models."
+    ],
+    "limitations": [
+      "The provided analysis lacks actual numerical results, tables, or figures, preventing a detailed assessment of the paper's performance and findings.",
+      "No explicit conclusions or self-identified limitations of the research are presented within the given content.",
+      "The evaluation set of 10 instances from the GAIA dataset for computational efficiency is very small, which may limit the generalizability and statistical significance of the comparative analysis."
+    ],
+    "future_work": [
+      "The provided text does not contain any discussion regarding future research directions."
+    ],
+    "strength_score": 7,
+    "relevance_tags": [
+      "Agent Foundation Models",
+      "Multi-Agent Systems",
+      "Knowledge Distillation",
+      "Reinforcement Learning",
+      "End-to-End Learning",
+      "AI Agents",
+      "Dynamic Orchestration"
+    ],
+    "research_gaps": [
+      "Absence of concrete performance metrics and comparative results to validate the proposed methodology.",
+      "Lack of explicit discussion on future research directions from the paper itself.",
+      "Insufficient scale of the evaluation dataset for robust statistical analysis of computational efficiency."
+    ],
+    "section_analyses": [
+      {
+        "pass": "overview",
+        "data": {
+          "summary": "The paper introduces \"Chain-of-Agents,\" a framework aimed at developing \"End-to-End Agent Foundation Models.\" It proposes to achieve this by integrating two primary methodologies: \"Multi-Agent Distillation\" and \"Agentic RL.\" The core objective appears to be the creation of comprehensive, self-contained AI agents through a structured multi-agent approach combined with advanced learning techniques.",
+          "key_contributions": [
+            "Proposing \"Chain-of-Agents\" as a novel architectural paradigm for agent development.",
+            "Leveraging \"Multi-Agent Distillation\" as a key technique for training agent foundation models.",
+            "Employing \"Agentic RL\" as a specialized reinforcement learning mechanism.",
+            "Focusing on the \"End-to-End\" development of agent foundation models."
+          ],
+          "novelty_assessment": "The novelty appears to stem from the specific integration and orchestration of several advanced concepts. While multi-agent systems, distillation, and reinforcement learning are established, their combination under the \"Chain-of-Agents\" paradigm for building \"End-to-End Agent Foundation Models,\" particularly with the explicit mention of \"Agentic RL,\" suggests a genuinely new architectural and training methodology. The approach aims to create comprehensive AI agents by chaining specialized agents and distilling their knowledge, which could represent a significant step beyond incremental improvements in individual agent components."
+        }
+      },
+      {
+        "pass": "methodology",
+        "data": {
+          "methodology_detail": "The Chain-of-Agents (CoA) framework tackles complex queries by dynamically orchestrating a unified model M\u03b8 with specialized role-playing (e.g., Thinking, Plan, Reflection) and tool agents (e.g., Search, Crawl, Code Generate). Its methodology involves multi-agent knowledge distillation, where sequential decision-making patterns and agent activation sequences from state-of-the-art multi-agent systems are extracted to generate training data. This data is then used for Agentic Supervised Fine-tuning, allowing the model to learn adaptive, dynamic multi-agent collaboration within a single inference process.",
+          "technical_approach": "The core technical approach is multi-agent knowledge distillation, which extends sequence-level knowledge distillation to capture complete execution trajectories of expert multi-agent systems. Specifically, the OAgents system is used as a teacher to extract trajectories, formalized as sequences of reasoning states, activated agents, and observations (\u03c4 = {(St,\u03d5t,ot)}T t=1). These extracted trajectories form 'CoA distillation datasets' which are then used for Agentic Supervised Fine-tuning of the Chain-of-Agents model, enabling it to learn dynamic agent orchestration via state transitions (St = f\u03b8(St\u22121,\u03d5t\u22121,ot\u22121)). A progressive quality filtering mechanism is applied to these trajectories, excluding overly simplistic tasks.",
+          "reproducibility": "Medium",
+          "datasets_used": [
+            "CoA distillation datasets (generated from OAgents trajectories)"
+          ]
+        }
+      },
+      {
+        "pass": "results",
+        "data": {
+          "key_findings": [
+            "The paper outlines a methodology for evaluating computational efficiency, comparing tool calls and token consumption across OAgents, WebThinker, and AFM.",
+            "The computational efficiency evaluation uses 10 randomly sampled instances from the GAIA dataset.",
+            "The paper indicates that code generation benchmarks will be reported using the Pass@1 metric."
+          ],
+          "limitations": [
+            "The provided text does not include the actual numerical results, tables, or figures, preventing a detailed analysis of the paper's performance and findings.",
+            "No explicit conclusions or self-identified limitations of the research are presented within the given content.",
+            "The evaluation set of 10 instances from the GAIA dataset for computational efficiency is very small, which may limit the generalizability and statistical significance of the comparative analysis."
+          ],
+          "future_work": [
+            "The provided text does not contain any discussion regarding future research directions."
+          ],
+          "strength_score": 1
+        }
+      }
+    ],
+    "_meta": {
+      "bias_disclaimer": "AI-generated deep analysis may contain inaccuracies or reflect biases from the underlying model. Always perform critical evaluation.",
+      "analysis_type": "deep",
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "passes": 4
+    }
+  }
+}

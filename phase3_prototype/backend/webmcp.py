@@ -28,7 +28,7 @@ from github_storage import get_storage_service
 
 # Add tools dir for imports
 sys.path.insert(0, os.path.abspath(TOOLS_DIR))
-from paper_fetcher import fetch_by_id, fetch_by_query, fetch_from_hysts, download_pdf, extract_text
+from paper_fetcher import fetch_by_id, fetch_by_query, fetch_from_hysts, download_pdf, extract_text, check_extraction_quality, fetch_arxiv_html
 from llm_providers import (
     analyze_paper as _analyze_paper,
     analyze_paper_deep as _analyze_deep,
@@ -280,6 +280,8 @@ async def mcp_analyze(
         db.add(db_analysis)
         paper.status = "analyzed"
         db.commit()
+        db.refresh(paper)        # reload attrs before session closes (prevents DetachedInstanceError)
+        db.refresh(db_analysis)  # same — background task accesses these after db.close()
 
         # GitHub dual-write: save analysis with per-agent path (MACP v2.0)
         if user:
@@ -346,9 +348,30 @@ async def mcp_analyze_deep(
             logger.warning("PDF extraction failed for %s: %s", arxiv_id, e)
             return mcp_response("PDF text extraction failed.", is_error=True)
 
+        # Quality gate: check if extraction got meaningful text
+        quality = check_extraction_quality(extracted)
+        if not quality["is_sufficient"]:
+            logger.warning(
+                "PDF extraction quality poor for %s: %s — trying HTML fallback",
+                arxiv_id, quality["reason"]
+            )
+            html_extracted = fetch_arxiv_html(arxiv_id)
+            if html_extracted:
+                extracted = html_extracted
+                logger.info(
+                    "HTML fallback succeeded for %s: %d chars",
+                    arxiv_id, len(html_extracted["full_text"])
+                )
+            else:
+                logger.warning(
+                    "HTML fallback also failed for %s — proceeding with limited text", arxiv_id
+                )
+
         sections = extracted.get("sections", [])
         if not sections:
             return mcp_response("No text could be extracted from PDF", is_error=True)
+
+        extraction_source = extracted.get("source", "pdf")
 
         # Step 3: Multi-pass deep analysis
         config = PROVIDERS[req.provider]
@@ -360,6 +383,7 @@ async def mcp_analyze_deep(
             sections=sections,
             provider_id=req.provider,
             api_key_override=req.api_key,
+            extraction_source=extraction_source,
         )
 
         if not analysis:
@@ -384,6 +408,8 @@ async def mcp_analyze_deep(
         db.add(db_analysis)
         paper.status = "analyzed"
         db.commit()
+        db.refresh(paper)        # reload attrs before session closes (prevents DetachedInstanceError)
+        db.refresh(db_analysis)  # same — background task accesses these after db.close()
 
         # Step 5: GitHub dual-write with per-agent path (MACP v2.0)
         if user:
@@ -406,6 +432,7 @@ async def mcp_analyze_deep(
             "analysis_type": "deep",
             "page_count": extracted.get("page_count", 0),
             "sections_extracted": len(sections),
+            "extraction_source": extraction_source,
             "analysis": analysis,
         })
 

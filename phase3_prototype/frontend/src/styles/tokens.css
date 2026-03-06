@@ -55,5 +55,6 @@
 
   /* Layout */
   --sidebar-width: 260px;
-  --detail-width: 400px;
+  --detail-width: 480px;
+  --detail-width-focus-list: 240px;
 }
