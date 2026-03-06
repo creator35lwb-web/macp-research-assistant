@@ -56,7 +56,7 @@ interface MainPanelProps {
 export function MainPanel({
   view, papers, libraryPapers, libraryLoading, searching, searchError, onSearch,
   selectedPaper, onSelectPaper,
-  analyses: _analyses, analyzingId, analyzeError, onAnalyze, onSave,
+  analyses, analyzingId, analyzeError, onAnalyze, onSave,
   onAddNote, onLoadGraph, graphLoading,
   provider, onProviderChange, apiKey, onApiKeyChange,
   byokValidated, byokValidating, onValidateKey, onClearKey,
@@ -122,6 +122,7 @@ export function MainPanel({
             selected={selectedPaper?.id === paper.id}
             onSelect={onSelectPaper}
             analyzing={analyzingId === paper.id}
+            analyzed={!!analyses[paper.id]}
             onAnalyze={(id) => onAnalyze(id)}
             onSave={onSave}
           />
@@ -157,6 +158,7 @@ export function MainPanel({
               selected={selectedPaper?.id === paper.id}
               onSelect={onSelectPaper}
               analyzing={analyzingId === paper.id}
+              analyzed={!!analyses[paper.id]}
               onAnalyze={(id) => onAnalyze(id)}
             />
           ))

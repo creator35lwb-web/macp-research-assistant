@@ -3,6 +3,7 @@ import type { Analysis, DeepAnalysis, Consensus, Paper } from "../../api/types";
 import { AnalysisView, DeepAnalysisView, ConsensusView } from "../analysis/AnalysisView";
 import { PdfPreview } from "../analysis/PdfPreview";
 import { EmptyState } from "../common/EmptyState";
+import { generateMarkdown, downloadMarkdown } from "../../utils/generateMarkdown";
 
 interface DetailPanelProps {
   paper: Paper | null;
@@ -13,12 +14,15 @@ interface DetailPanelProps {
   onGenerateConsensus?: (paperId: string) => void;
   analyzingDeep?: boolean;
   generatingConsensus?: boolean;
+  focusMode?: boolean;
+  onToggleFocus?: () => void;
 }
 
 export function DetailPanel({
   paper, analysis, deepAnalysis, consensus,
   onAnalyzeDeep, onGenerateConsensus,
   analyzingDeep, generatingConsensus,
+  focusMode, onToggleFocus,
 }: DetailPanelProps) {
   const [overviewCollapsed, setOverviewCollapsed] = useState(false);
 
@@ -32,6 +36,29 @@ export function DetailPanel({
 
   return (
     <aside className="detail-panel">
+      {/* Toolbar: focus toggle + markdown download */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <div>
+          {(analysis || deepAnalysis || consensus) && (
+            <button
+              className="btn-focus-toggle"
+              onClick={() => {
+                const md = generateMarkdown(paper, analysis, deepAnalysis, consensus);
+                const safeTitle = paper.title.slice(0, 50).replace(/[^a-z0-9]/gi, "_").toLowerCase();
+                downloadMarkdown(`macp_${safeTitle}.md`, md);
+              }}
+            >
+              ⬇ Download as Markdown
+            </button>
+          )}
+        </div>
+        {onToggleFocus && (
+          <button className="btn-focus-toggle" onClick={onToggleFocus}>
+            {focusMode ? "◀ List view" : "⤢ Focus"}
+          </button>
+        )}
+      </div>
+
       {/* Paper Overview — collapsible */}
       <div className="detail-card detail-card--overview">
         <button

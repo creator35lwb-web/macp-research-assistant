@@ -40,6 +40,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --platform managed \
   --max-instances "${MAX_INSTANCES}" \
   --memory "${MEMORY}" \
+  --timeout=60 \
   --allow-unauthenticated \
   --set-env-vars "ENFORCE_HTTPS=true,GITHUB_APP_CLIENT_ID=${GITHUB_APP_CLIENT_ID},GITHUB_APP_CLIENT_SECRET=${GITHUB_APP_CLIENT_SECRET},JWT_SECRET=${JWT_SECRET}" \
   --port 8080

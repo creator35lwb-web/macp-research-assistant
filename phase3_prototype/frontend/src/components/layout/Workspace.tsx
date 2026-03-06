@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Note, ViewMode, DeepAnalysis, Consensus, Agent } from "../../api/types";
 import { useAuth } from "../../hooks/useAuth";
 import { usePapers } from "../../hooks/usePapers";
@@ -31,6 +31,7 @@ export function Workspace() {
   const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
   const [provider, setProvider] = useState("gemini");
   const [apiKey, setApiKey] = useState("");
   const [byokValidated, setByokValidated] = useState(false);
@@ -77,9 +78,10 @@ export function Workspace() {
   }, []);
 
   // Fetch GitHub status on mount if user is logged in
-  useState(() => {
+  useEffect(() => {
     if (user) fetchStatus();
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const handleSearch = (query: string, source: string) => {
     search(query, 10, source);
@@ -209,7 +211,7 @@ export function Workspace() {
   };
 
   return (
-    <div className="workspace">
+    <div className={`workspace${focusMode ? " workspace--focus" : ""}`}>
       {/* Mobile header — visible only on small screens */}
       <header className="mobile-header">
         <button className="mobile-menu-btn" onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}>
@@ -316,6 +318,8 @@ export function Workspace() {
           onGenerateConsensus={handleGenerateConsensus}
           analyzingDeep={analyzingDeep}
           generatingConsensus={generatingConsensus}
+          focusMode={focusMode}
+          onToggleFocus={() => setFocusMode(f => !f)}
         />
       </div>
     </div>

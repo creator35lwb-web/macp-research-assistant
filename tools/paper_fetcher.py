@@ -16,6 +16,7 @@ import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from datetime import datetime, date
+from html.parser import HTMLParser
 from typing import Optional
 
 import jsonschema
@@ -533,8 +534,10 @@ def fetch_hysts_by_date(target_date: str, limit: int = 50) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 ARXIV_PDF_URL = "https://arxiv.org/pdf/{arxiv_id}"
+ARXIV_HTML_URL = "https://arxiv.org/html/{arxiv_id}"
 MAX_PDF_PAGES = 50
 MAX_SECTION_BYTES = 100_000  # 100KB per section
+MIN_BODY_CHARS = 500  # minimum chars to consider extraction successful
 
 # Common section headings in academic papers
 _SECTION_HEADINGS = [
@@ -686,6 +689,127 @@ def _split_into_sections(text: str) -> list[dict]:
         })
 
     return sections
+
+
+def check_extraction_quality(extracted: dict) -> dict:
+    """
+    Assess whether PDF extraction produced meaningful text.
+
+    Returns:
+        {
+            "total_chars": int,
+            "body_sections": int,
+            "is_sufficient": bool,
+            "reason": str
+        }
+    """
+    full_text = extracted.get("full_text", "")
+    sections = extracted.get("sections", [])
+
+    total_chars = len(full_text)
+    body_sections = sum(
+        1 for s in sections
+        if s.get("title", "").lower() not in ("preamble",)
+        and len(s.get("content", "")) > 100
+    )
+
+    is_sufficient = total_chars >= MIN_BODY_CHARS and body_sections >= 1
+
+    if total_chars < MIN_BODY_CHARS:
+        reason = f"Only {total_chars} chars extracted (minimum {MIN_BODY_CHARS})"
+    elif body_sections < 1:
+        reason = f"No body sections with >100 chars found (got {len(sections)} total sections)"
+    else:
+        reason = f"OK: {total_chars} chars, {body_sections} body sections"
+
+    return {
+        "total_chars": total_chars,
+        "body_sections": body_sections,
+        "is_sufficient": is_sufficient,
+        "reason": reason,
+    }
+
+
+class _TextExtractor(HTMLParser):
+    """Minimal HTML parser that collects text from semantic tags."""
+
+    _BLOCK_TAGS = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "section", "div", "li", "blockquote"}
+
+    def __init__(self):
+        super().__init__()
+        self._parts: list[str] = []
+        self._capture = 0  # nesting depth of block tags we care about
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self._BLOCK_TAGS:
+            self._capture += 1
+
+    def handle_endtag(self, tag):
+        if tag in self._BLOCK_TAGS and self._capture > 0:
+            self._capture -= 1
+            self._parts.append("\n")
+
+    def handle_data(self, data):
+        if self._capture > 0:
+            self._parts.append(data)
+
+    def get_text(self) -> str:
+        return "".join(self._parts)
+
+
+_ARXIV_ID_PATTERN = re.compile(r'^\d{4}\.\d{4,5}(v\d+)?$')
+
+
+def fetch_arxiv_html(arxiv_id: str) -> Optional[dict]:
+    """
+    Fetch the HTML version of an arXiv paper as a fallback when PDF extraction fails.
+
+    Args:
+        arxiv_id: Validated arXiv identifier (e.g. "2412.12004").
+
+    Returns:
+        Extraction dict (same shape as extract_text()) with source="html_fallback",
+        or None if the HTML version is unavailable.
+    """
+    # SECURITY: Validate arxiv_id format before constructing outbound URL.
+    # Prevents partial SSRF if a DB record contains a malformed/injected ID.
+    clean_id = arxiv_id.replace("arxiv:", "").strip()
+    if not _ARXIV_ID_PATTERN.match(clean_id):
+        print(f"[SECURITY] Rejected invalid arXiv ID in fetch_arxiv_html: {arxiv_id!r}", file=sys.stderr)
+        return None
+
+    if _httpx is None:
+        return None
+
+    url = ARXIV_HTML_URL.format(arxiv_id=clean_id)
+    try:
+        with _httpx.Client(timeout=30, follow_redirects=True) as client:
+            resp = client.get(url)
+    except Exception as e:
+        print(f"[WARN] HTML fetch failed for {clean_id}: {e}", file=sys.stderr)
+        return None
+
+    if resp.status_code != 200:
+        return None
+
+    parser = _TextExtractor()
+    try:
+        parser.feed(resp.text)
+    except Exception as e:
+        print(f"[WARN] HTML parse failed for {clean_id}: {e}", file=sys.stderr)
+        return None
+
+    full_text = parser.get_text()
+    if not full_text.strip():
+        return None
+
+    sections = _split_into_sections(full_text)
+    return {
+        "sections": sections,
+        "full_text": full_text[:MAX_SECTION_BYTES * 10],
+        "page_count": 0,
+        "source": "html_fallback",
+    }
 
 
 # ---------------------------------------------------------------------------

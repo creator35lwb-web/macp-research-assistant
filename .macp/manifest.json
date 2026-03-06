@@ -1,10 +1,47 @@
 {
   "version": "2.0",
   "schema": "macp-research",
-  "created_at": "2026-02-25T16:47:21.876775+00:00",
-  "updated_at": "2026-02-25T16:47:21.876791+00:00",
+  "created_at": "2026-03-05T05:55:35.772396+00:00",
+  "updated_at": "2026-03-05T12:21:35.131850+00:00",
   "owner": "creator35lwb-web",
   "papers": {},
-  "analyses": {},
+  "analyses": {
+    "arxiv:2405.19888": {
+      "consensus": {
+        "agreement_score": 0.344,
+        "agents": [
+          "gemini"
+        ],
+        "generated_at": "2026-03-05T06:00:08.001634+00:00"
+      }
+    },
+    "arxiv:2508.13167": {
+      "providers": [
+        {
+          "provider": "gemini",
+          "type": "deep",
+          "analyzed_at": "2026-03-05T11:23:38.317798+00:00"
+        }
+      ]
+    },
+    "arxiv:2412.12004": {
+      "consensus": {
+        "agreement_score": 0.366,
+        "agents": [
+          "gemini"
+        ],
+        "generated_at": "2026-03-05T11:40:20.894242+00:00"
+      }
+    },
+    "arxiv:2509.09873": {
+      "providers": [
+        {
+          "provider": "gemini",
+          "type": "deep",
+          "analyzed_at": "2026-03-05T12:21:33.516805+00:00"
+        }
+      ]
+    }
+  },
   "notes": {}
 }
