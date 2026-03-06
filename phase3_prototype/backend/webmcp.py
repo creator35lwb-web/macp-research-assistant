@@ -522,7 +522,7 @@ async def mcp_analyze_deep(
         # Step 4b: Populate knowledge graph nodes/edges (P4.1)
         _populate_graph(db, paper, analysis, user.id if user else None)
 
-        # Step 5: GitHub dual-write with per-agent path (MACP v2.0)
+        # Step 5: GitHub dual-write with per-agent path (MACP v2.0) + graph sync (P4.4)
         if user:
             storage = get_storage_service(user)
             if storage:
@@ -537,6 +537,41 @@ async def mcp_analyze_deep(
                         }],
                     })
                 background_tasks.add_task(_sync_deep_analysis)
+
+                async def _sync_graph_to_github():
+                    """P4.4 — sync graph nodes/edges JSON to user's connected repo."""
+                    try:
+                        _db = SessionLocal()
+                        _user_id = user.id
+                        gn_rows = _db.query(GraphNode).filter(
+                            GraphNode.user_id == _user_id
+                        ).limit(500).all()
+                        ge_rows = _db.query(GraphEdge).filter(
+                            GraphEdge.user_id == _user_id
+                        ).limit(2000).all()
+
+                        node_idx = {gn.id: i for i, gn in enumerate(gn_rows)}
+                        graph_json = {
+                            "generated": __import__("datetime").datetime.now(
+                                __import__("datetime").timezone.utc).isoformat(),
+                            "version": "1.0",
+                            "nodes": [gn.to_dict() for gn in gn_rows],
+                            "edges": [
+                                {
+                                    "source": node_idx[ge.source_node_id],
+                                    "target": node_idx[ge.target_node_id],
+                                    "type": ge.edge_type,
+                                }
+                                for ge in ge_rows
+                                if ge.source_node_id in node_idx and ge.target_node_id in node_idx
+                            ],
+                        }
+                        _db.close()
+                        await storage.save_graph(graph_json)
+                        logger.info("Graph synced to GitHub for user %s: %d nodes", _user_id, len(gn_rows))
+                    except Exception:
+                        logger.exception("GitHub graph sync failed — skipping")
+                background_tasks.add_task(_sync_graph_to_github)
 
         return mcp_response({
             "paper_id": paper.arxiv_id,
