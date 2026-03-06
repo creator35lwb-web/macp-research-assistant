@@ -12,7 +12,7 @@ export interface GraphStats {
   connections: number;
 }
 
-interface GraphDelta {
+export interface GraphDelta {
   papers: number;
   concepts: number;
   connections: number;
