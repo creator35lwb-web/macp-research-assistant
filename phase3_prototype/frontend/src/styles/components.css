@@ -895,3 +895,62 @@
   color: var(--text-tertiary);
   margin: 0;
 }
+
+/* ========== Knowledge Graph — legend + tooltip (P4.3) ========== */
+.graph-legend {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  background: rgba(9, 9, 11, 0.82);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none;
+}
+
+.graph-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.graph-legend__hint {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 4px;
+}
+
+.graph-tooltip {
+  position: absolute;
+  z-index: 20;
+  background: rgba(9, 9, 11, 0.92);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--text-primary);
+  pointer-events: none;
+  max-width: 220px;
+  transition: opacity 0.1s;
+  line-height: 1.5;
+}
+
+.graph-tooltip strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.graph-tooltip span {
+  color: var(--text-tertiary);
+  font-size: 10px;
+  text-transform: capitalize;
+}
