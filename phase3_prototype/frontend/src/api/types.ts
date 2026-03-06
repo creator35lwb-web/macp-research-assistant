@@ -49,15 +49,16 @@ export interface Note {
 export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
-  stats: { papers: number; analyses: number };
+  stats: { papers: number; concepts: number; methods: number; connections: number; analyses?: number };
 }
 
 export interface GraphNode {
   id: string;
   title: string;
-  type: "paper" | "analysis";
+  type: "paper" | "analysis" | "concept" | "method" | "author";
   status?: string;
   provider?: string;
+  paper_count?: number;
   x?: number;
   y?: number;
 }

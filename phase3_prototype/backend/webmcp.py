@@ -17,6 +17,8 @@ from pydantic import BaseModel, Field
 from config import TOOLS_DIR, MACP_DIR
 from database import (
     Analysis,
+    GraphEdge,
+    GraphNode,
     Note,
     Paper,
     SessionLocal,
@@ -309,6 +311,112 @@ async def mcp_analyze(
 
 
 # ---------------------------------------------------------------------------
+# Graph population helper (P4.1 — Knowledge Graph)
+# ---------------------------------------------------------------------------
+
+def _populate_graph(db, paper: Paper, analysis: dict, user_id: Optional[int]) -> None:
+    """
+    Persist concept/method/author nodes and edges extracted from a deep analysis.
+
+    Called after each successful deep analysis. Uses upsert pattern:
+    - If a concept/method node already exists, increment paper_count.
+    - Create paper→concept (uses_concept), paper→method (uses_method),
+      paper→author (authored_by) edges.
+    - Cross-paper relates_to edges are built lazily in the /graph endpoint.
+    """
+    from re import sub as re_sub
+
+    def _node_id(node_type: str, label: str) -> str:
+        """Normalised stable ID: concept_constitutional_ai"""
+        slug = re_sub(r"[^a-z0-9]+", "_", label.lower().strip()).strip("_")
+        return f"{node_type}_{slug[:80]}"
+
+    def _upsert_node(node_id: str, node_type: str, label: str) -> GraphNode:
+        node = db.query(GraphNode).filter(
+            GraphNode.node_id == node_id,
+            GraphNode.user_id == user_id,
+        ).first()
+        if node:
+            node.paper_count += 1
+            node.updated_at = __import__("datetime").datetime.now(
+                __import__("datetime").timezone.utc)
+        else:
+            node = GraphNode(
+                user_id=user_id,
+                node_id=node_id,
+                node_type=node_type,
+                label=label,
+                paper_count=1,
+            )
+            db.add(node)
+        db.flush()
+        return node
+
+    def _add_edge(source: GraphNode, target: GraphNode, edge_type: str) -> None:
+        exists = db.query(GraphEdge).filter(
+            GraphEdge.source_node_id == source.id,
+            GraphEdge.target_node_id == target.id,
+            GraphEdge.edge_type == edge_type,
+            GraphEdge.user_id == user_id,
+        ).first()
+        if not exists:
+            db.add(GraphEdge(
+                user_id=user_id,
+                source_node_id=source.id,
+                target_node_id=target.id,
+                edge_type=edge_type,
+            ))
+
+    try:
+        # Upsert paper node
+        paper_node = _upsert_node(paper.arxiv_id, "paper", paper.title)
+
+        # Author nodes (from paper metadata — free, no extraction needed)
+        authors = json.loads(paper.authors) if paper.authors else []
+        for author in authors[:5]:  # cap at 5 authors per paper
+            if not author or not author.strip():
+                continue
+            author_id = _node_id("author", author)
+            author_node = _upsert_node(author_id, "author", author)
+            _add_edge(paper_node, author_node, "authored_by")
+
+        # Concept nodes from PASS3
+        concepts = []
+        for section in analysis.get("section_analyses", []):
+            if section.get("pass") == "results":
+                concepts = section.get("data", {}).get("concepts", [])
+                break
+        for concept in concepts[:5]:  # max 5 per paper
+            if not concept or not str(concept).strip():
+                continue
+            c_id = _node_id("concept", str(concept))
+            c_node = _upsert_node(c_id, "concept", str(concept))
+            _add_edge(paper_node, c_node, "uses_concept")
+
+        # Method nodes from PASS3
+        methods = []
+        for section in analysis.get("section_analyses", []):
+            if section.get("pass") == "results":
+                methods = section.get("data", {}).get("methods", [])
+                break
+        for method in methods[:5]:  # max 5 per paper
+            if not method or not str(method).strip():
+                continue
+            m_id = _node_id("method", str(method))
+            m_node = _upsert_node(m_id, "method", str(method))
+            _add_edge(paper_node, m_node, "uses_method")
+
+        db.commit()
+        logger.info(
+            "Graph populated for %s: %d concepts, %d methods, %d authors",
+            paper.arxiv_id, len(concepts), len(methods), len(authors[:5])
+        )
+    except Exception:
+        logger.exception("Graph population failed for %s — skipping", paper.arxiv_id)
+        db.rollback()
+
+
+# ---------------------------------------------------------------------------
 # 2b. Deep Analysis (Phase 3E — full-text multi-pass)
 # ---------------------------------------------------------------------------
 
@@ -410,6 +518,9 @@ async def mcp_analyze_deep(
         db.commit()
         db.refresh(paper)        # reload attrs before session closes (prevents DetachedInstanceError)
         db.refresh(db_analysis)  # same — background task accesses these after db.close()
+
+        # Step 4b: Populate knowledge graph nodes/edges (P4.1)
+        _populate_graph(db, paper, analysis, user.id if user else None)
 
         # Step 5: GitHub dual-write with per-agent path (MACP v2.0)
         if user:
@@ -616,7 +727,60 @@ async def mcp_graph(user: Optional[User] = Depends(get_current_user)):
     """Get knowledge graph data for D3.js visualization."""
     db = SessionLocal()
     try:
-        # Build nodes (papers) and edges (citations, analyses)
+        user_id = user.id if user else None
+
+        # --- Rich graph from graph_nodes/graph_edges tables (P4.1) ---
+        db_nodes = db.query(GraphNode).filter(GraphNode.user_id == user_id).limit(500).all()
+
+        if db_nodes:
+            # Build index: db node id → position in nodes list
+            node_idx = {}
+            nodes = []
+            for gn in db_nodes:
+                node_idx[gn.id] = len(nodes)
+                nodes.append(gn.to_dict())
+
+            db_edges = db.query(GraphEdge).filter(GraphEdge.user_id == user_id).limit(2000).all()
+            edges = []
+            for ge in db_edges:
+                if ge.source_node_id in node_idx and ge.target_node_id in node_idx:
+                    edges.append({
+                        "source": node_idx[ge.source_node_id],
+                        "target": node_idx[ge.target_node_id],
+                        "type": ge.edge_type,
+                    })
+
+            # Cross-paper relates_to: papers sharing a concept node
+            concept_papers: dict[int, list[int]] = {}
+            for ge in db_edges:
+                if ge.edge_type == "uses_concept" and ge.source_node_id in node_idx:
+                    concept_papers.setdefault(ge.target_node_id, []).append(ge.source_node_id)
+            for concept_id, paper_db_ids in concept_papers.items():
+                unique_ids = list(set(paper_db_ids))
+                for i in range(len(unique_ids)):
+                    for j in range(i + 1, len(unique_ids)):
+                        if unique_ids[i] in node_idx and unique_ids[j] in node_idx:
+                            edges.append({
+                                "source": node_idx[unique_ids[i]],
+                                "target": node_idx[unique_ids[j]],
+                                "type": "relates_to",
+                            })
+
+            concept_count = sum(1 for n in nodes if n["type"] == "concept")
+            method_count = sum(1 for n in nodes if n["type"] == "method")
+            paper_count = sum(1 for n in nodes if n["type"] == "paper")
+            return mcp_response({
+                "nodes": nodes,
+                "edges": edges,
+                "stats": {
+                    "papers": paper_count,
+                    "concepts": concept_count,
+                    "methods": method_count,
+                    "connections": len(edges),
+                },
+            })
+
+        # --- Fallback: legacy on-the-fly graph (no graph_nodes data yet) ---
         papers = db.query(Paper).limit(200).all()
         analyses = db.query(Analysis).limit(500).all()
 
@@ -635,7 +799,6 @@ async def mcp_graph(user: Optional[User] = Depends(get_current_user)):
 
         for a in analyses:
             if a.paper_id in paper_idx:
-                # Add analysis as node connected to paper
                 analysis_id = f"analysis_{a.id}"
                 nodes.append({
                     "id": analysis_id,
@@ -649,13 +812,11 @@ async def mcp_graph(user: Optional[User] = Depends(get_current_user)):
                     "type": "analyzed_by",
                 })
 
-        # Connect papers that share tags
-        tag_papers = {}
+        tag_papers: dict[str, list[int]] = {}
         for a in analyses:
             tags = json.loads(a.relevance_tags) if a.relevance_tags else []
             for tag in tags:
                 tag_papers.setdefault(tag, []).append(a.paper_id)
-
         for tag, pids in tag_papers.items():
             unique_pids = list(set(pids))
             for i in range(len(unique_pids)):
@@ -671,7 +832,12 @@ async def mcp_graph(user: Optional[User] = Depends(get_current_user)):
         return mcp_response({
             "nodes": nodes,
             "edges": edges,
-            "stats": {"papers": len(papers), "analyses": len(analyses)},
+            "stats": {
+                "papers": len(papers),
+                "concepts": 0,
+                "methods": 0,
+                "connections": len(edges),
+            },
         })
     finally:
         db.close()

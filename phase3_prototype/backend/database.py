@@ -250,6 +250,46 @@ class Project(Base):
         }
 
 
+class GraphNode(Base):
+    """Knowledge graph node — paper, concept, method, or author."""
+    __tablename__ = "graph_nodes"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    node_id = Column(String(300), nullable=False, index=True)  # e.g. "concept_rlhf", "arxiv:2412.12004"
+    node_type = Column(String(20), nullable=False)  # paper | concept | method | author
+    label = Column(String(500), nullable=False)
+    paper_count = Column(Integer, default=1)  # how many papers reference this node
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    edges_from = relationship("GraphEdge", foreign_keys="GraphEdge.source_node_id", back_populates="source_node")
+    edges_to = relationship("GraphEdge", foreign_keys="GraphEdge.target_node_id", back_populates="target_node")
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.node_id,
+            "title": self.label,
+            "type": self.node_type,
+            "paper_count": self.paper_count,
+        }
+
+
+class GraphEdge(Base):
+    """Knowledge graph edge connecting two nodes."""
+    __tablename__ = "graph_edges"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    source_node_id = Column(Integer, ForeignKey("graph_nodes.id"), nullable=False)
+    target_node_id = Column(Integer, ForeignKey("graph_nodes.id"), nullable=False)
+    edge_type = Column(String(50), nullable=False)  # uses_concept | uses_method | relates_to | authored_by
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    source_node = relationship("GraphNode", foreign_keys=[source_node_id], back_populates="edges_from")
+    target_node = relationship("GraphNode", foreign_keys=[target_node_id], back_populates="edges_to")
+
+
 class AuditLog(Base):
     __tablename__ = "audit_log"
 
