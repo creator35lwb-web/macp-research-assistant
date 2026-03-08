@@ -1,0 +1,51 @@
+{
+  "arxiv_id": "arxiv:2602.12430",
+  "paper_id": "arxiv:2602.12430",
+  "title": "Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward",
+  "agent_id": "gemini",
+  "provider": "gemini",
+  "type": "abstract",
+  "analysis_type": "abstract",
+  "model": "gemini-2.5-flash",
+  "analyzed_at": "2026-03-08T17:58:36.480635+00:00",
+  "summary": "This paper surveys the emerging field of \"agent skills\" for large language models, which allows LLMs to dynamically extend capabilities through modular, on-demand packages of instructions and code. It provides a comprehensive overview of architectural foundations, skill acquisition methods, deployment challenges, and critical security concerns, including a proposed governance framework. The work also identifies key open challenges for realizing trustworthy and self-improving skill ecosystems.",
+  "key_findings": [
+    "Agent skills enable dynamic capability extension for LLMs without retraining, through composable packages of instructions, code, and resources.",
+    "The field is organized along four axes: architectural foundations (e.g., SKILL$.$md, MCP), skill acquisition (e.g., RL, autonomous discovery), deployment at scale (e.g., CUA stack, benchmarks), and security.",
+    "A significant security vulnerability exists, with 26.1% of community-contributed skills empirically found to contain vulnerabilities.",
+    "A Skill Trust and Lifecycle Governance Framework is proposed, featuring a four-tier, gate-based permission model to address security risks.",
+    "Seven open challenges are identified, including cross-platform skill portability and the development of capability-based permission models."
+  ],
+  "methodology": "This paper employs a survey methodology, providing a comprehensive treatment and organization of the rapidly evolving agent skills landscape.",
+  "relevance_score": 0.8,
+  "bias_disclaimer": "AI-generated analysis may contain inaccuracies or reflect biases from the underlying model. Always perform critical evaluation.",
+  "analysis": {
+    "summary": "This paper surveys the emerging field of \"agent skills\" for large language models, which allows LLMs to dynamically extend capabilities through modular, on-demand packages of instructions and code. It provides a comprehensive overview of architectural foundations, skill acquisition methods, deployment challenges, and critical security concerns, including a proposed governance framework. The work also identifies key open challenges for realizing trustworthy and self-improving skill ecosystems.",
+    "key_insights": [
+      "Agent skills enable dynamic capability extension for LLMs without retraining, through composable packages of instructions, code, and resources.",
+      "The field is organized along four axes: architectural foundations (e.g., SKILL$.$md, MCP), skill acquisition (e.g., RL, autonomous discovery), deployment at scale (e.g., CUA stack, benchmarks), and security.",
+      "A significant security vulnerability exists, with 26.1% of community-contributed skills empirically found to contain vulnerabilities.",
+      "A Skill Trust and Lifecycle Governance Framework is proposed, featuring a four-tier, gate-based permission model to address security risks.",
+      "Seven open challenges are identified, including cross-platform skill portability and the development of capability-based permission models."
+    ],
+    "methodology": "This paper employs a survey methodology, providing a comprehensive treatment and organization of the rapidly evolving agent skills landscape.",
+    "relevance_tags": [
+      "llm-agents",
+      "agent-skills",
+      "large-language-models",
+      "security",
+      "architecture"
+    ],
+    "research_gaps": [
+      "Achieving cross-platform skill portability for agent skills.",
+      "Developing robust capability-based permission models for skill deployment.",
+      "Realizing trustworthy and self-improving skill ecosystems."
+    ],
+    "strength_score": 8,
+    "_meta": {
+      "bias_disclaimer": "AI-generated analysis may contain inaccuracies or reflect biases from the underlying model. Always perform critical evaluation.",
+      "provider": "gemini",
+      "model": "gemini-2.5-flash"
+    }
+  }
+}
