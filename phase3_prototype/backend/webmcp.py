@@ -16,7 +16,7 @@ from typing import Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from pydantic import BaseModel, Field
 
-from config import TOOLS_DIR, MACP_DIR, RATE_LIMIT_AUTH_ANALYZE, RATE_LIMIT_AUTH_MCP
+from config import TOOLS_DIR, RATE_LIMIT_AUTH_ANALYZE, RATE_LIMIT_AUTH_MCP
 from database import (
     Analysis,
     GraphEdge,
