@@ -63,39 +63,72 @@ def sanitize_llm_input(text: str, max_length: int = 5000) -> str:
 # Provider Configuration
 # ---------------------------------------------------------------------------
 
+# Each model default can be overridden via env var (e.g. GEMINI_MODEL) so a
+# provider's model deprecation is a config change, not a code change. Defaults
+# track the current stable model as of 2026-06; update the default OR set the
+# env var when a provider ships a newer/renamed model.
 PROVIDERS = {
     "gemini": {
         "name": "Google Gemini",
         "env_key": "GEMINI_API_KEY",
-        "model": "gemini-2.5-flash",
+        "model": os.getenv("GEMINI_MODEL", "gemini-3.5-flash"),
         "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
         "free_tier": True,
     },
     "anthropic": {
         "name": "Anthropic Claude",
         "env_key": "ANTHROPIC_API_KEY",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6"),
         "endpoint": "https://api.anthropic.com/v1/messages",
         "free_tier": False,
     },
     "openai": {
         "name": "OpenAI",
         "env_key": "OPENAI_API_KEY",
-        "model": "gpt-4o-mini",
+        "model": os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
         "endpoint": "https://api.openai.com/v1/chat/completions",
         "free_tier": False,
     },
     "grok": {
         "name": "xAI Grok",
         "env_key": "GROK_API_KEY",
-        "model": "grok-3",
+        "model": os.getenv("GROK_MODEL", "grok-3"),
         "endpoint": "https://api.x.ai/v1/chat/completions",
+        "free_tier": False,
+    },
+    # --- Open-source / lower-cost providers (all OpenAI-compatible) ---
+    "deepseek": {
+        "name": "DeepSeek",
+        "env_key": "DEEPSEEK_API_KEY",
+        "model": os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash"),
+        "endpoint": "https://api.deepseek.com/chat/completions",
+        "free_tier": False,
+    },
+    "mistral": {
+        "name": "Mistral",
+        "env_key": "MISTRAL_API_KEY",
+        "model": os.getenv("MISTRAL_MODEL", "mistral-large-latest"),
+        "endpoint": "https://api.mistral.ai/v1/chat/completions",
+        "free_tier": False,
+    },
+    "groq": {
+        "name": "Groq",
+        "env_key": "GROQ_API_KEY",
+        "model": os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"),
+        "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+        "free_tier": True,
+    },
+    "qwen": {
+        "name": "Qwen (Alibaba)",
+        "env_key": "DASHSCOPE_API_KEY",
+        "model": os.getenv("QWEN_MODEL", "qwen-max"),
+        "endpoint": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
         "free_tier": False,
     },
     "perplexity": {
         "name": "Perplexity Sonar",
         "env_key": "SONAR_API_KEY",
-        "model": "sonar-pro",
+        "model": os.getenv("SONAR_MODEL", "sonar-pro"),
         "endpoint": "https://api.perplexity.ai/chat/completions",
         "free_tier": False,
     },
@@ -296,12 +329,46 @@ def _call_perplexity(api_key: str, prompt: str, model: str) -> Optional[str]:
     return None
 
 
+def _call_openai_compatible(provider_id: str):
+    """Build a caller for any OpenAI-compatible chat-completions API.
+
+    DeepSeek, Mistral, Groq, and Qwen all speak the OpenAI chat format
+    (Bearer auth, /chat/completions, choices[0].message.content), so one
+    implementation parameterized by the provider's endpoint serves them all.
+    """
+    def caller(api_key: str, prompt: str, model: str) -> Optional[str]:
+        resp = requests.post(
+            PROVIDERS[provider_id]["endpoint"],
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.3,
+                "max_tokens": 4096,
+            },
+            timeout=90,
+        )
+        resp.raise_for_status()
+        choices = resp.json().get("choices", [])
+        if choices:
+            return choices[0].get("message", {}).get("content", "")
+        return None
+    return caller
+
+
 _CALLERS = {
     "gemini": _call_gemini,
     "anthropic": _call_anthropic,
     "openai": _call_openai,
     "grok": _call_grok,
     "perplexity": _call_perplexity,
+    "deepseek": _call_openai_compatible("deepseek"),
+    "mistral": _call_openai_compatible("mistral"),
+    "groq": _call_openai_compatible("groq"),
+    "qwen": _call_openai_compatible("qwen"),
 }
 
 
