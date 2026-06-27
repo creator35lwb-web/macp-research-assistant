@@ -42,3 +42,6 @@ tokens.json
 
 # Topic taxonomy is local/per-deployment research data
 .macp/topics/
+
+# Local-only ops checklist (contains DNS/operational details)
+CLOUDFLARE_MIGRATION_CHECKLIST.md
