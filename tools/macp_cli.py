@@ -868,6 +868,199 @@ def _register_submission_in_manifest(paper_id, agent_id, analysis_type, filename
 
 
 # ---------------------------------------------------------------------------
+# Command: topic  (Phase 5C2 — Topic Taxonomy / Research Journey tree)
+# ---------------------------------------------------------------------------
+
+TOPICS_DIR = os.path.join(MACP_DIR, "topics")
+TOPICS_INDEX = os.path.join(TOPICS_DIR, "index.json")
+
+
+def _load_topic_index() -> dict:
+    if os.path.isfile(TOPICS_INDEX):
+        try:
+            with open(TOPICS_INDEX, "r", encoding="utf-8") as fh:
+                return json.load(fh)
+        except (OSError, json.JSONDecodeError):
+            pass
+    return {"topics": {}, "updated_at": None}
+
+
+def _save_topic_index(index: dict) -> None:
+    index["updated_at"] = datetime.now().isoformat()
+    atomic_write_json(TOPICS_INDEX, index)
+
+
+def _topic_rel_path(slug: str, parent: str | None, index: dict) -> str:
+    """Relative path under .macp/topics/ — nested under the parent's path."""
+    if parent and parent in index["topics"]:
+        return f"{index['topics'][parent]['path']}/{slug}"
+    return slug
+
+
+def _read_topic(rel_path: str) -> dict | None:
+    path = os.path.join(TOPICS_DIR, rel_path, "topic.json")
+    if os.path.isfile(path):
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                return json.load(fh)
+        except (OSError, json.JSONDecodeError):
+            return None
+    return None
+
+
+def _write_topic(rel_path: str, topic: dict) -> None:
+    topic["updated_at"] = datetime.now().isoformat()
+    atomic_write_json(os.path.join(TOPICS_DIR, rel_path, "topic.json"), topic)
+
+
+def _upsert_topic(name: str, parent: str | None, agent: str, paper_id: str | None) -> tuple[str, bool]:
+    """Create a topic (or update an existing one). Returns (slug, created)."""
+    slug = slugify(name)
+    index = _load_topic_index()
+
+    created = slug not in index["topics"]
+    rel_path = (
+        index["topics"][slug]["path"] if not created
+        else _topic_rel_path(slug, parent, index)
+    )
+
+    topic = _read_topic(rel_path) or {
+        "slug": slug,
+        "name": name,
+        "parent": parent,
+        "depth": (index["topics"][parent]["depth"] + 1) if (parent and parent in index["topics"]) else 0,
+        "papers": [],
+        "child_topics": [],
+        "discovered_by": agent,
+        "discovered_from": paper_id,
+        "research_status": "active",
+        "agents_contributed": [],
+        "created_at": datetime.now().isoformat(),
+    }
+
+    if paper_id and paper_id not in topic["papers"]:
+        topic["papers"].append(paper_id)
+    if agent and agent not in topic["agents_contributed"]:
+        topic["agents_contributed"].append(agent)
+
+    _write_topic(rel_path, topic)
+
+    # Register / refresh in the flat index.
+    index["topics"][slug] = {
+        "name": name,
+        "path": rel_path,
+        "parent": parent,
+        "depth": topic["depth"],
+        "paper_count": len(topic["papers"]),
+    }
+
+    # Link into the parent's child list.
+    if parent and parent in index["topics"] and created:
+        p = _read_topic(index["topics"][parent]["path"])
+        if p is not None and slug not in p.get("child_topics", []):
+            p.setdefault("child_topics", []).append(slug)
+            _write_topic(index["topics"][parent]["path"], p)
+
+    _save_topic_index(index)
+    return slug, created
+
+
+def _collect_relevance_tags(arxiv_bare: str) -> list[str]:
+    """Gather relevance_tags from any analysis JSON saved for this paper."""
+    paper_dir = os.path.join(ANALYSES_DIR, arxiv_bare)
+    tags: list[str] = []
+    if os.path.isdir(paper_dir):
+        for fname in os.listdir(paper_dir):
+            if not fname.endswith(".json"):
+                continue
+            try:
+                with open(os.path.join(paper_dir, fname), "r", encoding="utf-8") as fh:
+                    data = json.load(fh)
+            except (OSError, json.JSONDecodeError):
+                continue
+            for t in data.get("relevance_tags", []) or []:
+                if isinstance(t, str) and t.strip() and t not in tags:
+                    tags.append(t.strip())
+    return tags
+
+
+def cmd_topic(args):
+    """Topic Taxonomy — the self-growing research tree (Phase 5 Component 2)."""
+    action = getattr(args, "topic_action", None)
+
+    if action == "add":
+        try:
+            name = sanitize_text(args.name, MAX_PROJECT_LENGTH, "Topic name")
+        except ValueError as e:
+            print(f"[ERROR] {e}", file=sys.stderr)
+            return
+        parent = slugify(args.parent) if args.parent else None
+        if parent:
+            idx = _load_topic_index()
+            if parent not in idx["topics"]:
+                print(f"[ERROR] Parent topic '{parent}' does not exist. Add it first.", file=sys.stderr)
+                return
+        paper = None
+        if args.paper:
+            paper = args.paper.strip()
+            if not paper.startswith("arxiv:"):
+                paper = f"arxiv:{paper}"
+        slug, created = _upsert_topic(name, parent, args.agent, paper)
+        print(f"[TOPIC] {'created' if created else 'updated'}: {slug}"
+              + (f" (parent: {parent})" if parent else " (root)")
+              + (f" + {paper}" if paper else ""))
+        return
+
+    if action == "classify":
+        paper = args.paper.strip()
+        if not paper.startswith("arxiv:"):
+            paper = f"arxiv:{paper}"
+        arxiv_bare = paper.replace("arxiv:", "")
+        tags = [t.strip() for t in args.tags.split(",")] if args.tags else _collect_relevance_tags(arxiv_bare)
+        tags = [t for t in tags if t]
+        if not tags:
+            print(f"[!] No relevance_tags found for {paper}. Provide --tags, or analyze/submit it first.")
+            return
+        parent = slugify(args.parent) if args.parent else None
+        print(f"[CLASSIFY] {paper} -> {len(tags)} topic(s):")
+        for tag in tags:
+            slug, created = _upsert_topic(tag, parent, args.agent, paper)
+            print(f"  - {slug} ({'new' if created else 'existing'})")
+        return
+
+    if action in ("list", "tree", None):
+        index = _load_topic_index()
+        topics = index.get("topics", {})
+        if not topics:
+            print("No topics yet. Create one with: macp topic add <name> [--parent <p>]")
+            print("Or auto-classify a paper: macp topic classify <arxiv_id>")
+            return
+        print(f"Topic Taxonomy ({len(topics)} topics)")
+        roots = [s for s, t in topics.items() if not t.get("parent")]
+
+        def _render(slug: str, prefix: str = "  "):
+            t = topics[slug]
+            print(f"{prefix}{slug}  [{t.get('paper_count', 0)} papers]")
+            children = [s for s, c in topics.items() if c.get("parent") == slug]
+            for child in sorted(children):
+                _render(child, prefix + "  ")
+
+        for root in sorted(roots):
+            _render(root)
+        return
+
+    if action == "show":
+        slug = slugify(args.name)
+        index = _load_topic_index()
+        if slug not in index["topics"]:
+            print(f"[!] Topic '{slug}' not found.")
+            return
+        topic = _read_topic(index["topics"][slug]["path"]) or {}
+        print(json.dumps(topic, indent=2))
+        return
+
+
+# ---------------------------------------------------------------------------
 # Command: learn
 # ---------------------------------------------------------------------------
 
@@ -1516,6 +1709,30 @@ def main():
     p_submit.add_argument("--continues-from-agent", dest="continues_from_agent", help="Agent ID of the analysis being continued")
     p_submit.add_argument("--force", action="store_true", help="Bypass strict schema validation")
     p_submit.set_defaults(func=cmd_submit)
+
+    # --- topic (Phase 5 Component 2: Topic Taxonomy) ---
+    p_topic = subparsers.add_parser("topic", help="Manage the research topic taxonomy (self-growing tree)")
+    topic_sub = p_topic.add_subparsers(dest="topic_action")
+
+    pt_add = topic_sub.add_parser("add", help="Create/update a topic (optionally under a parent)")
+    pt_add.add_argument("name", help="Topic name (e.g. 'Transformer Architecture')")
+    pt_add.add_argument("--parent", "-p", help="Parent topic name/slug for hierarchy")
+    pt_add.add_argument("--paper", help="arXiv ID to attach to this topic")
+    pt_add.add_argument("--agent", "-a", default="human", help="Agent recording this topic")
+
+    pt_cls = topic_sub.add_parser("classify", help="Auto-classify a paper into topics from its relevance_tags")
+    pt_cls.add_argument("paper", help="arXiv ID of the paper to classify")
+    pt_cls.add_argument("--tags", "-t", help="Comma-separated tags (else read from saved analyses)")
+    pt_cls.add_argument("--parent", "-p", help="Place created topics under this parent")
+    pt_cls.add_argument("--agent", "-a", default="human", help="Agent performing classification")
+
+    topic_sub.add_parser("list", help="List the topic tree")
+    topic_sub.add_parser("tree", help="List the topic tree")
+
+    pt_show = topic_sub.add_parser("show", help="Show a topic's full record")
+    pt_show.add_argument("name", help="Topic name/slug")
+
+    p_topic.set_defaults(func=cmd_topic)
 
     # --- learn ---
     p_learn = subparsers.add_parser("learn", help="Record a learning insight (C-S-P: Synthesis)")
