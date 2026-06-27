@@ -37,7 +37,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 HF_DAILY_PAPERS_API = "https://huggingface.co/api/daily_papers"
 HF_PAPER_SEARCH_API = "https://huggingface.co/api/papers/search"
-ARXIV_API = "http://export.arxiv.org/api/query"
+ARXIV_API = "https://export.arxiv.org/api/query"
 HYSTS_DATASET_API = "https://datasets-server.huggingface.co"
 HYSTS_DATASET_NAME = "hysts-bot-data/daily-papers"
 MACP_DIR = ".macp"
