@@ -55,7 +55,7 @@ from github_auth import (
 )
 from middleware import get_current_user, is_authenticated, require_user
 from guest import check_guest_limit
-from security import SecurityHeadersMiddleware
+from security import SecurityHeadersMiddleware, OriginGuardMiddleware
 from github_storage import GitHubStorageService, get_storage_service
 from rate_limit import limiter
 from webmcp import mcp_router
@@ -179,6 +179,9 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-API-Key", "Cookie"],
 )
+# Origin guard runs first on the request (added last). Opt-in via CF_ORIGIN_SECRET:
+# blocks direct *.run.app hits to /api/* that bypass Cloudflare. No-op until set.
+app.add_middleware(OriginGuardMiddleware)
 
 # Note: Do NOT use HTTPSRedirectMiddleware on Cloud Run.
 # Cloud Run terminates TLS externally and forwards HTTP internally,

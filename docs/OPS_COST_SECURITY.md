@@ -66,11 +66,32 @@ rules — all on `macpresearch.ysenseai.org`.
    - **Security → Rate limiting** → add a rule (e.g. 100 req/min/IP to `/api/*`)
      as an edge backstop in front of the app-level slowapi limits.
 6. Keep `--allow-unauthenticated` on Cloud Run (Cloudflare is the front door).
-   Optionally restrict Cloud Run ingress to Cloudflare IP ranges later for
-   defense-in-depth (free, but more setup).
 
-**Why this beats Cloud Armor here:** comparable L7 protection at **$0/mo**, and
-the caching actively reduces your container invocations (= lower bill).
+### 3a. Lock the origin so direct `*.run.app` hits can't bypass Cloudflare (free)
+
+Strict ingress (`internal-and-cloud-load-balancing`) needs a paid HTTPS Load
+Balancer (~$18/mo) — skip it. Instead use the built-in **origin-secret guard**
+(`OriginGuardMiddleware`): Cloudflare injects a secret header; the app rejects
+`/api/*` requests that lack it. Free, app-layer, scoped to /api/* (static + health
+stay reachable). Activate:
+
+1. Generate a random secret: `python -c "import secrets; print(secrets.token_urlsafe(32))"`
+2. Cloudflare → **Rules → Transform Rules → Modify Request Header → Create**:
+   "Set static" header `X-Origin-Secret` = the secret, for all requests.
+3. Set it on the service (preserves other env vars):
+   ```bash
+   gcloud run services update macp-research-assistant --region us-central1 \
+     --update-env-vars CF_ORIGIN_SECRET=<the-secret>
+   ```
+4. Verify: `https://macpresearch.ysenseai.org/api/mcp/` works (via Cloudflare),
+   but a direct `curl https://<service>.run.app/api/mcp/` now returns **403**.
+
+Until `CF_ORIGIN_SECRET` is set, the guard is a **no-op** — safe to deploy first,
+activate later. To roll back: remove the env var
+(`--remove-env-vars CF_ORIGIN_SECRET`).
+
+**Why this beats Cloud Armor here:** comparable L7 protection + origin lockdown at
+**$0/mo**, and the caching actively reduces your container invocations (= lower bill).
 
 ---
 
