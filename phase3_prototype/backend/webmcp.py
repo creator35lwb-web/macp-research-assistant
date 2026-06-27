@@ -34,7 +34,7 @@ from paper_fetcher import fetch_by_id, fetch_by_query, fetch_from_hysts, downloa
 from llm_providers import (
     analyze_paper as _analyze_paper,
     analyze_paper_deep as _analyze_deep,
-    compute_agreement_score,
+    compute_agreement_detail,
     generate_consensus_synthesis,
     deep_research as _deep_research,
     PROVIDERS,
@@ -984,9 +984,20 @@ async def mcp_consensus(
                 "strength_score": a.score or 5,
             })
 
-        # Compute agreement score with schema-defined weights
+        # Compute agreement score with schema-defined weights.
+        # Semantic mode uses embedding cosine similarity (paraphrase-robust)
+        # and transparently falls back to lexical overlap when no embedding
+        # provider is reachable. req.provider/req.api_key seed the embedding
+        # provider selection (BYOK-aware); see resolve_embed_provider().
         weights = get_consensus_weights()
-        agreement_score = compute_agreement_score(analysis_dicts, weights)
+        agreement = compute_agreement_detail(
+            analysis_dicts,
+            weights=weights,
+            semantic=True,
+            embed_provider=req.provider,
+            api_key_override=req.api_key,
+        )
+        agreement_score = agreement["agreement_score"]
 
         # Generate LLM synthesis
         synthesis = generate_consensus_synthesis(
@@ -1004,6 +1015,8 @@ async def mcp_consensus(
             "generated_at": now.isoformat(),
             "generated_by": req.provider,
             "agreement_score": agreement_score,
+            "agreement_method": agreement["method"],
+            "agreement_components": agreement["components"],
             "synthesized_summary": (synthesis or {}).get("synthesized_summary", ""),
             "convergence_points": (synthesis or {}).get("convergence_points", []),
             "divergence_points": (synthesis or {}).get("divergence_points", []),
@@ -1039,6 +1052,7 @@ async def mcp_consensus(
                     await storage.update_manifest_entry("analyses", paper.arxiv_id, {
                         "consensus": {
                             "agreement_score": agreement_score,
+                            "agreement_method": agreement["method"],
                             "agents": agents_compared,
                             "generated_at": now.isoformat(),
                         },

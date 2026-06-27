@@ -182,12 +182,13 @@ async def lifespan(app: FastAPI):
         print(f"{'='*60}\n", file=sys.stderr)
         sys.exit(1)
 
-    # Warn about recommended env vars
+    init_db()
+
+    # Warn about recommended env vars (after init_db — log_audit persists to the DB)
     for var, desc in RECOMMENDED_ENV_VARS.items():
         if not os.environ.get(var):
             log_audit(event="env_warning", message=f"Missing recommended env var: {var} — {desc}", level="WARNING")
 
-    init_db()
     log_audit(event="server_start", message="Phase 3C backend started — all env vars validated")
     yield
     log_audit(event="server_stop", message="Phase 3C backend stopped")

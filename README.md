@@ -91,15 +91,19 @@ The BYOK feature includes a **Validate & Apply** button that tests your key agai
 
 ### Multi-Agent Consensus Analysis
 
-When 2 or more AI providers analyze the same paper, the platform generates an automated **consensus analysis** using a weighted scoring algorithm:
+When 2 or more AI providers analyze the same paper, the platform generates an automated **consensus analysis** using a weighted agreement score (0–1):
 
-| Component | Weight | Metric |
-|-----------|--------|--------|
-| **Key Findings Overlap** | 40% | Jaccard word similarity between extracted findings |
-| **Relevance Score Alignment** | 30% | 1 − normalized variance of provider scores |
-| **Methodology Consistency** | 30% | Word overlap in methodology assessments |
+| Component | Weight | Semantic metric (default) | Lexical fallback |
+|-----------|--------|---------------------------|------------------|
+| **Key Findings Agreement** | 40% | Embedding cosine similarity between agents' findings | Jaccard word overlap |
+| **Relevance Score Alignment** | 30% | 1 − normalized variance of provider scores | *(same — always numeric)* |
+| **Methodology Consistency** | 30% | Embedding cosine similarity between methodology texts | Jaccard word overlap |
 
-The consensus output includes convergence points, divergence points (with each agent's position), an agreement score (0–1), and a `bias_cross_check` field that assesses whether agent biases cancel out or compound.
+**Semantic scoring (Phase 4).** Findings and methodology agreement are computed from sentence embeddings (Google `text-embedding-004` free tier, with OpenAI `text-embedding-3-small` fallback), so two agents that reach the same conclusion in *different words* are correctly scored as agreeing — something pure word-overlap misses. Embeddings are batched in a single request and BYOK-aware.
+
+**Transparent and degradation-safe.** Every consensus record reports an `agreement_method` field — `semantic:<provider>:<model>`, `lexical`, or `trivial` — plus the per-component `agreement_components` breakdown, so the score is auditable. If no embedding provider is reachable (no key, network failure), the scorer automatically falls back to lexical Jaccard overlap and records the reason; it never fails the request.
+
+The consensus output also includes convergence points, divergence points (with each agent's position), and a `bias_cross_check` field that assesses whether agent biases cancel out or compound.
 
 ### WebMCP Integration
 

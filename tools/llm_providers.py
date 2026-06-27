@@ -17,6 +17,7 @@ Date: February 17, 2026
 """
 
 import json
+import math
 import os
 import re
 import sys
@@ -96,6 +97,29 @@ PROVIDERS = {
         "env_key": "SONAR_API_KEY",
         "model": "sonar-pro",
         "endpoint": "https://api.perplexity.ai/chat/completions",
+        "free_tier": False,
+    },
+}
+
+# Embedding providers for semantic consensus scoring (Phase 4 upgrade).
+# Only providers with a native embedding endpoint are listed. Gemini is
+# preferred because its embedding tier is free. Chat-only providers
+# (anthropic, grok, perplexity) intentionally have no embedding endpoint —
+# when one of those is selected for synthesis, semantic scoring falls back
+# to a configured embedding provider's server-side key, or to lexical.
+EMBEDDING_PROVIDERS = {
+    "gemini": {
+        "name": "Google Gemini Embeddings",
+        "env_key": "GEMINI_API_KEY",
+        "model": "text-embedding-004",
+        "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/{model}:batchEmbedContents",
+        "free_tier": True,
+    },
+    "openai": {
+        "name": "OpenAI Embeddings",
+        "env_key": "OPENAI_API_KEY",
+        "model": "text-embedding-3-small",
+        "endpoint": "https://api.openai.com/v1/embeddings",
         "free_tier": False,
     },
 }
@@ -759,118 +783,341 @@ Respond with valid JSON:
 Respond with ONLY the JSON object, no markdown formatting."""
 
 
-def compute_agreement_score(
-    analyses: list[dict],
-    weights: dict | None = None,
-) -> float:
-    """
-    Compute agreement score between multiple agent analyses.
+# ---------------------------------------------------------------------------
+# Embedding layer for semantic consensus (Phase 4)
+# ---------------------------------------------------------------------------
 
-    Algorithm (from MACP v2.0 schema consensus_rules):
-    - 40% key_findings overlap (Jaccard-like word overlap)
-    - 30% relevance_score alignment (1 - normalized variance)
-    - 30% methodology consistency (word overlap between methodology texts)
+DEFAULT_WEIGHTS = {
+    "key_findings_overlap": 0.4,
+    "relevance_score_alignment": 0.3,
+    "methodology_consistency": 0.3,
+}
 
-    Args:
-        analyses: List of analysis dicts, each with key_findings/key_insights,
-                  relevance_score/strength_score, and methodology.
-        weights: Override weights dict with keys key_findings_overlap,
-                 relevance_score_alignment, methodology_consistency.
+# Max characters embedded per document. Embedding models truncate anyway;
+# this bounds payload size and cost.
+_EMBED_CHAR_LIMIT = 8000
+_EMBED_BLANK_SENTINEL = "[no content provided]"
+
+
+def resolve_embed_provider(
+    preferred: Optional[str] = None,
+    api_key_override: Optional[str] = None,
+) -> tuple[Optional[str], Optional[str]]:
+    """Pick an embedding provider and key.
+
+    Preference order: the caller's `preferred` provider (only if it actually
+    has an embedding endpoint), then free-tier providers, then the rest.
+    The BYOK `api_key_override` is only applied to `preferred` — it is never
+    reused for a different provider (so an Anthropic key is never sent to
+    Gemini). Returns (provider_id, api_key) or (None, None) if nothing usable.
 
     Returns:
-        Float between 0 and 1 (1.0 = full agreement).
+        (provider_id, api_key) when an embedding provider is available,
+        otherwise (None, None).
     """
-    if len(analyses) < 2:
-        return 1.0
+    ordered = sorted(
+        EMBEDDING_PROVIDERS.items(),
+        key=lambda kv: (not kv[1]["free_tier"], kv[0]),
+    )
+    candidates: list[str] = []
+    if preferred:
+        candidates.append(preferred)
+    candidates += [pid for pid, _ in ordered]
 
-    if weights is None:
-        weights = {
-            "key_findings_overlap": 0.4,
-            "relevance_score_alignment": 0.3,
-            "methodology_consistency": 0.3,
-        }
+    seen: set[str] = set()
+    for pid in candidates:
+        if pid in seen or pid not in EMBEDDING_PROVIDERS:
+            continue
+        seen.add(pid)
+        cfg = EMBEDDING_PROVIDERS[pid]
+        key = (api_key_override if pid == preferred else None) or os.environ.get(cfg["env_key"], "")
+        if key:
+            return pid, key
+    return None, None
 
-    # --- Component 1: Key findings overlap (40%) ---
-    def _extract_words(findings: list) -> set:
-        words = set()
-        for f in findings:
-            if isinstance(f, str):
-                words.update(w.lower().strip(".,;:!?") for w in f.split() if len(w) > 3)
-        return words
 
-    all_findings = []
-    for a in analyses:
-        findings = (
-            a.get("key_findings")
-            or a.get("key_insights")
-            or a.get("key_contributions")
-            or []
-        )
-        all_findings.append(_extract_words(findings))
+def embed_texts(
+    texts: list[str],
+    provider: str,
+    api_key: str,
+    timeout: int = 60,
+) -> Optional[list[list[float]]]:
+    """Embed a batch of texts with the given provider.
 
-    # Average pairwise Jaccard similarity
-    jaccard_sum = 0.0
-    pair_count = 0
-    for i in range(len(all_findings)):
-        for j in range(i + 1, len(all_findings)):
-            a_set, b_set = all_findings[i], all_findings[j]
+    Returns a list of vectors aligned 1:1 with `texts`, or None on any
+    failure (missing config, network error, malformed/partial response).
+    Callers must treat None as "fall back to lexical".
+    """
+    if not texts:
+        return []
+    cfg = EMBEDDING_PROVIDERS.get(provider)
+    if not cfg or not api_key:
+        return None
+
+    # Empty strings make some embedding APIs error; substitute a sentinel.
+    payload_texts = [
+        (t[:_EMBED_CHAR_LIMIT] if t and t.strip() else _EMBED_BLANK_SENTINEL)
+        for t in texts
+    ]
+
+    try:
+        if provider == "gemini":
+            url = cfg["endpoint"].format(model=cfg["model"])
+            body = {
+                "requests": [
+                    {"model": f"models/{cfg['model']}", "content": {"parts": [{"text": t}]}}
+                    for t in payload_texts
+                ]
+            }
+            resp = requests.post(
+                url,
+                params={"key": api_key},
+                headers={"Content-Type": "application/json"},
+                json=body,
+                timeout=timeout,
+            )
+            resp.raise_for_status()
+            vectors = [e.get("values", []) for e in resp.json().get("embeddings", [])]
+        elif provider == "openai":
+            resp = requests.post(
+                cfg["endpoint"],
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={"model": cfg["model"], "input": payload_texts},
+                timeout=timeout,
+            )
+            resp.raise_for_status()
+            # OpenAI does not guarantee response order; sort by index.
+            data = sorted(resp.json().get("data", []), key=lambda d: d.get("index", 0))
+            vectors = [d.get("embedding", []) for d in data]
+        else:
+            return None
+    except Exception as e:  # noqa: BLE001 — embeddings are best-effort
+        print(f"[WARN] Embedding via {provider} failed: {e}", file=sys.stderr)
+        return None
+
+    if len(vectors) != len(texts) or any(not v for v in vectors):
+        return None
+    return vectors
+
+
+def _cosine(a: list[float], b: list[float]) -> float:
+    """Cosine similarity in [-1, 1]; 0.0 for degenerate inputs."""
+    if not a or not b or len(a) != len(b):
+        return 0.0
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(y * y for y in b))
+    if na == 0.0 or nb == 0.0:
+        return 0.0
+    return dot / (na * nb)
+
+
+def _mean_pairwise_similarity(vectors: list[list[float]]) -> Optional[float]:
+    """Average pairwise cosine similarity, rescaled from [-1,1] to [0,1].
+
+    Returns None when fewer than two vectors are available.
+    """
+    n = len(vectors)
+    if n < 2:
+        return None
+    total = 0.0
+    pairs = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            total += (_cosine(vectors[i], vectors[j]) + 1.0) / 2.0
+            pairs += 1
+    return total / pairs if pairs else None
+
+
+# ---------------------------------------------------------------------------
+# Consensus component helpers (shared by lexical + semantic paths)
+# ---------------------------------------------------------------------------
+
+def _findings_words(analysis: dict) -> set:
+    findings = (
+        analysis.get("key_findings")
+        or analysis.get("key_insights")
+        or analysis.get("key_contributions")
+        or []
+    )
+    words: set = set()
+    for f in findings:
+        if isinstance(f, str):
+            words.update(w.lower().strip(".,;:!?") for w in f.split() if len(w) > 3)
+    return words
+
+
+def _text_words(text: str) -> set:
+    if not text:
+        return set()
+    return set(w.lower().strip(".,;:!?") for w in text.split() if len(w) > 3)
+
+
+def _mean_pairwise_jaccard(word_sets: list[set]) -> float:
+    total = 0.0
+    pairs = 0
+    for i in range(len(word_sets)):
+        for j in range(i + 1, len(word_sets)):
+            a_set, b_set = word_sets[i], word_sets[j]
             if a_set or b_set:
-                intersection = len(a_set & b_set)
                 union = len(a_set | b_set)
-                jaccard_sum += intersection / union if union > 0 else 0
-            pair_count += 1
-    findings_score = jaccard_sum / pair_count if pair_count > 0 else 0
+                total += (len(a_set & b_set) / union) if union > 0 else 0.0
+            pairs += 1
+    return total / pairs if pairs > 0 else 0.0
 
-    # --- Component 2: Relevance score alignment (30%) ---
+
+def _findings_document(analysis: dict) -> str:
+    findings = (
+        analysis.get("key_findings")
+        or analysis.get("key_insights")
+        or analysis.get("key_contributions")
+        or []
+    )
+    return " ".join(f for f in findings if isinstance(f, str))
+
+
+def _methodology_document(analysis: dict) -> str:
+    return analysis.get("methodology") or analysis.get("methodology_detail") or ""
+
+
+def _relevance_alignment(analyses: list[dict]) -> float:
+    """Component 2 (unchanged): 1 - normalized variance of relevance scores."""
     scores = []
     for a in analyses:
         s = a.get("relevance_score") or a.get("strength_score")
         if s is not None:
-            # Normalize to 0-1 range if it's on a 1-10 scale
             s = float(s)
-            if s > 1:
+            if s > 1:  # normalize a 1-10 scale to 0-1
                 s = s / 10.0
             scores.append(s)
+    if len(scores) < 2:
+        return 0.5  # neutral when there isn't enough data
+    mean = sum(scores) / len(scores)
+    variance = sum((s - mean) ** 2 for s in scores) / len(scores)
+    # Max variance for values in [0,1] is 0.25 (half at 0, half at 1).
+    return 1.0 - min(variance / 0.25, 1.0)
 
-    if len(scores) >= 2:
-        mean = sum(scores) / len(scores)
-        variance = sum((s - mean) ** 2 for s in scores) / len(scores)
-        # Max possible variance for 0-1 range is 0.25
-        relevance_score = 1.0 - min(variance / 0.25, 1.0)
-    else:
-        relevance_score = 0.5  # neutral if not enough data
 
-    # --- Component 3: Methodology consistency (30%) ---
-    def _method_words(text: str) -> set:
-        if not text:
-            return set()
-        return set(w.lower().strip(".,;:!?") for w in text.split() if len(w) > 3)
+# ---------------------------------------------------------------------------
+# Agreement scoring (lexical-compatible + semantic upgrade)
+# ---------------------------------------------------------------------------
 
-    all_methods = []
-    for a in analyses:
-        m = a.get("methodology") or a.get("methodology_detail") or ""
-        all_methods.append(_method_words(m))
+def compute_agreement_detail(
+    analyses: list[dict],
+    weights: dict | None = None,
+    semantic: bool = True,
+    embed_provider: Optional[str] = None,
+    api_key_override: Optional[str] = None,
+) -> dict:
+    """Compute the multi-agent agreement score with a transparent breakdown.
 
-    method_jaccard_sum = 0.0
-    method_pairs = 0
-    for i in range(len(all_methods)):
-        for j in range(i + 1, len(all_methods)):
-            a_set, b_set = all_methods[i], all_methods[j]
-            if a_set or b_set:
-                intersection = len(a_set & b_set)
-                union = len(a_set | b_set)
-                method_jaccard_sum += intersection / union if union > 0 else 0
-            method_pairs += 1
-    methodology_score = method_jaccard_sum / method_pairs if method_pairs > 0 else 0
+    Weighted blend of three components (MACP v2.0 consensus_rules):
+    - key_findings agreement (default 40%)
+    - relevance_score alignment (default 30%) — always numeric variance
+    - methodology consistency (default 30%)
 
-    # --- Weighted combination ---
+    When ``semantic=True`` and an embedding provider is reachable, the
+    findings and methodology components use embedding cosine similarity
+    (paraphrase-robust). Otherwise they fall back to Jaccard word overlap.
+    The relevance component is numeric in both modes.
+
+    Returns:
+        Dict with keys:
+            agreement_score: float in [0, 1]
+            method: "semantic:<provider>:<model>" | "lexical" | "trivial"
+            components: per-component scores (each rounded to 3 dp)
+            weights: the weights actually applied
+            fallback_reason: why semantic was skipped, or None
+    """
+    weights = weights or DEFAULT_WEIGHTS
+
+    if len(analyses) < 2:
+        return {
+            "agreement_score": 1.0,
+            "method": "trivial",
+            "components": {
+                "key_findings_overlap": 1.0,
+                "relevance_score_alignment": 1.0,
+                "methodology_consistency": 1.0,
+            },
+            "weights": weights,
+            "fallback_reason": "single_analysis",
+        }
+
+    relevance_score = _relevance_alignment(analyses)
+
+    method = "lexical"
+    fallback_reason: Optional[str] = None
+    findings_score: Optional[float] = None
+    methodology_score: Optional[float] = None
+
+    if semantic:
+        provider, key = resolve_embed_provider(embed_provider, api_key_override)
+        if not provider:
+            fallback_reason = "no_embedding_provider_configured"
+        else:
+            n = len(analyses)
+            # One batched call: findings docs first, methodology docs second.
+            batch = (
+                [_findings_document(a) for a in analyses]
+                + [_methodology_document(a) for a in analyses]
+            )
+            vectors = embed_texts(batch, provider, key)
+            if vectors is None:
+                fallback_reason = f"embedding_call_failed:{provider}"
+            else:
+                fs = _mean_pairwise_similarity(vectors[:n])
+                ms = _mean_pairwise_similarity(vectors[n:])
+                if fs is not None and ms is not None:
+                    findings_score = fs
+                    methodology_score = ms
+                    method = f"semantic:{provider}:{EMBEDDING_PROVIDERS[provider]['model']}"
+                else:
+                    fallback_reason = "insufficient_vectors"
+
+    if findings_score is None or methodology_score is None:
+        findings_score = _mean_pairwise_jaccard([_findings_words(a) for a in analyses])
+        methodology_score = _mean_pairwise_jaccard(
+            [_text_words(_methodology_document(a)) for a in analyses]
+        )
+        method = "lexical"
+
     final = (
         weights["key_findings_overlap"] * findings_score
         + weights["relevance_score_alignment"] * relevance_score
         + weights["methodology_consistency"] * methodology_score
     )
 
-    return round(min(max(final, 0.0), 1.0), 3)
+    return {
+        "agreement_score": round(min(max(final, 0.0), 1.0), 3),
+        "method": method,
+        "components": {
+            "key_findings_overlap": round(findings_score, 3),
+            "relevance_score_alignment": round(relevance_score, 3),
+            "methodology_consistency": round(methodology_score, 3),
+        },
+        "weights": weights,
+        "fallback_reason": fallback_reason,
+    }
+
+
+def compute_agreement_score(
+    analyses: list[dict],
+    weights: dict | None = None,
+) -> float:
+    """Backward-compatible float API.
+
+    Lexical by default so existing/offline callers never trigger surprise
+    network calls. For the semantic upgrade, call ``compute_agreement_detail``
+    with ``semantic=True``.
+
+    Returns:
+        Float between 0 and 1 (1.0 = full agreement).
+    """
+    return compute_agreement_detail(analyses, weights=weights, semantic=False)["agreement_score"]
 
 
 def generate_consensus_synthesis(

@@ -20,6 +20,8 @@ from sqlalchemy import (
     String,
     Text,
     create_engine,
+    inspect,
+    text,
 )
 from sqlalchemy.orm import DeclarativeBase, Session, relationship, sessionmaker
 
@@ -51,10 +53,39 @@ def get_db() -> Session:
 
 
 def init_db():
-    """Create all tables if they don't exist."""
+    """Create all tables and add missing columns for local SQLite upgrades."""
     import os
     os.makedirs(MACP_DIR, exist_ok=True)
     Base.metadata.create_all(bind=engine)
+    _ensure_sqlite_columns()
+
+
+def _ensure_sqlite_columns():
+    """Best-effort lightweight migrations for existing local SQLite databases.
+
+    SQLAlchemy's create_all() creates missing tables but does not alter existing
+    ones. Local prototype databases can therefore miss columns added in later
+    phases (e.g. knowledge-graph models), so reconcile additive columns before
+    the app starts. Production PostgreSQL is left to real migrations.
+    """
+    if not DATABASE_URL.startswith("sqlite"):
+        return
+
+    inspector = inspect(engine)
+    existing_tables = set(inspector.get_table_names())
+
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if table.name not in existing_tables:
+                continue
+
+            existing_columns = {col["name"] for col in inspector.get_columns(table.name)}
+            for column in table.columns:
+                if column.name in existing_columns:
+                    continue
+
+                column_type = column.type.compile(dialect=engine.dialect)
+                conn.execute(text(f'ALTER TABLE "{table.name}" ADD COLUMN "{column.name}" {column_type}'))
 
 
 # ---------------------------------------------------------------------------
@@ -362,6 +393,16 @@ def log_audit(
         )
         db.add(entry)
         db.commit()
+    except Exception as e:
+        db.rollback()
+        print(json.dumps({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "severity": "WARNING",
+            "event": "audit_persist_failed",
+            "message": str(e),
+            "service": "macp-research-assistant",
+            "version": "phase3c",
+        }), flush=True)
     finally:
         if close_after:
             db.close()

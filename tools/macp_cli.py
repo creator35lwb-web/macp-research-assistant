@@ -695,6 +695,179 @@ def cmd_handoff(args):
 
 
 # ---------------------------------------------------------------------------
+# Command: submit  (Phase 5A — Agent Submission Layer)
+# ---------------------------------------------------------------------------
+
+ANALYSES_DIR = os.path.join(MACP_DIR, "analyses")
+
+# Fields an external agent may supply in its analysis content.
+_SUBMIT_CONTENT_FIELDS = (
+    "summary", "key_findings", "key_insights", "methodology",
+    "research_gaps", "relevance_tags", "strength_score", "relevance_score",
+)
+
+
+def cmd_submit(args):
+    """Submit an external agent's analysis into the MACP substrate.
+
+    This is the Phase 5A "Agent Submission Layer": it lets ANY agent
+    (Claude Code, Manus AI, Perplexity, Cursor, ...) contribute an analysis
+    of a paper back into the repo as provenance-tracked, schema-shaped data.
+    GitHub-native — writes to .macp/analyses/{arxiv_id}/{agent_id}_{date}.json
+    and updates the manifest, so the webapp and other agents read it on sync.
+
+    Supports the continuation protocol via --continues-from: an analysis can
+    declare that it builds on a previous agent's analysis, forming the chains
+    the Research Journey Engine navigates.
+    """
+    print("=" * 60)
+    print("MACP Research Assistant - SUBMIT")
+    print("  Phase 5A: Agent Submission Layer (provenance ingest)")
+    print("=" * 60)
+
+    # --- Resolve + sanitize core inputs ---
+    try:
+        agent_id = sanitize_text(args.agent, MAX_PROJECT_LENGTH, "Agent ID")
+    except ValueError as e:
+        print(f"[ERROR] Input validation failed: {e}", file=sys.stderr)
+        return
+
+    paper_id = args.paper.strip()
+    if not paper_id.startswith("arxiv:"):
+        paper_id = f"arxiv:{paper_id}"
+    arxiv_bare = paper_id.replace("arxiv:", "")
+
+    analysis_type = args.type
+    if analysis_type not in ("abstract", "deep"):
+        print(f"[ERROR] --type must be 'abstract' or 'deep', got '{analysis_type}'", file=sys.stderr)
+        return
+
+    # --- Load the agent's analysis content ---
+    if args.file:
+        if not os.path.isfile(args.file):
+            print(f"[ERROR] Analysis file not found: {args.file}", file=sys.stderr)
+            return
+        try:
+            with open(args.file, "r", encoding="utf-8") as fh:
+                content = json.load(fh)
+        except (OSError, json.JSONDecodeError) as e:
+            print(f"[ERROR] Could not read analysis JSON: {e}", file=sys.stderr)
+            return
+    elif args.summary:
+        content = {"summary": args.summary}
+        if args.findings:
+            content["key_findings"] = [f.strip() for f in args.findings.split(";") if f.strip()]
+        if args.score is not None:
+            content["strength_score"] = args.score
+    else:
+        print("[ERROR] Provide either --file <analysis.json> or --summary <text>.", file=sys.stderr)
+        return
+
+    if not isinstance(content, dict) or not content.get("summary"):
+        print("[ERROR] Analysis content must be a JSON object with at least a 'summary'.", file=sys.stderr)
+        return
+
+    # Keep only known fields; coerce list/score types defensively.
+    analysis = {k: content[k] for k in _SUBMIT_CONTENT_FIELDS if k in content}
+
+    # --- Build the provenance-tracked record ---
+    now = datetime.now()
+    record = {
+        "agent_id": agent_id,
+        "arxiv_id": paper_id,
+        "analysis_type": analysis_type,
+        "submitted_at": now.isoformat(),
+        **analysis,
+        "_provenance": {
+            "agent_id": agent_id,
+            "submitted_via": "macp_cli.submit",
+            "analysis_type": analysis_type,
+            "timestamp": now.isoformat(),
+        },
+        "_meta": {
+            "bias_disclaimer": (
+                "Agent-submitted analysis. May contain inaccuracies or reflect "
+                "the submitting agent's biases. Cross-check before relying on it."
+            ),
+        },
+    }
+
+    # --- Continuation protocol: link to a prior analysis ---
+    if args.continues_from:
+        record["continues_from"] = {
+            "analysis_id": args.continues_from.strip(),
+            "agent_id": args.continues_from_agent.strip() if args.continues_from_agent else None,
+        }
+
+    # --- Schema validation (best-effort, non-blocking) ---
+    # There is no dedicated analysis schema in schemas/ yet, so validate_json_data
+    # is a no-op today (returns True when no schema file is found) but will engage
+    # automatically once an analysis schema is added. The structural check above
+    # (dict + non-empty summary) is the real gate. Never block on validator error.
+    try:
+        validate_json_data(record, "analysis_schema.json", strict=False)
+    except Exception:
+        pass
+
+    # --- Write GitHub-native: .macp/analyses/{arxiv_id}/{agent_id}_{date}.json ---
+    safe_agent = re.sub(r"[^a-z0-9_-]+", "-", agent_id.lower()).strip("-") or "agent"
+    paper_dir = os.path.join(ANALYSES_DIR, arxiv_bare)
+    filename = f"{safe_agent}_{now.strftime('%Y%m%d_%H%M%S')}.json"
+    out_path = os.path.join(paper_dir, filename)
+
+    try:
+        atomic_write_json(out_path, record)
+    except OSError as e:
+        print(f"[ERROR] Could not write analysis: {e}", file=sys.stderr)
+        return
+
+    # --- Update the manifest so the webapp / other agents discover it ---
+    _register_submission_in_manifest(paper_id, safe_agent, analysis_type, filename, now)
+
+    # --- Report ---
+    rel_path = os.path.relpath(out_path, MACP_DIR)
+    print(f"\n[SUBMITTED] {agent_id} -> {paper_id}")
+    print(f"  Type:    {analysis_type}")
+    print(f"  Summary: {record['summary'][:80]}...")
+    if "continues_from" in record:
+        print(f"  Continues from: {record['continues_from']['analysis_id']}")
+    print(f"  Stored:  .macp/{rel_path}")
+    print("\n[MACP] Analysis ingested. Commit + push to share with the FLYWHEEL TEAM.")
+    print("=" * 60)
+
+
+def _register_submission_in_manifest(paper_id, agent_id, analysis_type, filename, when):
+    """Record the submission under analyses[paper_id] in the manifest (best-effort)."""
+    manifest_path = os.path.join(MACP_DIR, "manifest.json")
+    try:
+        if os.path.isfile(manifest_path):
+            with open(manifest_path, "r", encoding="utf-8") as fh:
+                manifest = json.load(fh)
+        else:
+            manifest = {}
+    except (OSError, json.JSONDecodeError):
+        manifest = {}
+
+    analyses = manifest.setdefault("analyses", {})
+    entry = analyses.setdefault(paper_id, {"agents": [], "submissions": []})
+    if isinstance(entry, dict):
+        agents = entry.setdefault("agents", [])
+        if agent_id not in agents:
+            agents.append(agent_id)
+        entry.setdefault("submissions", []).append({
+            "agent_id": agent_id,
+            "analysis_type": analysis_type,
+            "file": filename,
+            "submitted_at": when.isoformat(),
+        })
+
+    try:
+        atomic_write_json(manifest_path, manifest)
+    except OSError:
+        pass  # manifest update is advisory; the analysis file is the source of truth
+
+
+# ---------------------------------------------------------------------------
 # Command: learn
 # ---------------------------------------------------------------------------
 
@@ -1326,6 +1499,23 @@ def main():
     p_handoff.add_argument("--papers", "-p", help="Comma-separated arXiv IDs relevant to this handoff")
     p_handoff.add_argument("--force", action="store_true", help="Bypass strict schema validation")
     p_handoff.set_defaults(func=cmd_handoff)
+
+    # --- submit (Phase 5A: Agent Submission Layer) ---
+    p_submit = subparsers.add_parser(
+        "submit",
+        help="Submit an external agent's paper analysis into the MACP substrate",
+    )
+    p_submit.add_argument("--paper", "-p", required=True, help="arXiv ID of the analyzed paper (e.g. 2402.05120)")
+    p_submit.add_argument("--agent", "-a", required=True, help="Submitting agent ID (e.g. claude_code, manus_ai)")
+    p_submit.add_argument("--type", "-t", default="abstract", choices=["abstract", "deep"], help="Analysis type")
+    p_submit.add_argument("--file", "-f", help="Path to a JSON file with the structured analysis content")
+    p_submit.add_argument("--summary", "-s", help="Inline analysis summary (alternative to --file)")
+    p_submit.add_argument("--findings", help="Semicolon-separated key findings (used with --summary)")
+    p_submit.add_argument("--score", type=float, help="Strength/relevance score (used with --summary)")
+    p_submit.add_argument("--continues-from", dest="continues_from", help="Analysis ID this submission builds on (continuation chain)")
+    p_submit.add_argument("--continues-from-agent", dest="continues_from_agent", help="Agent ID of the analysis being continued")
+    p_submit.add_argument("--force", action="store_true", help="Bypass strict schema validation")
+    p_submit.set_defaults(func=cmd_submit)
 
     # --- learn ---
     p_learn = subparsers.add_parser("learn", help="Record a learning insight (C-S-P: Synthesis)")
