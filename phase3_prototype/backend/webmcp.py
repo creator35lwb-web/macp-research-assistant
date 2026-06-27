@@ -8,7 +8,9 @@ Response format follows MCP tool result convention.
 import json
 import logging
 import os
+import re
 import sys
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
@@ -103,6 +105,33 @@ class McpSyncRequest(BaseModel):
     pass
 
 
+class SubmitAnalysisContent(BaseModel):
+    """The structured analysis an external agent submits."""
+    summary: str = Field(..., min_length=1, max_length=5000)
+    key_findings: list[str] = Field(default=[])
+    key_insights: list[str] = Field(default=[])
+    methodology: str = Field(default="", max_length=5000)
+    research_gaps: list[str] = Field(default=[])
+    relevance_tags: list[str] = Field(default=[])
+    strength_score: Optional[float] = Field(default=None, ge=0, le=10)
+    relevance_score: Optional[float] = Field(default=None, ge=0, le=1)
+    model: str = Field(default="", max_length=100)
+
+
+class ContinuesFrom(BaseModel):
+    analysis_id: str = Field(..., min_length=1, max_length=200)
+    agent_id: Optional[str] = Field(default=None, max_length=100)
+
+
+class McpSubmitAnalysisRequest(BaseModel):
+    """Phase 5A — any external agent submits a provenance-tracked analysis."""
+    paper_id: str = Field(..., min_length=1)
+    agent_id: str = Field(..., min_length=1, max_length=100, description="Submitting agent, e.g. claude_code, manus_ai")
+    analysis_type: str = Field(default="abstract", pattern="^(abstract|deep)$")
+    content: SubmitAnalysisContent
+    continues_from: Optional[ContinuesFrom] = Field(default=None, description="Analysis this submission builds on (continuation chain)")
+
+
 # ---------------------------------------------------------------------------
 # Discovery endpoint
 # ---------------------------------------------------------------------------
@@ -170,6 +199,13 @@ async def mcp_discovery():
             "endpoint": "/api/mcp/consensus",
             "method": "POST",
             "inputSchema": McpConsensusRequest.model_json_schema(),
+        },
+        {
+            "name": "macp.submit-analysis",
+            "description": "Submit an analysis produced by an external agent into the MACP substrate (provenance-tracked, supports continuation chains)",
+            "endpoint": "/api/mcp/submit-analysis",
+            "method": "POST",
+            "inputSchema": McpSubmitAnalysisRequest.model_json_schema(),
         },
         {
             "name": "macp.deep-research",
@@ -1067,6 +1103,130 @@ async def mcp_consensus(
     except Exception:
         logger.exception("Consensus generation failed")
         return mcp_response("Consensus generation failed. Please try again.", is_error=True)
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# 8b. Submit Analysis (Phase 5A — Agent Submission Layer)
+# ---------------------------------------------------------------------------
+
+@mcp_router.post("/submit-analysis")
+async def mcp_submit_analysis(
+    request: Request,
+    req: McpSubmitAnalysisRequest,
+    background_tasks: BackgroundTasks,
+    user: Optional[User] = Depends(get_current_user),
+):
+    """Ingest an analysis produced by an external agent (Claude Code, Manus,
+    Perplexity, Cursor, ...) into the MACP substrate.
+
+    Web/MCP counterpart of the `macp submit` CLI. Persists to the DB and, when
+    authenticated, dual-writes the provenance-tracked record to GitHub at
+    .macp/analyses/{arxiv_id}/{agent_id}_{date}.json and registers it in the
+    manifest. Supports the continuation protocol (continues_from) so one agent's
+    analysis chains onto another's.
+    """
+    db = SessionLocal()
+    try:
+        if not req.paper_id.startswith("arxiv:"):
+            req.paper_id = f"arxiv:{req.paper_id}"
+        paper = db.query(Paper).filter(Paper.arxiv_id == req.paper_id).first()
+        if not paper:
+            return mcp_response(f"Paper {req.paper_id} not found", is_error=True)
+
+        # Sanitize the agent id — it becomes the stored provider + a filename.
+        agent_id = re.sub(r"[^a-z0-9_-]+", "-", req.agent_id.lower()).strip("-") or "agent"
+        c = req.content
+
+        # Normalize findings (accept either key_findings or key_insights).
+        findings = c.key_findings or c.key_insights
+        score = c.strength_score if c.strength_score is not None else (
+            (c.relevance_score * 10) if c.relevance_score is not None else 0
+        )
+
+        provenance = {
+            "agent_id": agent_id,
+            "analysis_type": req.analysis_type,
+            "submitted_via": "api/mcp/submit-analysis",
+            "model": c.model or "",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        if req.continues_from:
+            provenance["continues_from"] = req.continues_from.model_dump()
+
+        db_analysis = Analysis(
+            paper_id=paper.id, user_id=user.id if user else None,
+            provider=agent_id,
+            summary=c.summary,
+            key_insights=json.dumps(findings),
+            methodology=c.methodology,
+            research_gaps=json.dumps(c.research_gaps),
+            relevance_tags=json.dumps(c.relevance_tags),
+            score=score,
+            provenance=json.dumps(provenance),
+        )
+        db.add(db_analysis)
+        paper.status = "analyzed"
+        db.commit()
+        db.refresh(paper)
+        db.refresh(db_analysis)
+
+        # Build the full analysis dict for GitHub (mirrors CLI submit record).
+        full_analysis = {
+            "summary": c.summary,
+            "key_insights": findings,
+            "methodology": c.methodology,
+            "research_gaps": c.research_gaps,
+            "relevance_tags": c.relevance_tags,
+            "strength_score": score,
+            "_meta": {
+                "analysis_type": req.analysis_type,
+                "model": c.model or "",
+                "agent_id": agent_id,
+                "submitted_via": "api/mcp/submit-analysis",
+                "bias_disclaimer": (
+                    "Agent-submitted analysis. May contain inaccuracies or reflect "
+                    "the submitting agent's biases. Cross-check before relying on it."
+                ),
+            },
+        }
+        if req.continues_from:
+            full_analysis["continues_from"] = req.continues_from.model_dump()
+
+        # GitHub dual-write (only when authenticated).
+        synced = False
+        if user:
+            storage = get_storage_service(user)
+            if storage:
+                synced = True
+                now_iso = datetime.now(timezone.utc).isoformat()
+
+                async def _sync_submission():
+                    await storage.save_analysis_per_agent(paper, db_analysis, full_analysis)
+                    await storage.update_manifest_entry("analyses", paper.arxiv_id, {
+                        "submissions": [{
+                            "agent_id": agent_id,
+                            "analysis_type": req.analysis_type,
+                            "continues_from": req.continues_from.analysis_id if req.continues_from else None,
+                            "submitted_at": now_iso,
+                        }],
+                    })
+                background_tasks.add_task(_sync_submission)
+
+        return mcp_response({
+            "paper_id": paper.arxiv_id,
+            "analysis_id": db_analysis.id,
+            "agent_id": agent_id,
+            "analysis_type": req.analysis_type,
+            "continues_from": req.continues_from.analysis_id if req.continues_from else None,
+            "github_synced": synced,
+            "stored_path": f".macp/analyses/{paper.arxiv_id.replace(':', '_')}/{agent_id}_{datetime.now(timezone.utc).strftime('%Y%m%d')}.json",
+        })
+
+    except Exception:
+        logger.exception("Analysis submission failed")
+        return mcp_response("Analysis submission failed. Please try again.", is_error=True)
     finally:
         db.close()
 
