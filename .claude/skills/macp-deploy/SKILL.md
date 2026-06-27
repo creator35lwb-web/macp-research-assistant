@@ -5,7 +5,7 @@ description: Deploy the MACP Research Assistant backend+frontend to Google Cloud
 
 # MACP Deploy — Cloud Run Release Protocol
 
-Production service: `macp-research-assistant` · project `ysense-platform-v4-1` ·
+Production service: `macp-research-assistant` · project `<GCP_PROJECT>` ·
 region `us-central1` · public URL `https://macpresearch.ysenseai.org`.
 Deploy is a MANUAL, outward-facing action — confirm scope before pushing to prod.
 
@@ -42,7 +42,7 @@ scan from the `session-close` skill before anything public.
 
 ### 2. Confirm GCP target (read-only)
 ```bash
-gcloud config get-value project          # expect ysense-platform-v4-1
+gcloud config get-value project          # expect <GCP_PROJECT>
 gcloud run services describe macp-research-assistant --region us-central1 \
   --format="value(spec.template.spec.containers[0].env[].name)"   # GEMINI_API_KEY present?
 ```
@@ -56,7 +56,7 @@ gcloud builds submit --config cloudbuild.yaml --timeout=900s .
 ### 4. Deploy that exact digest (env preserved — no env flags)
 ```bash
 gcloud run deploy macp-research-assistant \
-  --image gcr.io/ysense-platform-v4-1/macp-research-assistant@sha256:XXXX \
+  --image gcr.io/<GCP_PROJECT>/macp-research-assistant@sha256:XXXX \
   --region us-central1 --platform managed
 ```
 

@@ -1,0 +1,18 @@
+{
+  "slug": "multi-agent",
+  "name": "multi-agent",
+  "parent": "transformer-architecture",
+  "depth": 2,
+  "papers": [
+    "arxiv:2402.05120"
+  ],
+  "child_topics": [],
+  "discovered_by": "human",
+  "discovered_from": "arxiv:2402.05120",
+  "research_status": "active",
+  "agents_contributed": [
+    "human"
+  ],
+  "created_at": "2026-06-28T01:10:24.870898",
+  "updated_at": "2026-06-28T01:10:24.870919"
+}

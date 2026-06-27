@@ -22,7 +22,7 @@ Commits pushed this session (all green, on origin/master):
 
 ### 2. DEPLOYED to production (Cloud Run)
 - Live: rev `macp-research-assistant-00039-z42`, 100% traffic, project
-  `ysense-platform-v4-1`, region us-central1. Semantic consensus + submit-analysis
+  `<GCP_PROJECT>`, region us-central1. Semantic consensus + submit-analysis
   now live; env (GEMINI_API_KEY etc.) preserved.
 - **Deploy saga / root cause (important for next agent):** the deploy initially
   appeared to "not take" — discovery kept showing old code. Root cause was NOT the
@@ -65,12 +65,12 @@ Commits pushed this session (all green, on origin/master):
 ## Pending / Next Agent
 
 ### Maintainer manual actions (cannot be done by an agent — account/console/DNS)
-1. **GCP billing budget** — verify/create for project `ysense-platform-v4-1`.
+1. **GCP billing budget** — verify/create for project `<GCP_PROJECT>`.
    Could NOT verify via gcloud (Billing Budget API disabled + billing perms). The
    existing VeriFimind budget may be scoped to that project only — check the
    budget's SCOPE in console: if it covers "all projects" on billing account
-   015E46-0A4895-1CAC38, this project is already covered; if it lists only
-   verifimind-mcp-server, add coverage for ysense-platform-v4-1. (Runbook §2.)
+   <BILLING_ACCOUNT_ID>, this project is already covered; if it lists only
+   verifimind-mcp-server, add coverage for <GCP_PROJECT>. (Runbook §2.)
 2. **SonarCloud CI**: add GitHub secret `SONAR_TOKEN` + turn OFF Automatic Analysis
    in SonarCloud (mutually exclusive). Until then the new SonarCloud CI check FAILS
    (harmless — not a required check; doesn't affect the app). (Runbook §4.)

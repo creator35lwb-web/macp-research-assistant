@@ -1,0 +1,18 @@
+{
+  "slug": "large-language-models",
+  "name": "Large Language Models",
+  "parent": null,
+  "depth": 0,
+  "papers": [],
+  "child_topics": [
+    "transformer-architecture"
+  ],
+  "discovered_by": "human",
+  "discovered_from": null,
+  "research_status": "active",
+  "agents_contributed": [
+    "human"
+  ],
+  "created_at": "2026-06-28T01:10:00.167228",
+  "updated_at": "2026-06-28T01:10:24.368932"
+}

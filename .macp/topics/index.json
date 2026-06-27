@@ -1,0 +1,33 @@
+{
+  "topics": {
+    "large-language-models": {
+      "name": "Large Language Models",
+      "path": "large-language-models",
+      "parent": null,
+      "depth": 0,
+      "paper_count": 0
+    },
+    "transformer-architecture": {
+      "name": "Transformer Architecture",
+      "path": "large-language-models/transformer-architecture",
+      "parent": "large-language-models",
+      "depth": 1,
+      "paper_count": 0
+    },
+    "multi-agent": {
+      "name": "multi-agent",
+      "path": "large-language-models/transformer-architecture/multi-agent",
+      "parent": "transformer-architecture",
+      "depth": 2,
+      "paper_count": 1
+    },
+    "ai-alignment": {
+      "name": "ai-alignment",
+      "path": "large-language-models/transformer-architecture/ai-alignment",
+      "parent": "transformer-architecture",
+      "depth": 2,
+      "paper_count": 1
+    }
+  },
+  "updated_at": "2026-06-28T01:10:24.891975"
+}

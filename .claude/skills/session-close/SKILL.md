@@ -42,18 +42,27 @@ git rev-list --left-right --count master...origin/master   # left=ahead right=be
 - Compile-check changed Python: `python -m py_compile <files>`
 - Confirm `git status` matches what you intend to leave behind.
 
-### 3. Unpublished-IP safety scan (BEFORE any public commit)
+### 3. Unpublished-IP + operational-identifier scan (BEFORE any public commit)
 
-Committing to the public repo IS publishing. Some materials are prepared in the
-**private hub** and must not surface in public commits until the maintainer
-releases them. Scan the diff for unpublished-IP markers:
+Committing to the public repo IS publishing. Two classes to keep out of public
+commits (especially docs/handoffs/skills):
+
+1. **Unpublished IP** prepared in the private hub (release is the maintainer's call).
+2. **Operational identifiers** — these are recon fodder, not credentials, but
+   should NOT be broadcast: GCP **billing account IDs**, **project IDs/numbers**,
+   and direct **`*.run.app` URLs** (they bypass the custom domain + any edge WAF).
+   Use placeholders (`<GCP_PROJECT>`) or dynamic refs (`gcloud config get-value
+   project`); reference the public custom domain, not the `.run.app` host.
 
 ```bash
 git diff | grep -inE "defensive publication|prior art|patent|unpublished|confidential|proprietary|do not publish"
+git diff | grep -inE "[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}|[a-z0-9-]+\.run\.app|projects/[a-z0-9-]+-[0-9]+|[0-9]{11,}"
 ```
 
-If anything matches — or you are unsure whether content is cleared for public
-release — STOP and confirm with the maintainer before committing.
+Architecture details, revision names, region, the custom domain, and env-var
+*names* are public-by-design for this open-source project — not secrets.
+If anything matches, or you are unsure content is cleared for public release —
+STOP and confirm with the maintainer before committing.
 
 ### 4. Write the handoff record
 

@@ -29,13 +29,13 @@ controls + financial guardrails**.
 ## 2. GCP billing budget + alerts (free)
 
 **Status (2026-06-27): ✅ DONE.** An **"All projects"** budget is configured on
-billing account `015E46-0A4895-1CAC38`, so `ysense-platform-v4-1` is covered
+billing account `<BILLING_ACCOUNT_ID>`, so `<GCP_PROJECT>` is covered
 (alongside `verifimind-mcp-server`). No per-project budget needed.
 
 For reference, to create/adjust one:
 
 1. Console → **Billing → Budgets & alerts → Create budget**
-2. Scope: project `ysense-platform-v4-1` (or the whole billing account)
+2. Scope: project `<GCP_PROJECT>` (or the whole billing account)
 3. Amount: a monthly cap you're comfortable with (e.g. **$15–25**)
 4. Alert thresholds: **50% / 90% / 100%** → email to `creator35lwb@gmail.com`
 5. (Optional) Enable **"Connect a Pub/Sub topic"** later if you want
@@ -54,8 +54,9 @@ rules — all on `macpresearch.ysenseai.org`.
 
 1. Create a free Cloudflare account; **add the `ysenseai.org` zone**.
 2. Update the domain's nameservers at your registrar to Cloudflare's.
-3. DNS: point `macpresearch` (CNAME/A) at the Cloud Run URL
-   `macp-research-assistant-690976799907.us-central1.run.app`, **proxied (orange cloud ON)**.
+3. DNS: point the `macpresearch` record (CNAME/A) at your Cloud Run service URL
+   (from `gcloud run services describe ... --format='value(status.url)'`),
+   **proxied (orange cloud ON)**.
    - Cloud Run custom-domain mapping stays; Cloudflare sits in front.
 4. SSL/TLS mode: **Full (strict)** (Cloud Run serves valid TLS).
 5. Enable free protections:
