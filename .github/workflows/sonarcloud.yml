@@ -23,7 +23,7 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Full history so SonarCloud computes new-code/blame accurately.
           fetch-depth: 0
@@ -35,4 +35,4 @@ jobs:
         # If this action version errors, check the latest at
         # https://github.com/SonarSource/sonarqube-scan-action
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v8
