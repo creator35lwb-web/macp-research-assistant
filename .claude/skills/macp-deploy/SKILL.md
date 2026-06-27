@@ -32,6 +32,9 @@ Deploy is a MANUAL, outward-facing action — confirm scope before pushing to pr
 git fetch origin && git status -sb        # clean + not behind origin/master
 python tools/test_consensus.py && python tools/test_submit.py
 python phase3_prototype/backend/test_submit_endpoint.py
+# Run the EXACT full-scope CI lint — NOT per-file. A per-file ruff check has
+# missed unused-import (F401) failures that then broke Backend Lint CI.
+python -m ruff check phase3_prototype/backend/ tools/ --select E,W,F --ignore E501,E402
 # frontend: cd phase3_prototype/frontend && npx tsc -b
 ```
 Confirm CI is green on the commit (`gh run list --limit 3`). Run the unpublished-IP
