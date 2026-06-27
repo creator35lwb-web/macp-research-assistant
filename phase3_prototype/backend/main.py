@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
-from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 import httpx
@@ -58,6 +57,7 @@ from middleware import get_current_user, is_authenticated, require_user
 from guest import check_guest_limit
 from security import SecurityHeadersMiddleware
 from github_storage import GitHubStorageService, get_storage_service
+from rate_limit import limiter
 from webmcp import mcp_router
 
 # Add the tools directory to the Python path
@@ -67,50 +67,8 @@ from paper_fetcher import fetch_by_id, fetch_by_query, fetch_from_hysts
 from llm_providers import analyze_paper as _analyze_paper, PROVIDERS
 
 
-# ---------------------------------------------------------------------------
-# Rate limiting: 3-tier key function
-# ---------------------------------------------------------------------------
-
-def _get_real_client_ip(request: Request) -> str:
-    """Extract the true client IP from X-Forwarded-For.
-
-    Cloud Run appends the real client IP as the LAST entry in the chain.
-    Reading the first entry is exploitable — attackers can prepend fake IPs
-    to bypass per-IP rate limits. Always use the last entry on Cloud Run.
-    """
-    forwarded_for = request.headers.get("X-Forwarded-For", "")
-    if forwarded_for:
-        ips = [ip.strip() for ip in forwarded_for.split(",")]
-        return ips[-1]  # Last IP = Cloud Run's addition = real client
-    return request.client.host or "unknown"
-
-
-def _rate_limit_key(request: Request) -> str:
-    """
-    3-tier rate limit key:
-    - Authenticated (JWT): user:{user_id}
-    - Authenticated (API key): apikey:{ip}
-    - Guest: guest:{ip}
-    """
-    auth = request.headers.get("authorization")
-    api_key = request.headers.get("x-api-key")
-    cookie = request.cookies.get("macp_session")
-
-    if is_authenticated(authorization=auth, x_api_key=api_key, macp_session=cookie):
-        # Try to extract user ID from JWT
-        from github_auth import decode_jwt
-        from jwt import InvalidTokenError
-        for token in [cookie, auth[7:] if auth and auth.startswith("Bearer ") else None]:
-            if token:
-                try:
-                    payload = decode_jwt(token)
-                    return f"user:{payload.get('sub', 'unknown')}"
-                except InvalidTokenError:
-                    pass
-        return f"apikey:{_get_real_client_ip(request)}"
-
-    return f"guest:{_get_real_client_ip(request)}"
-
+# Rate limiting: the 3-tier key function + limiter live in rate_limit.py
+# (shared with webmcp.py to avoid a circular import).
 
 # ---------------------------------------------------------------------------
 # Pydantic Models
@@ -193,8 +151,6 @@ async def lifespan(app: FastAPI):
     yield
     log_audit(event="server_stop", message="Phase 3C backend stopped")
 
-
-limiter = Limiter(key_func=_rate_limit_key)
 
 app = FastAPI(
     title="MACP Research Assistant API",

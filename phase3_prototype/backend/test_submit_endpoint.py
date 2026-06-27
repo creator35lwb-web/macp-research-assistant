@@ -3,8 +3,10 @@
 Integration tests for POST /api/mcp/submit-analysis (Phase 5A web endpoint).
 
 Isolated: points MACP_DIR + DATABASE_URL at a temp dir BEFORE importing the
-backend, mounts only the mcp_router on a bare FastAPI app, and exercises the
-endpoint unauthenticated (DB-write path; no GitHub/network).
+backend, mounts only the mcp_router on a bare FastAPI app (with the slowapi
+limiter wired), and exercises the endpoint. submit-analysis now requires auth
+(require_user) — authed tests override that dependency with a seeded user; an
+unauthenticated request must get 401.
 
 Run:  python phase3_prototype/backend/test_submit_endpoint.py
 Or:   pytest phase3_prototype/backend/test_submit_endpoint.py
@@ -26,19 +28,42 @@ sys.path.insert(0, os.path.abspath(os.path.join(_BACKEND, "..", "..", "tools")))
 
 from fastapi import FastAPI  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
-from database import init_db, SessionLocal, Paper, Analysis  # noqa: E402
+from slowapi.errors import RateLimitExceeded  # noqa: E402
+from slowapi import _rate_limit_exceeded_handler  # noqa: E402
+from database import init_db, SessionLocal, Paper, Analysis, User  # noqa: E402
+from middleware import require_user  # noqa: E402
+from rate_limit import limiter  # noqa: E402
 from webmcp import mcp_router  # noqa: E402
 
 init_db()
 _db = SessionLocal()
 if not _db.query(Paper).filter(Paper.arxiv_id == "arxiv:2402.05120").first():
     _db.add(Paper(arxiv_id="arxiv:2402.05120", title="Test Paper", abstract="abc", status="new"))
-    _db.commit()
+_FAKE = _db.query(User).filter(User.github_id == 4242).first()
+if not _FAKE:
+    _FAKE = User(github_id=4242, github_login="tester")
+    _db.add(_FAKE)
+_db.commit()
+_FAKE_ID = _FAKE.id
 _db.close()
 
 _app = FastAPI()
+_app.state.limiter = limiter
+_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 _app.include_router(mcp_router)
 client = TestClient(_app)
+
+
+def _as_authed():
+    """Override require_user with the seeded test user."""
+    db = SessionLocal()
+    user = db.query(User).filter(User.id == _FAKE_ID).first()
+    db.close()
+    _app.dependency_overrides[require_user] = lambda: user
+
+
+def _as_guest():
+    _app.dependency_overrides.pop(require_user, None)
 
 
 def _post(payload):
@@ -49,7 +74,16 @@ def _post(payload):
     return json.loads(body["content"][0]["text"])
 
 
-def test_submit_creates_analysis_and_sanitizes_agent():
+def test_unauthenticated_is_401():
+    _as_guest()
+    r = client.post("/api/mcp/submit-analysis", json={
+        "paper_id": "2402.05120", "agent_id": "x", "content": {"summary": "s"},
+    })
+    assert r.status_code == 401, r.text
+
+
+def test_authed_submit_creates_analysis_and_sanitizes_agent():
+    _as_authed()
     out = _post({
         "paper_id": "2402.05120",
         "agent_id": "Claude Code",  # -> sanitized to claude-code
@@ -58,50 +92,44 @@ def test_submit_creates_analysis_and_sanitizes_agent():
     })
     assert out["agent_id"] == "claude-code"
     assert out["analysis_type"] == "abstract"
-    assert out["github_synced"] is False  # unauthenticated -> DB only
     assert out["stored_path"].startswith(".macp/analyses/arxiv_2402.05120/claude-code_")
-
     db = SessionLocal()
     row = db.query(Analysis).filter(Analysis.id == out["analysis_id"]).first()
-    assert row is not None
-    assert row.provider == "claude-code"
+    assert row is not None and row.provider == "claude-code"
     assert json.loads(row.key_insights) == ["f1", "f2"]
-    prov = json.loads(row.provenance)
-    assert prov["submitted_via"] == "api/mcp/submit-analysis"
+    assert json.loads(row.provenance)["submitted_via"] == "api/mcp/submit-analysis"
     db.close()
 
 
-def test_continuation_chain_recorded_in_provenance():
+def test_continuation_chain_recorded():
+    _as_authed()
     out = _post({
-        "paper_id": "2402.05120",
-        "agent_id": "manus_ai",
-        "analysis_type": "deep",
+        "paper_id": "2402.05120", "agent_id": "manus_ai", "analysis_type": "deep",
         "content": {"summary": "Deeper read.", "key_insights": ["scales to 5 agents"], "relevance_score": 0.75},
         "continues_from": {"analysis_id": "claude-code_abstract", "agent_id": "claude_code"},
     })
     assert out["continues_from"] == "claude-code_abstract"
     db = SessionLocal()
     row = db.query(Analysis).filter(Analysis.id == out["analysis_id"]).first()
-    prov = json.loads(row.provenance)
-    assert prov["continues_from"]["analysis_id"] == "claude-code_abstract"
-    # relevance_score 0.75 -> score 7.5
-    assert abs(row.score - 7.5) < 1e-6
+    assert json.loads(row.provenance)["continues_from"]["analysis_id"] == "claude-code_abstract"
+    assert abs(row.score - 7.5) < 1e-6  # relevance_score 0.75 -> 7.5
     db.close()
 
 
-def test_unknown_paper_is_rejected():
+def test_authed_unknown_paper_rejected():
+    _as_authed()
     r = client.post("/api/mcp/submit-analysis", json={
         "paper_id": "9999.99999", "agent_id": "x", "content": {"summary": "s"},
     })
-    body = r.json()
-    assert body["isError"] is True
+    assert r.json()["isError"] is True
 
 
-def test_missing_summary_is_422():
+def test_authed_missing_summary_is_422():
+    _as_authed()
     r = client.post("/api/mcp/submit-analysis", json={
         "paper_id": "2402.05120", "agent_id": "x", "content": {"key_findings": ["a"]},
     })
-    assert r.status_code == 422  # pydantic: summary required
+    assert r.status_code == 422
 
 
 def test_appears_in_discovery():
@@ -123,5 +151,7 @@ if __name__ == "__main__":
         except Exception as e:  # noqa: BLE001
             failures += 1
             print(f"ERROR {t.__name__}: {type(e).__name__}: {e}")
+        finally:
+            _as_guest()
     print(f"\n{len(tests) - failures}/{len(tests)} passed")
     sys.exit(1 if failures else 0)

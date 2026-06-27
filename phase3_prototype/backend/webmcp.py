@@ -16,7 +16,7 @@ from typing import Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from pydantic import BaseModel, Field
 
-from config import TOOLS_DIR, MACP_DIR
+from config import TOOLS_DIR, MACP_DIR, RATE_LIMIT_AUTH_ANALYZE, RATE_LIMIT_AUTH_MCP
 from database import (
     Analysis,
     GraphEdge,
@@ -28,6 +28,7 @@ from database import (
     upsert_paper,
 )
 from middleware import get_current_user, require_user
+from rate_limit import limiter
 from github_storage import get_storage_service
 
 # Add tools dir for imports
@@ -270,6 +271,7 @@ async def mcp_search(
 # ---------------------------------------------------------------------------
 
 @mcp_router.post("/analyze")
+@limiter.limit(RATE_LIMIT_AUTH_ANALYZE)
 async def mcp_analyze(
     request: Request,
     req: McpAnalyzeRequest,
@@ -457,6 +459,7 @@ def _populate_graph(db, paper: Paper, analysis: dict, user_id: Optional[int]) ->
 # ---------------------------------------------------------------------------
 
 @mcp_router.post("/analyze-deep")
+@limiter.limit(RATE_LIMIT_AUTH_ANALYZE)
 async def mcp_analyze_deep(
     request: Request,
     req: McpAnalyzeDeepRequest,
@@ -919,6 +922,7 @@ async def mcp_graph(user: Optional[User] = Depends(get_current_user)):
 # ---------------------------------------------------------------------------
 
 @mcp_router.post("/deep-research")
+@limiter.limit(RATE_LIMIT_AUTH_ANALYZE)
 async def mcp_deep_research(
     request: Request,
     req: McpDeepResearchRequest,
@@ -962,6 +966,7 @@ async def mcp_deep_research(
 # ---------------------------------------------------------------------------
 
 @mcp_router.post("/consensus")
+@limiter.limit(RATE_LIMIT_AUTH_ANALYZE)
 async def mcp_consensus(
     request: Request,
     req: McpConsensusRequest,
@@ -1112,11 +1117,12 @@ async def mcp_consensus(
 # ---------------------------------------------------------------------------
 
 @mcp_router.post("/submit-analysis")
+@limiter.limit(RATE_LIMIT_AUTH_MCP)
 async def mcp_submit_analysis(
     request: Request,
     req: McpSubmitAnalysisRequest,
     background_tasks: BackgroundTasks,
-    user: Optional[User] = Depends(get_current_user),
+    user: User = Depends(require_user),
 ):
     """Ingest an analysis produced by an external agent (Claude Code, Manus,
     Perplexity, Cursor, ...) into the MACP substrate.
