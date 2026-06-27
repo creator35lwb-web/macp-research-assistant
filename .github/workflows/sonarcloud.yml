@@ -1,0 +1,34 @@
+name: SonarCloud
+
+# CI-gated static analysis. Runs on every push to master and on PRs.
+# Requires a repository secret SONAR_TOKEN (SonarCloud → My Account → Security →
+# generate a token, then add it under GitHub repo Settings → Secrets and variables
+# → Actions → New repository secret: SONAR_TOKEN).
+#
+# Config (project key, organization, sources, quality-gate wait) lives in
+# sonar-project.properties. Automatic Analysis MUST be disabled in SonarCloud
+# for this CI workflow to run — see that file's header.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history so SonarCloud computes new-code/blame accurately.
+          fetch-depth: 0
+
+      - name: SonarQube Cloud Scan
+        # If this action version errors, check the latest at
+        # https://github.com/SonarSource/sonarqube-scan-action
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
