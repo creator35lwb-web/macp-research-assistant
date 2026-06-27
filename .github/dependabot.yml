@@ -8,6 +8,15 @@ updates:
     labels:
       - "dependencies"
       - "security"
+    # Group minor + patch bumps into ONE backend PR/week (cuts PR clutter).
+    # Major updates still open individual PRs so breaking changes get scrutiny.
+    groups:
+      backend-deps:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/phase3_prototype/frontend"
@@ -17,3 +26,21 @@ updates:
     labels:
       - "dependencies"
       - "security"
+    groups:
+      frontend-deps:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+    groups:
+      actions:
+        patterns:
+          - "*"
