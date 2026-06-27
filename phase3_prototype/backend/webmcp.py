@@ -1242,8 +1242,12 @@ async def mcp_submit_analysis(
 # ---------------------------------------------------------------------------
 
 @mcp_router.get("/agents")
-async def mcp_agents():
-    """List all registered agents from .macp/agents/ directory."""
+def mcp_agents():
+    """List all registered providers from .macp/agents/ directory.
+
+    Sync path operation on purpose: it does small blocking file reads, so
+    FastAPI runs it in its threadpool instead of blocking the event loop.
+    """
     agents_dir = os.path.join(MACP_DIR, "agents")
     agents = []
     if os.path.isdir(agents_dir):
