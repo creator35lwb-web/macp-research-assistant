@@ -1,6 +1,6 @@
 # MACP Research Assistant — Project Roadmap
 
-> **Last Updated:** 2026-02-25 | **Author:** FLYWHEEL TEAM (Orchestrator L + CSO R + CTO RNA)
+> **Last Updated:** 2026-06-27 | **Author:** FLYWHEEL TEAM (Orchestrator L + CSO R + CTO RNA)
 > **Status:** Living document — updated after each alignment meeting
 > **Version:** v1.0.0 released → v2.0.0 in planning
 
@@ -17,6 +17,37 @@ Three architectural principles guide all development:
 1. **GitHub is the source of truth** for the entire research journey. Every paper discovered, every analysis produced, every note written becomes a permanent, version-controlled artifact in the `.macp/` directory.
 2. **MACP v2.0** defines a standardized directory schema that any AI agent (Manus AI, Claude Code, Cursor, Perplexity, Antigravity) can read, understand, and contribute to.
 3. **Zero burn-rate, BYOK privacy** — the platform operates on free tiers and open-source infrastructure. Users bring their own API keys; no keys are stored server-side.
+
+---
+
+## Strategic Positioning (added 2026-06-27)
+
+A deliberate positioning decision, made after observing the 2026 landscape: **the platforms we operate on — Claude Code, Manus AI, Perplexity — already provide excellent, research-proven deep-research workflows.** Competing with platform-native deep research on research *quality* is a treadmill owned by far larger teams. We will not duplicate it.
+
+Instead, MACP Research Assistant is positioned as **two things at once**:
+
+1. **A public flagship showcase** of the FLYWHEEL TEAM and the **MACP protocol** — concrete, deployed proof of multi-agent collaboration with full provenance. Build/deploy decisions optimize for *demonstrability*, not feature parity with the platforms.
+2. **The provenance / memory layer that platform agents *call*** — not a competitor to Claude/Manus/Perplexity deep research, but the substrate they write into. The platforms produce *answers*; MACP captures, attributes, versions, and reconciles those answers across sessions, models, and platforms. This is the complement, not the clone.
+
+### What is genuinely non-commodity here (the moat)
+
+- **Self-describing repo-as-protocol** (`.macp/schema.json`) — an agent-coordination substrate; a new agent orients itself with no human onboarding.
+- **Auditable multi-agent consensus** — semantic agreement scoring with a transparent `agreement_method`/`agreement_components` breakdown (no platform's deep research tells you *how* agents agreed).
+- **Git-native provenance** — every contribution attributed and version-controlled.
+- **The Agent Submission Layer** (Phase 5A) — the mechanism by which any external agent submits provenance-tracked analyses back into the substrate. This is the "be the layer platforms call" wedge made real.
+
+### Who actually builds vs. who is a runtime provider
+
+To keep the record accurate:
+
+| Platform / Model | Relationship to this project |
+|------------------|------------------------------|
+| **Manus AI** (L/Godel founding agent, CSO-R strategist) | **Contributing development agent** — specs, strategy, audits, vision |
+| **Claude Code** (RNA) | **Contributing development agent** — implementation, deployment |
+| **Perplexity Sonar** | **Runtime provider + registry entry** — the deep-research API the app calls; *not* a contributing development agent |
+| **Gemini / OpenAI / xAI Grok** | **Runtime LLM providers** (BYOK) — called by the app; *not* contributing agents |
+
+The MACP schema is designed so that *additional* agents (Cursor, Antigravity, Perplexity, etc.) **can** contribute in future via the Agent Submission Layer — but as of this writing, only Manus AI and Claude Code have authored work on the codebase.
 
 ---
 
