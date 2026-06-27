@@ -25,12 +25,12 @@ echo "Service: ${SERVICE_NAME}"
 echo "Region: ${REGION}"
 echo ""
 
-# Build and push using Cloud Build (context = repo root, Dockerfile in phase3_prototype/)
-echo ">>> Building container image..."
-gcloud builds submit \
-  --tag "gcr.io/$(gcloud config get-value project)/${SERVICE_NAME}" \
-  --timeout=600s \
-  -f phase3_prototype/Dockerfile .
+# Build and push using Cloud Build via cloudbuild.yaml (context = repo root).
+# NOTE: use the cloudbuild.yaml config, NOT `builds submit --tag ... -f Dockerfile`
+# — `-f` is not a valid flag for `builds submit --tag`, and cloudbuild.yaml is the
+# proven path that correctly references phase3_prototype/Dockerfile.
+echo ">>> Building container image (cloudbuild.yaml)..."
+gcloud builds submit --config cloudbuild.yaml --timeout=900s .
 
 # Deploy to Cloud Run
 echo ">>> Deploying to Cloud Run..."
@@ -49,6 +49,12 @@ gcloud run deploy "${SERVICE_NAME}" \
   --allow-unauthenticated \
   --update-env-vars "ENFORCE_HTTPS=true,GITHUB_APP_CLIENT_ID=${GITHUB_APP_CLIENT_ID},GITHUB_APP_CLIENT_SECRET=${GITHUB_APP_CLIENT_SECRET},JWT_SECRET=${JWT_SECRET}" \
   --port 8080
+
+# Safeguard: route 100% of traffic to the latest revision. Without this, if the
+# service ever has traffic PINNED to a specific revision, a new deploy builds and
+# goes healthy but receives 0% traffic — the new code silently never goes live.
+echo ">>> Routing traffic to latest revision..."
+gcloud run services update-traffic "${SERVICE_NAME}" --region "${REGION}" --to-latest
 
 echo ""
 echo "=== Deployment Complete ==="
