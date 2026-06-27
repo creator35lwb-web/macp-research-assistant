@@ -29,11 +29,11 @@
 
 ## Overview
 
-The **MACP Research Assistant** is a production-deployed web application that brings the [Multi-Agent Collaboration Protocol (MACP v2.0)](https://github.com/creator35lwb-web/LegacyEvolve) to life as an interactive research platform. It enables researchers, developers, and AI practitioners to discover papers from arXiv and HuggingFace Daily Papers (12,800+ papers searchable), analyze them with multiple AI providers, generate multi-agent consensus analyses, conduct deep web-grounded research via Perplexity, save findings to a personal library, and sync research projects to GitHub repositories — all with complete provenance tracking.
+The **MACP Research Assistant** is a production-deployed, open-source platform — a **working demonstration of recursive, multi-agent AI research with full provenance**, built on the [Multi-Agent Collaboration Protocol (MACP)](https://github.com/creator35lwb-web/LegacyEvolve).
 
-Built by the **FLYWHEEL TEAM** (a multi-agent collaboration between Manus AI and Claude Code), this project demonstrates the MACP protocol's real-world application: AI agents collaborating with human researchers to accelerate knowledge discovery.
+In the era of AI agents, research no longer happens in a single chat. This project makes that real: discover papers from arXiv and HuggingFace (12,800+ searchable), analyze them with **9 AI providers** (BYOK), reconcile their views with **semantic multi-agent consensus**, let **any agent submit provenance-tracked analyses** that build on each other (agent-to-agent continuation), and watch a **topic taxonomy** grow into a navigable research tree — all versioned on GitHub with complete, citable provenance.
 
-This project is **Tool Suite 2** within the broader **VerifiMind-PEAS v0.5.0** architecture. For the operational command hub, see the [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp) repository.
+A **YSenseAI ecosystem project**. The MACP protocol is evolving from its public v2.0 schema toward a recursive **Research Journey Engine**; this repository is where those capabilities are built and proven in the open.
 
 ---
 
@@ -46,7 +46,9 @@ This project is **Tool Suite 2** within the broader **VerifiMind-PEAS v0.5.0** a
 | **Paper Discovery** | Search 12,800+ papers from arXiv and HuggingFace Daily Papers with real-time results | ✅ Live |
 | **AI Analysis (Abstract)** | Multi-provider LLM analysis with summary, key insights, methodology, research gaps, and strength scoring | ✅ Live |
 | **Deep PDF Analysis** | Full-text 4-pass analysis using PyMuPDF extraction with section chunking | ✅ Built |
-| **Multi-Agent Consensus** | Automated consensus generation when 2+ agents analyze the same paper (40/30/30 scoring) | ✅ Built |
+| **Semantic Multi-Agent Consensus** | Embedding-based agreement when 2+ agents analyze a paper, with an auditable per-component score breakdown (lexical fallback) | ✅ Live |
+| **Agent Submission Layer** | Any external agent (Claude Code, Manus, Cursor…) submits provenance-tracked analyses with agent-to-agent continuation chains | ✅ Live |
+| **Topic Taxonomy** | A self-growing research tree: papers auto-organize into hierarchical topics as study deepens | ✅ Built (CLI) |
 | **Deep Research (Perplexity)** | Web-grounded investigation with citations, related work, code repos, and impact assessment | ✅ Built |
 | **Personal Library** | Save papers with notes and organize by research project | ✅ Live |
 | **BYOK Support** | Bring Your Own Key with Validate & Apply UX for any supported provider | ✅ Live |
@@ -56,8 +58,8 @@ This project is **Tool Suite 2** within the broader **VerifiMind-PEAS v0.5.0** a
 | **GitHub Sync** | Connect repositories for version-controlled research persistence | ✅ Live |
 | **Load More** | Paginated search results with progressive loading | ✅ Live |
 | **Schema Validation** | All saves validated against MACP v2.0 `schema.json` before persistence | ✅ Built |
-| **Agent Registry** | Dynamic agent capability registry with 6 registered agents | ✅ Built |
-| **Knowledge Graph** | Visualize paper relationships and citation networks | 📋 Phase 4 |
+| **Supported Models** | Live BYOK reference across 9 providers with current, env-configurable models | ✅ Live |
+| **Knowledge Graph** | Visualize paper relationships and citation networks | ✅ Live |
 
 ### Multi-Provider LLM Support
 
@@ -126,7 +128,7 @@ POST /api/mcp/create_note         → Create research note
 POST /api/mcp/get_knowledge_graph → Get paper relationships
 POST /api/mcp/export_citations    → Export BibTeX citations
 POST /api/mcp/get_paper_details   → Get full paper metadata
-GET  /api/mcp/agents              → Agent registry (6 agents)
+GET  /api/mcp/agents              → Supported models / providers (9, live)
 ```
 
 ---
@@ -279,7 +281,7 @@ When conducting research using multiple AI assistants (ChatGPT, Claude, Perplexi
 - **Complete traceability** — Know which AI analyzed which paper when
 - **Easy recall** — "What have I learned about X?" queries work instantly
 - **Citation provenance** — Every citation linked to AI handoffs
-- **Multi-agent consensus** — Automated reconciliation when agents disagree (40/30/30 scoring)
+- **Semantic multi-agent consensus** — Automated reconciliation when agents disagree, with an auditable score breakdown
 - **Deep research** — Perplexity-powered web-grounded investigation with citations
 - **Knowledge graphs** — See relationships between papers and concepts
 - **Schema validation** — Every data write validated against MACP v2.0 specification
@@ -418,30 +420,31 @@ Any AI agent can read `schema.json` to understand the entire directory structure
 | **Phase 3C** | Production Deployment | GCP Cloud Run, CI/CD, security hardening, multi-provider LLM, Load More |
 | **Phase 3D** | Foundation Repair & GitHub Integration | Save pipeline fix, BYOK UX (Validate & Apply), GitHub-first persistence, .gitignore fix |
 | **Phase 3E** | MACP v2.0 Schema & Deep Analysis | Schema validation, deep PDF analysis (4-pass), multi-agent consensus (40/30/30), Perplexity deep research, agent registry (6 agents), 13 MCP endpoints |
-| **Phase 3F** | Deployment & UI Polish | Cloud Run revision 00022, Agent Registry UI, Consensus Comparison UI, Deep Analysis View, resizable detail panel, 10/10 Dependabot PRs closed, CI #28 all green, 0 code scanning alerts |
+| **Phase 3F** | Deployment & UI Polish | Agent Registry UI, Consensus Comparison UI, Deep Analysis View, CI green, 0 code scanning alerts |
+| **Phase 4** | Knowledge Intelligence & Provider Expansion | Knowledge graph, **semantic** consensus (embedding-based + auditable breakdown), **9-provider BYOK** with env-configurable latest models, rate-limited MCP endpoints, CI/CD + static-analysis hardening |
 
-### Current: Phase 4 — WebMCP Ecosystem & External Integrations
+### Current: Phase 5 — Recursive Research Engine
+
+Transforming the tool from a research *assistant* into a recursive research *engine*, where agents and the knowledge base grow each other.
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Agent Registry UI | ✅ Done | Built in Phase 3F (card grid, cost tiers, capability chips) |
-| Knowledge Graph visualization | 📋 Planned | Backend tool exists, frontend UI pending |
-| n8n workflow integration | 📋 Planned | Daily paper digest, trend alerts |
-| Research templates | 📋 Planned | Domain-specific research workflows |
-| Collaborative notes | 📋 Planned | Multi-agent + human annotation |
-| Full-text search | 📋 Planned | Search across all analyses |
-| Mobile responsive | 📋 Planned | Detail panel as slide-over |
-| Keyboard shortcuts | 📋 Planned | Panel navigation hotkeys |
+| Agent Submission Layer | ✅ Live | Any agent submits provenance-tracked analyses (CLI + web) with continuation chains |
+| Topic Taxonomy | ✅ Built (CLI) | Self-growing hierarchical research tree (`macp topic`) |
+| Auto-classify on analysis | 📋 Next | Grow the topic tree automatically as papers are analyzed |
+| Research Queue | 📋 Planned | Agents pull "needs deeper study" tasks |
+| "Go Deeper" trigger | 📋 Planned | Identify a sub-topic → auto-discover papers → recurse |
+| Topic tree UI | 📋 Planned | Navigable web view of the research journey |
 
 ---
 
 ## Roadmap
 
 ```
-Phase 1 ✅ → Phase 2 ✅ → Phase 3A ✅ → Phase 3B ✅ → Phase 3C ✅ → Phase 3D ✅ → Phase 3E ✅ → Phase 3F ✅ → Phase 4 🔧
-  Manual       CLI Tools     Web UI       Full Hybrid    Production    Foundation     MACP v2.0     Deploy &       WebMCP
-  MACP         & Schemas     Prototype    WebMCP         Deployment    Repair &       Schema &      UI Polish      Ecosystem
-                                                                      GitHub Sync    Deep Analysis
+Phase 1 ✅ → Phase 2 ✅ → Phase 3 ✅ → Phase 4 ✅ → Phase 5 🔧
+  Manual       CLI Tools     Production   Knowledge      Recursive
+  MACP         & Schemas     Web Platform Intelligence   Research
+                             (WebMCP)     & 9 Providers   Engine
 ```
 
 See **[ROADMAP.md](ROADMAP.md)** for the full roadmap with sprint details, architecture diagrams, and agent assignment matrix.
@@ -542,7 +545,7 @@ macp-research-assistant/
 │   ├── research/                 # Research data (papers, analyses)
 │   ├── analyses/                 # Per-agent analysis files
 │   ├── validation/               # Trinity Validation reports
-│   ├── handoffs/                 # FLYWHEEL TEAM handoff documents
+│   ├── handoffs/                 # Multi-agent handoff records
 │   └── security/                 # Security assessment reports
 │
 ├── phase3_prototype/             # Production application
@@ -654,14 +657,14 @@ If you use MACP Research Assistant in your research, please cite:
 ## Acknowledgments
 
 - **MACP Protocol:** Based on MACP v2.0 from the LegacyEvolve project
-- **FLYWHEEL TEAM:** Built through multi-agent collaboration (Manus AI as CSO R + Claude Code as CTO RNA)
+- **Built by:** the YSenseAI ecosystem, through multi-agent collaboration (itself a demonstration of the protocol)
 - **Data Sources:** arXiv API, HuggingFace Daily Papers API (12,800+ papers), Perplexity Sonar API
-- **Security:** Aligned with Claude Code Security framework and CS Agent v3.1 protocol
+- **Cite this work:** [DOI 10.5281/zenodo.18651799](https://doi.org/10.5281/zenodo.18651799)
 
 ---
 
 <p align="center">
-  <strong>Built with the FLYWHEEL TEAM — Multi-Agent Collaboration in Action</strong>
+  <strong>Recursive, multi-agent AI research — with provenance, in the open.</strong>
   <br />
-  <em>Made with purpose by the YSenseAI™ Team</em>
+  <em>A YSenseAI™ ecosystem project | 慧觉™</em>
 </p>
