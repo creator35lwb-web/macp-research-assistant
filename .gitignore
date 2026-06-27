@@ -39,3 +39,6 @@ Thumbs.db
 secrets.json
 api_keys.json
 tokens.json
+
+# Topic taxonomy is local/per-deployment research data
+.macp/topics/
