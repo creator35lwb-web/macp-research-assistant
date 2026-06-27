@@ -10,7 +10,7 @@
     <!-- Open Graph -->
     <meta property="og:title" content="MACP Research Assistant">
     <meta property="og:description" content="Multi-Agent AI Research Platform — Discover, analyze, and synthesize research papers using collaborative AI agents.">
-    <meta property="og:image" content="https://files.manuscdn.com/user_upload_by_module/session_file/310519663198430423/eMkcjHCJCrwyNEFE.png">
+    <meta property="og:image" content="https://creator35lwb-web.github.io/macp-research-assistant/assets/macp-logo-hd.png">
     <meta property="og:url" content="https://creator35lwb-web.github.io/macp-research-assistant/">
     <meta property="og:type" content="website">
     
@@ -536,7 +536,7 @@
         <!-- Navigation -->
         <nav>
             <a href="#" class="nav-brand">
-                <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663198430423/eMkcjHCJCrwyNEFE.png" alt="MACP Logo">
+                <img src="assets/macp-logo-hd.png" alt="MACP Logo">
                 <span>MACP Research</span>
             </a>
             <div class="nav-links">
@@ -556,16 +556,17 @@
         <section class="hero">
             <div class="hero-badge">
                 <span class="dot"></span>
-                Phase 3E — Multi-Agent Convergence
+                Phase 5 — Recursive Research Engine
             </div>
             <h1>
                 <span class="gradient-text">Multi-Agent</span> AI<br>
                 Research Platform
             </h1>
             <p>
-                Discover, analyze, and synthesize research papers using collaborative AI agents. 
-                MACP v2.0 enables Gemini, Claude, GPT-4o, and Grok to converge their analyses 
-                into a unified knowledge base on GitHub.
+                Discover, analyze, and synthesize research papers with your choice of 9 AI providers
+                (Gemini, Claude, OpenAI, Grok, DeepSeek, Mistral, Groq, Qwen, Perplexity). MACP v2.0
+                turns their analyses into a versioned, provenance-tracked knowledge base on GitHub —
+                with semantic multi-agent consensus and agent-to-agent submission.
             </p>
             <div class="hero-actions">
                 <a href="https://macpresearch.ysenseai.org" class="btn-primary">
@@ -576,8 +577,8 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
                     View Source
                 </a>
-                <a href="https://github.com/creator35lwb-web/macp-research-assistant/blob/master/docs/QUICK_START.md" class="btn-outline">
-                    Quick Start Guide
+                <a href="https://doi.org/10.5281/zenodo.18651799" class="btn-outline">
+                    Cite (DOI)
                 </a>
             </div>
         </section>
@@ -585,15 +586,15 @@
         <!-- Stats -->
         <div class="stats-bar">
             <div class="stat">
-                <div class="stat-value">6</div>
-                <div class="stat-label">AI Agents</div>
+                <div class="stat-value">9</div>
+                <div class="stat-label">AI Providers (BYOK)</div>
             </div>
             <div class="stat">
               <span class="stat-value">12,800+</span>
                     <span class="stat-label">Papers Searchable</span>       </div>
             <div class="stat">
-                <div class="stat-value">8</div>
-                <div class="stat-label">WebMCP Tools</div>
+                <div class="stat-value">13</div>
+                <div class="stat-label">MCP Tools</div>
             </div>
             <div class="stat">
                 <div class="stat-value">v2.0</div>
@@ -618,7 +619,7 @@
                 <div class="feature-card">
                     <div class="feature-icon icon-purple">&#x1F9E0;</div>
                     <h3>Multi-Agent Analysis</h3>
-                    <p>Get research papers analyzed by Gemini, Claude, GPT-4o, and Grok. Each agent brings unique strengths — compare their perspectives side by side.</p>
+                    <p>Analyze papers with your choice of 9 providers — Gemini, Claude, OpenAI, Grok, DeepSeek, Mistral, Groq, Qwen, and Perplexity. Compare their perspectives side by side, then synthesize a semantic consensus.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon icon-amber">&#x1F4CA;</div>
@@ -677,42 +678,57 @@
 
         <div class="divider"></div>
 
-        <!-- Agents -->
+        <!-- Supported Models -->
         <section id="agents">
             <div class="section-header">
-                <h2>Agent Ecosystem</h2>
-                <p>Six AI agents with complementary strengths, all contributing to your research through the MACP v2.0 protocol.</p>
+                <h2>Supported Models</h2>
+                <p>Bring your own key (BYOK) for any of 9 providers. Models are current defaults and are overridable per deployment via env vars — so a provider's model deprecation is a config change, not a code change.</p>
             </div>
             <div class="agents-grid">
                 <div class="agent-card">
                     <div class="agent-name">Google Gemini</div>
-                    <div class="agent-model">gemini-2.5-flash</div>
-                    <span class="agent-badge badge-free">Free</span>
+                    <div class="agent-model">gemini-3.5-flash</div>
+                    <span class="agent-badge badge-free">BYOK</span>
                 </div>
                 <div class="agent-card">
                     <div class="agent-name">Anthropic Claude</div>
-                    <div class="agent-model">claude-sonnet-4-5</div>
-                    <span class="agent-badge badge-paid">BYOK</span>
+                    <div class="agent-model">claude-sonnet-4-6</div>
+                    <span class="agent-badge badge-free">BYOK</span>
                 </div>
                 <div class="agent-card">
-                    <div class="agent-name">OpenAI GPT-4o</div>
-                    <div class="agent-model">gpt-4o</div>
-                    <span class="agent-badge badge-paid">BYOK</span>
+                    <div class="agent-name">OpenAI</div>
+                    <div class="agent-model">gpt-4o-mini</div>
+                    <span class="agent-badge badge-free">BYOK</span>
                 </div>
                 <div class="agent-card">
                     <div class="agent-name">xAI Grok</div>
                     <div class="agent-model">grok-3</div>
-                    <span class="agent-badge badge-paid">BYOK</span>
+                    <span class="agent-badge badge-free">BYOK</span>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-name">DeepSeek</div>
+                    <div class="agent-model">deepseek-v4-flash</div>
+                    <span class="agent-badge badge-free">BYOK</span>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-name">Mistral</div>
+                    <div class="agent-model">mistral-large-latest</div>
+                    <span class="agent-badge badge-free">BYOK</span>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-name">Groq</div>
+                    <div class="agent-model">openai/gpt-oss-120b</div>
+                    <span class="agent-badge badge-free">BYOK</span>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-name">Qwen (Alibaba)</div>
+                    <div class="agent-model">qwen-max</div>
+                    <span class="agent-badge badge-free">BYOK</span>
                 </div>
                 <div class="agent-card">
                     <div class="agent-name">Perplexity Sonar</div>
                     <div class="agent-model">sonar-pro</div>
-                    <span class="agent-badge badge-paid">Deep Research</span>
-                </div>
-                <div class="agent-card">
-                    <div class="agent-name">Manus AI</div>
-                    <div class="agent-model">CSO R — Orchestrator</div>
-                    <span class="agent-badge badge-enterprise">FLYWHEEL</span>
+                    <span class="agent-badge badge-free">Deep Research</span>
                 </div>
             </div>
         </section>
@@ -760,7 +776,7 @@
         <section id="roadmap">
             <div class="section-header">
                 <h2>Development Roadmap</h2>
-                <p>Built by the FLYWHEEL TEAM — a multi-agent collaboration between human orchestrator, Manus AI, and Claude Code.</p>
+                <p>A YSenseAI ecosystem project demonstrating the MACP v2.0 protocol — multi-agent collaboration with full, citable provenance.</p>
             </div>
             <div class="roadmap">
                 <div class="roadmap-item">
@@ -824,9 +840,20 @@
                         <div class="roadmap-line active"></div>
                     </div>
                     <div class="roadmap-content">
-                        <div class="phase-tag">Phase 4 &middot; Q1-Q2 2026 &middot; CURRENT</div>
-                        <h3>Knowledge Intelligence</h3>
-                        <p>Interactive knowledge graph visualization, citation network analysis, cross-paper methodology comparison, automated literature review generation, research templates.</p>
+                        <div class="phase-tag">Phase 4 &middot; H1 2026</div>
+                        <h3>Knowledge Intelligence & Provider Expansion</h3>
+                        <p>Interactive knowledge graph, semantic multi-agent consensus (embedding-based, with auditable score breakdown), BYOK across 9 providers with env-configurable latest models, rate-limited MCP endpoints, CI/CD + static-analysis hardening.</p>
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-marker">
+                        <div class="roadmap-dot active"></div>
+                        <div class="roadmap-line active"></div>
+                    </div>
+                    <div class="roadmap-content">
+                        <div class="phase-tag">Phase 5 &middot; H2 2026 &middot; CURRENT</div>
+                        <h3>Recursive Research Engine</h3>
+                        <p>Agent-to-agent submission layer (live) so any AI agent contributes provenance-tracked analyses with continuation chains; hierarchical topic taxonomy that auto-organizes papers as study deepens; research queue and "go deeper" triggers.</p>
                     </div>
                 </div>
                 <div class="roadmap-item">
@@ -834,9 +861,9 @@
                         <div class="roadmap-dot upcoming"></div>
                     </div>
                     <div class="roadmap-content">
-                        <div class="phase-tag">Phase 5 &middot; Q2-Q3 2026</div>
+                        <div class="phase-tag">Phase 6 &middot; 2026+</div>
                         <h3>Community & Ecosystem</h3>
-                        <p>Shared research collections, collaborative annotations, public knowledge graphs, Zenodo integration for defensive publications.</p>
+                        <p>Shared research collections, collaborative annotations, public knowledge graphs, and Zenodo DOIs for citable, versioned releases.</p>
                     </div>
                 </div>
             </div>
@@ -869,8 +896,8 @@
                 <a href="https://github.com/creator35lwb-web/macp-research-assistant/discussions">Feedback</a>
             </div>
             <p class="footer-credit">
-                Built by <a href="https://github.com/creator35lwb-web">FLYWHEEL TEAM</a> &middot; 
-                A <a href="https://github.com/creator35lwb-web">YSenseAI</a> Project &middot; 
+                A <a href="https://github.com/creator35lwb-web">YSenseAI</a> ecosystem project &middot;
+                <a href="https://doi.org/10.5281/zenodo.18651799">Cite via DOI</a> &middot;
                 Open Source under MIT License
             </p>
         </footer>
