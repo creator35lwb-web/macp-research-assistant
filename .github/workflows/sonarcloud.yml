@@ -19,6 +19,8 @@ jobs:
   sonarcloud:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,8 +29,10 @@ jobs:
           fetch-depth: 0
 
       - name: SonarQube Cloud Scan
+        # Skips (job stays GREEN) until the SONAR_TOKEN secret is added; the scan
+        # then auto-runs on the next push. To activate: add SONAR_TOKEN in repo
+        # Settings → Secrets, and turn OFF Automatic Analysis in SonarCloud.
         # If this action version errors, check the latest at
         # https://github.com/SonarSource/sonarqube-scan-action
+        if: ${{ env.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
