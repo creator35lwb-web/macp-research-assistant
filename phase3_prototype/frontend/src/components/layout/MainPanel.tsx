@@ -90,10 +90,14 @@ export function MainPanel({
           <label>
             Provider:
             <select value={provider} onChange={(e) => onProviderChange(e.target.value)} style={{ marginLeft: 4 }}>
-              <option value="gemini">Gemini (free)</option>
+              <option value="gemini">Gemini</option>
               <option value="anthropic">Claude</option>
               <option value="openai">OpenAI</option>
               <option value="grok">xAI Grok</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="mistral">Mistral</option>
+              <option value="groq">Groq</option>
+              <option value="qwen">Qwen</option>
             </select>
           </label>
           <div className="byok-row">

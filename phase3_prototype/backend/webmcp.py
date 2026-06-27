@@ -1238,29 +1238,39 @@ async def mcp_submit_analysis(
 
 
 # ---------------------------------------------------------------------------
-# 9. Agents Registry
+# 9. Supported Models / Providers (BYOK reference)
 # ---------------------------------------------------------------------------
+
+# Capabilities per provider. Chat providers share the analysis set; Perplexity
+# is web-grounded research. Kept here (not in provider config) so the model
+# layer stays focused on calling APIs.
+_PROVIDER_CAPABILITIES = {
+    "perplexity": ["deep_research", "citation_extraction"],
+}
+_DEFAULT_CAPABILITIES = ["abstract_analysis", "deep_analysis", "consensus_synthesis"]
+
 
 @mcp_router.get("/agents")
 def mcp_agents():
-    """List all registered providers from .macp/agents/ directory.
+    """List supported LLM providers + their current model (BYOK reference).
 
-    Sync path operation on purpose: it does small blocking file reads, so
-    FastAPI runs it in its threadpool instead of blocking the event loop.
+    Generated live from the provider config so it never goes stale — adding a
+    provider or changing a model is reflected automatically. No cost tiers:
+    cost is the user's choice via BYOK.
     """
-    agents_dir = os.path.join(MACP_DIR, "agents")
-    agents = []
-    if os.path.isdir(agents_dir):
-        for fname in sorted(os.listdir(agents_dir)):
-            if fname.endswith(".json"):
-                try:
-                    with open(os.path.join(agents_dir, fname), "r", encoding="utf-8") as f:
-                        agent_data = json.load(f)
-                    agents.append(agent_data)
-                except (json.JSONDecodeError, OSError) as e:
-                    logger.warning("Failed to load agent %s: %s", fname, e)
-
-    return mcp_response({"agents": agents, "count": len(agents)})
+    providers = []
+    for pid, cfg in PROVIDERS.items():
+        providers.append({
+            "agent_id": pid,
+            "name": cfg["name"],
+            "model": cfg["model"],
+            "capabilities": _PROVIDER_CAPABILITIES.get(pid, _DEFAULT_CAPABILITIES),
+            "env_key": cfg["env_key"],
+            "byok": True,
+            # Whether a server-side key is configured (so it works without BYOK).
+            "server_key": bool(os.environ.get(cfg["env_key"])),
+        })
+    return mcp_response({"agents": providers, "count": len(providers)})
 
 
 # ---------------------------------------------------------------------------

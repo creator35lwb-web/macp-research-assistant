@@ -156,12 +156,11 @@ export interface Agent {
   name: string;
   model: string;
   capabilities: string[];
-  strengths: string;
-  cost_tier: "free" | "freemium" | "paid" | "enterprise";
-  api_endpoint?: string;
   env_key?: string | null;
-  registered_at: string;
-  config?: Record<string, unknown>;
+  /** BYOK supported (always true for listed providers) */
+  byok?: boolean;
+  /** A server-side key is configured, so it works without BYOK */
+  server_key?: boolean;
 }
 
 export type ViewMode = "search" | "library" | "graph" | "notes" | "agents";

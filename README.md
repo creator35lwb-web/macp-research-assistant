@@ -61,15 +61,19 @@ This project is **Tool Suite 2** within the broader **VerifiMind-PEAS v0.5.0** a
 
 ### Multi-Provider LLM Support
 
-The platform supports 5 AI providers for paper analysis, with both server-side keys and user-provided BYOK (Bring Your Own Key):
+The platform supports **9 AI providers** for paper analysis — bring your own key (BYOK) for any of them, or use a server-side key. **Cost is your choice** (no tiers): pick the provider/model that fits your budget. Each model below is the current default and is **overridable per deployment via an env var** (e.g. `GEMINI_MODEL`), so a provider's model deprecation is a config change, not a code change.
 
-| Provider | Model | BYOK Support | Capabilities |
-|----------|-------|:------------:|-------------|
-| **Google Gemini** | gemini-2.5-flash | ✅ | Abstract analysis, deep analysis, consensus synthesis |
-| **Anthropic** | Claude 3.5 Sonnet | ✅ | Abstract analysis, deep analysis, consensus synthesis |
-| **OpenAI** | GPT-4o | ✅ | Abstract analysis, deep analysis, consensus synthesis |
-| **xAI Grok** | grok-beta | ✅ | Abstract analysis, deep analysis, consensus synthesis |
-| **Perplexity** | Sonar Pro | ✅ | Deep web-grounded research with citations |
+| Provider | Default model (env override) | BYOK key | Capabilities |
+|----------|------------------------------|:--------:|-------------|
+| **Google Gemini** | `gemini-3.5-flash` (`GEMINI_MODEL`) | ✅ `GEMINI_API_KEY` | Analysis, deep analysis, consensus |
+| **Anthropic Claude** | `claude-sonnet-4-6` (`ANTHROPIC_MODEL`) | ✅ `ANTHROPIC_API_KEY` | Analysis, deep analysis, consensus |
+| **OpenAI** | `gpt-4o-mini` (`OPENAI_MODEL`) | ✅ `OPENAI_API_KEY` | Analysis, deep analysis, consensus |
+| **xAI Grok** | `grok-3` (`GROK_MODEL`) | ✅ `GROK_API_KEY` | Analysis, deep analysis, consensus |
+| **DeepSeek** | `deepseek-v4-flash` (`DEEPSEEK_MODEL`) | ✅ `DEEPSEEK_API_KEY` | Analysis, deep analysis, consensus |
+| **Mistral** | `mistral-large-latest` (`MISTRAL_MODEL`) | ✅ `MISTRAL_API_KEY` | Analysis, deep analysis, consensus |
+| **Groq** | `openai/gpt-oss-120b` (`GROQ_MODEL`) | ✅ `GROQ_API_KEY` | Analysis, deep analysis, consensus |
+| **Qwen (Alibaba)** | `qwen-max` (`QWEN_MODEL`) | ✅ `DASHSCOPE_API_KEY` | Analysis, deep analysis, consensus |
+| **Perplexity** | `sonar-pro` (`SONAR_MODEL`) | ✅ `SONAR_API_KEY` | Deep web-grounded research with citations |
 
 ### BYOK Privacy Guarantee
 

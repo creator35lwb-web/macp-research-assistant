@@ -6,13 +6,6 @@ interface AgentRegistryProps {
   onRefresh: () => void;
 }
 
-const COST_COLORS: Record<string, string> = {
-  free: "var(--color-success)",
-  freemium: "var(--color-notes)",
-  paid: "var(--color-papers)",
-  enterprise: "var(--color-graph)",
-};
-
 const CAPABILITY_LABELS: Record<string, string> = {
   abstract_analysis: "Abstract Analysis",
   deep_analysis: "Deep Analysis",
@@ -28,19 +21,20 @@ export function AgentRegistry({ agents, loading, onRefresh }: AgentRegistryProps
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 600 }}>Agent Registry</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 600 }}>Supported Models</h2>
         <button className="btn btn-secondary btn-sm" onClick={onRefresh} disabled={loading}>
           {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
       <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16 }}>
-        {agents.length} AI agents registered in the MACP ecosystem. Each agent can analyze papers with different strengths.
+        Bring your own API key (BYOK) for any provider below to analyze papers. Models are the
+        current defaults and can be overridden per deployment via env vars (e.g. <code>GEMINI_MODEL</code>).
       </p>
 
       {agents.length === 0 && !loading && (
         <div style={{ color: "var(--text-tertiary)", textAlign: "center", padding: 32 }}>
-          No agents loaded. Click Refresh.
+          No providers loaded. Click Refresh.
         </div>
       )}
 
@@ -49,17 +43,18 @@ export function AgentRegistry({ agents, loading, onRefresh }: AgentRegistryProps
           <div key={agent.agent_id} className="agent-card">
             <div className="agent-card-header">
               <span className="agent-name">{agent.name}</span>
-              <span
-                className="agent-cost-badge"
-                style={{ color: COST_COLORS[agent.cost_tier] || "var(--text-secondary)" }}
-              >
-                {agent.cost_tier}
-              </span>
+              {agent.server_key ? (
+                <span className="agent-cost-badge" style={{ color: "var(--color-success)" }}>
+                  ready
+                </span>
+              ) : (
+                <span className="agent-cost-badge" style={{ color: "var(--text-tertiary)" }}>
+                  BYOK
+                </span>
+              )}
             </div>
 
             <div className="agent-model">{agent.model}</div>
-
-            <div className="agent-strengths">{agent.strengths}</div>
 
             <div className="agent-capabilities">
               {agent.capabilities.map((cap) => (
@@ -71,10 +66,9 @@ export function AgentRegistry({ agents, loading, onRefresh }: AgentRegistryProps
 
             <div className="agent-footer">
               {agent.env_key && (
-                <span className="agent-key-hint">BYOK: {agent.env_key}</span>
-              )}
-              {!agent.env_key && agent.cost_tier === "enterprise" && (
-                <span className="agent-key-hint">Internal agent</span>
+                <span className="agent-key-hint">
+                  {agent.server_key ? "Server key set · " : ""}Key: {agent.env_key}
+                </span>
               )}
             </div>
           </div>
