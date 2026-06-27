@@ -122,12 +122,22 @@ export interface DivergencePoint {
   resolution?: string;
 }
 
+export interface AgreementComponents {
+  key_findings_overlap: number;
+  relevance_score_alignment: number;
+  methodology_consistency: number;
+}
+
 export interface Consensus {
   arxiv_id: string;
   agents_compared: string[];
   generated_at: string;
   generated_by: string;
   agreement_score: number;
+  /** How the score was derived: "semantic:<provider>:<model>" | "lexical" | "trivial" */
+  agreement_method?: string;
+  /** Per-component breakdown (0–1 each) behind the weighted agreement_score */
+  agreement_components?: AgreementComponents;
   synthesized_summary: string;
   convergence_points: string[];
   divergence_points: DivergencePoint[];

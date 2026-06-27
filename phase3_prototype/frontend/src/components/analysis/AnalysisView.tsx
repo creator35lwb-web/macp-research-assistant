@@ -220,11 +220,36 @@ interface ConsensusViewProps {
   consensus: Consensus;
 }
 
+/** Human-readable label + tooltip for the consensus scoring method. */
+function describeMethod(method?: string): { label: string; title: string; semantic: boolean } {
+  if (!method) return { label: "Lexical", title: "Word-overlap scoring", semantic: false };
+  if (method.startsWith("semantic")) {
+    const provider = method.split(":")[1] || "embeddings";
+    return {
+      label: `Semantic (${provider})`,
+      title: `Embedding cosine similarity via ${method.replace("semantic:", "")} — robust to paraphrasing`,
+      semantic: true,
+    };
+  }
+  if (method === "trivial") {
+    return { label: "Single analysis", title: "Only one analysis — trivially full agreement", semantic: false };
+  }
+  return { label: "Lexical", title: "Jaccard word-overlap fallback (no embedding provider available)", semantic: false };
+}
+
+const COMPONENT_META: { key: keyof NonNullable<Consensus["agreement_components"]>; label: string; weight: number }[] = [
+  { key: "key_findings_overlap", label: "Key findings", weight: 40 },
+  { key: "relevance_score_alignment", label: "Relevance alignment", weight: 30 },
+  { key: "methodology_consistency", label: "Methodology", weight: 30 },
+];
+
 export function ConsensusView({ consensus }: ConsensusViewProps) {
   const scoreColor = consensus.agreement_score >= 0.7 ? "var(--color-success)" :
     consensus.agreement_score >= 0.4 ? "var(--color-notes)" : "var(--color-error)";
 
   const scorePercent = Math.round(consensus.agreement_score * 100);
+  const method = describeMethod(consensus.agreement_method);
+  const components = consensus.agreement_components;
 
   return (
     <div>
@@ -234,6 +259,13 @@ export function ConsensusView({ consensus }: ConsensusViewProps) {
         </span>
         <span className="tag">{consensus.agents_compared.length} agents</span>
         <span className="tag">{consensus.generated_by}</span>
+        <span
+          className="tag"
+          title={method.title}
+          style={method.semantic ? { background: "var(--color-graph)", color: "#fff" } : undefined}
+        >
+          {method.label}
+        </span>
       </div>
 
       <div className="analysis-section">
@@ -254,6 +286,29 @@ export function ConsensusView({ consensus }: ConsensusViewProps) {
           </span>
         </div>
       </div>
+
+      {components && (
+        <div className="analysis-section">
+          <h4>Score Breakdown</h4>
+          <div className="consensus-breakdown">
+            {COMPONENT_META.map(({ key, label, weight }) => {
+              const value = components[key] ?? 0;
+              const pct = Math.round(value * 100);
+              return (
+                <div key={key} className="consensus-breakdown-row" title={`${label}: ${pct}% × ${weight}% weight`}>
+                  <span className="consensus-breakdown-label">
+                    {label} <span className="consensus-breakdown-weight">({weight}%)</span>
+                  </span>
+                  <div className="consensus-score-bar consensus-breakdown-bar">
+                    <div className="consensus-score-fill" style={{ width: `${pct}%`, background: "var(--color-graph)" }} />
+                  </div>
+                  <span className="consensus-breakdown-value">{pct}%</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="analysis-section">
         <h4>Agents Compared</h4>

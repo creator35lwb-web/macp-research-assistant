@@ -248,7 +248,15 @@ export function generateMarkdown(
   if (consensus) {
     L.push(`## Multi-Agent Consensus`);
     L.push(``);
-    L.push(`**Agreement Score:** ${consensus.agreement_score.toFixed(0)}% | **Agents:** ${consensus.agents_compared.join(", ")} | **Generated:** ${consensus.generated_at.split("T")[0]}`);
+    L.push(`**Agreement Score:** ${(consensus.agreement_score * 100).toFixed(0)}% | **Agents:** ${consensus.agents_compared.join(", ")} | **Generated:** ${consensus.generated_at.split("T")[0]}`);
+    if (consensus.agreement_method) {
+      L.push(``);
+      L.push(`**Scoring method:** \`${consensus.agreement_method}\``);
+      if (consensus.agreement_components) {
+        const c = consensus.agreement_components;
+        L.push(`**Breakdown:** key findings ${(c.key_findings_overlap * 100).toFixed(0)}% (40%) · relevance ${(c.relevance_score_alignment * 100).toFixed(0)}% (30%) · methodology ${(c.methodology_consistency * 100).toFixed(0)}% (30%)`);
+      }
+    }
     L.push(``);
 
     L.push(`### Synthesized Summary`);

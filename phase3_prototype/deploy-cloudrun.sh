@@ -34,6 +34,11 @@ gcloud builds submit \
 
 # Deploy to Cloud Run
 echo ">>> Deploying to Cloud Run..."
+# NOTE: use --update-env-vars (NOT --set-env-vars). --set-env-vars REPLACES the
+# service's entire env set, which would wipe vars not listed here — notably
+# GEMINI_API_KEY (breaks analysis + silently disables semantic consensus),
+# SONAR_API_KEY, CORS_ORIGINS, etc. --update-env-vars only adds/updates the
+# listed vars and preserves everything already configured on the service.
 gcloud run deploy "${SERVICE_NAME}" \
   --image "gcr.io/$(gcloud config get-value project)/${SERVICE_NAME}" \
   --region "${REGION}" \
@@ -42,7 +47,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --memory "${MEMORY}" \
   --timeout=60 \
   --allow-unauthenticated \
-  --set-env-vars "ENFORCE_HTTPS=true,GITHUB_APP_CLIENT_ID=${GITHUB_APP_CLIENT_ID},GITHUB_APP_CLIENT_SECRET=${GITHUB_APP_CLIENT_SECRET},JWT_SECRET=${JWT_SECRET}" \
+  --update-env-vars "ENFORCE_HTTPS=true,GITHUB_APP_CLIENT_ID=${GITHUB_APP_CLIENT_ID},GITHUB_APP_CLIENT_SECRET=${GITHUB_APP_CLIENT_SECRET},JWT_SECRET=${JWT_SECRET}" \
   --port 8080
 
 echo ""
