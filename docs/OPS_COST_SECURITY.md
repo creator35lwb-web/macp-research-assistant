@@ -11,7 +11,7 @@ controls + financial guardrails**.
 
 | Layer | What | Cost | Status |
 |-------|------|------|--------|
-| Financial backstop | **GCP billing budget + alerts** | Free | ⏳ TODO (see §2) |
+| Financial backstop | **GCP billing budget + alerts** | Free | ✅ Done ("All projects" budget) |
 | Edge DDoS/WAF/cache | **Cloudflare free tier** in front of the domain | Free | ⏳ TODO (see §3) |
 | Compute cost cap | Cloud Run `--max-instances 3`, scale-to-zero | Free | ✅ Live |
 | App rate limiting | slowapi on `/api/mcp/*` (20/min LLM, 60/min submit) | Free | ✅ Live |
@@ -26,9 +26,13 @@ controls + financial guardrails**.
 
 ---
 
-## 2. GCP billing budget + alerts (do this first — free)
+## 2. GCP billing budget + alerts (free)
 
-Currently **not configured** (the Billing Budget API isn't even enabled).
+**Status (2026-06-27): ✅ DONE.** An **"All projects"** budget is configured on
+billing account `015E46-0A4895-1CAC38`, so `ysense-platform-v4-1` is covered
+(alongside `verifimind-mcp-server`). No per-project budget needed.
+
+For reference, to create/adjust one:
 
 1. Console → **Billing → Budgets & alerts → Create budget**
 2. Scope: project `ysense-platform-v4-1` (or the whole billing account)
