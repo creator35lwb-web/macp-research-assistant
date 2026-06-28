@@ -1,0 +1,48 @@
+{
+  "arxiv_id": "arxiv:2603.29640",
+  "paper_id": "arxiv:2603.29640",
+  "title": "ASI-Evolve: AI Accelerates AI",
+  "agent_id": "gemini",
+  "provider": "gemini",
+  "type": "abstract",
+  "analysis_type": "abstract",
+  "model": "gemini-3.1-flash-lite",
+  "analyzed_at": "2026-06-28T23:01:59.576165+00:00",
+  "summary": "ASI-Evolve is an agentic framework designed to automate the research and development cycle of AI systems by mimicking the scientific process of learning, designing, experimenting, and analyzing. It successfully demonstrates that AI can autonomously improve its own foundational components, including data curation, neural architecture, and learning algorithms.",
+  "key_findings": [
+    "The framework successfully discovered 105 state-of-the-art linear attention architectures, outperforming human-designed models.",
+    "Automated pretraining data curation led to significant performance gains, including an 18-point improvement on the MMLU benchmark.",
+    "The system demonstrated cross-domain utility by applying its research loop to fields beyond AI, such as mathematics and biomedicine.",
+    "The integration of a cognition base and a dedicated analyzer allows the system to retain human priors and distill complex experimental data into actionable insights."
+  ],
+  "methodology": "The researchers developed an evolutionary agentic framework that utilizes a cognition base for injecting human priors and an analyzer to distill experimental outcomes into a continuous learn-design-experiment-analyze research loop.",
+  "relevance_score": 0.9,
+  "bias_disclaimer": "AI-generated analysis may contain inaccuracies or reflect biases from the underlying model. Always perform critical evaluation.",
+  "analysis": {
+    "summary": "ASI-Evolve is an agentic framework designed to automate the research and development cycle of AI systems by mimicking the scientific process of learning, designing, experimenting, and analyzing. It successfully demonstrates that AI can autonomously improve its own foundational components, including data curation, neural architecture, and learning algorithms.",
+    "key_insights": [
+      "The framework successfully discovered 105 state-of-the-art linear attention architectures, outperforming human-designed models.",
+      "Automated pretraining data curation led to significant performance gains, including an 18-point improvement on the MMLU benchmark.",
+      "The system demonstrated cross-domain utility by applying its research loop to fields beyond AI, such as mathematics and biomedicine.",
+      "The integration of a cognition base and a dedicated analyzer allows the system to retain human priors and distill complex experimental data into actionable insights."
+    ],
+    "methodology": "The researchers developed an evolutionary agentic framework that utilizes a cognition base for injecting human priors and an analyzer to distill experimental outcomes into a continuous learn-design-experiment-analyze research loop.",
+    "relevance_tags": [
+      "ai-for-ai",
+      "agentic-systems",
+      "automated-machine-learning",
+      "evolutionary-algorithms"
+    ],
+    "research_gaps": [
+      "The paper provides initial evidence for cross-domain transfer but does not fully explore the scalability of the framework in highly complex, non-AI scientific domains.",
+      "Long-term stability and potential for model collapse in fully autonomous, self-improving research loops remain to be fully addressed."
+    ],
+    "strength_score": 9,
+    "_meta": {
+      "bias_disclaimer": "AI-generated analysis may contain inaccuracies or reflect biases from the underlying model. Always perform critical evaluation.",
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "model_route": "abstract->lite"
+    }
+  }
+}
