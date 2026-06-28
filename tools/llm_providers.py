@@ -157,6 +157,63 @@ EMBEDDING_PROVIDERS = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# Smart model routing — per-provider tiers
+# ---------------------------------------------------------------------------
+# "standard" tier = the provider's configured `model`. Routing picks a cheaper
+# "lite" tier for short tasks (abstract) and a stronger "pro" tier for long/
+# complex deep analyses — don't waste a frontier model on a 200-word abstract,
+# and don't under-power a 30-page paper. Tiers are env-overridable; any tier not
+# set falls back to the provider's standard model, so routing is a SAFE no-op for
+# providers without a tier map. Disable entirely with MODEL_ROUTING=off.
+MODEL_TIERS = {
+    "gemini":   {"lite": os.getenv("GEMINI_LITE_MODEL", "gemini-3.1-flash-lite"),
+                 "pro":  os.getenv("GEMINI_PRO_MODEL", "")},
+    "openai":   {"lite": os.getenv("OPENAI_LITE_MODEL", "gpt-4o-mini"),
+                 "pro":  os.getenv("OPENAI_PRO_MODEL", "")},
+    "deepseek": {"lite": os.getenv("DEEPSEEK_LITE_MODEL", "deepseek-v4-flash"),
+                 "pro":  os.getenv("DEEPSEEK_PRO_MODEL", "deepseek-v4-pro")},
+    "mistral":  {"lite": os.getenv("MISTRAL_LITE_MODEL", "mistral-small-latest"),
+                 "pro":  os.getenv("MISTRAL_PRO_MODEL", "mistral-large-latest")},
+    "qwen":     {"lite": os.getenv("QWEN_LITE_MODEL", "qwen-plus"),
+                 "pro":  os.getenv("QWEN_PRO_MODEL", "qwen-max")},
+}
+
+# A deep analysis routes to the "pro" tier above either threshold.
+_DEEP_COMPLEX_CHARS = int(os.getenv("DEEP_COMPLEX_CHARS", "40000"))
+_DEEP_COMPLEX_SECTIONS = int(os.getenv("DEEP_COMPLEX_SECTIONS", "12"))
+
+
+def select_model(provider_id: str, task: str, signals: Optional[dict] = None) -> tuple[str, str]:
+    """Pick (model, reason) for a provider + task.
+
+    task: "abstract" (short → lite) | "deep" (standard, or pro when long/complex).
+    signals: optional {"chars": int, "sections": int} for deep routing.
+    Falls back to the provider's standard model for any undefined tier;
+    MODEL_ROUTING=off disables routing (always returns the standard model).
+    """
+    standard = PROVIDERS.get(provider_id, {}).get("model", "")
+    if os.getenv("MODEL_ROUTING", "balanced").lower() == "off":
+        return standard, "routing_off"
+
+    tiers = MODEL_TIERS.get(provider_id, {})
+
+    if task == "abstract":
+        return (tiers.get("lite") or standard), "abstract->lite"
+
+    if task == "deep":
+        s = signals or {}
+        is_complex = (
+            s.get("chars", 0) >= _DEEP_COMPLEX_CHARS
+            or s.get("sections", 0) >= _DEEP_COMPLEX_SECTIONS
+        )
+        if is_complex:
+            return (tiers.get("pro") or standard), "deep+complex->pro"
+        return standard, "deep->standard"
+
+    return standard, "default"
+
+
 # The analysis prompt sent to all providers
 ANALYSIS_PROMPT = """You are a research analyst. Analyze the following paper and provide a structured response in JSON format.
 
@@ -461,8 +518,10 @@ def analyze_paper(
         abstract=sanitize_llm_input(abstract or "No abstract available.", max_length=5000),
     )
 
+    # Abstract is a short task — route to the provider's cheaper "lite" tier.
+    model, route_reason = select_model(provider_id, "abstract")
     try:
-        raw = caller(api_key, prompt, config["model"])
+        raw = caller(api_key, prompt, model)
     except requests.RequestException as e:
         print(f"[ERROR] API call to {config['name']} failed: {e}", file=sys.stderr)
         return None
@@ -507,7 +566,8 @@ def analyze_paper(
             "from the underlying model. Always perform critical evaluation."
         ),
         "provider": provider_id,
-        "model": config["model"],
+        "model": model,
+        "model_route": route_reason,
     }
 
     return analysis
@@ -709,6 +769,12 @@ def analyze_paper_deep(
 
     authors_str = ", ".join(authors[:20]) if authors else "Unknown"
 
+    # Route deep analysis: long/complex full-text papers go to the "pro" tier.
+    total_chars = sum(len(s.get("content", "")) for s in sections)
+    model, route_reason = select_model(
+        provider_id, "deep", {"chars": total_chars, "sections": len(sections)}
+    )
+
     # --- Pass 1: Abstract + Introduction ---
     intro_text = _find_section_text(sections, ["abstract", "introduction", "preamble"])
     if not intro_text and sections:
@@ -717,7 +783,7 @@ def analyze_paper_deep(
 
     prompt1 = DEEP_PASS1_PROMPT.format(title=sanitize_llm_input(title, 500), authors=authors_str, text=intro_text)
     try:
-        raw1 = caller(api_key, prompt1, config["model"])
+        raw1 = caller(api_key, prompt1, model)
     except Exception as e:
         print(f"[ERROR] Deep pass 1 failed: {e}", file=sys.stderr)
         return None
@@ -731,7 +797,7 @@ def analyze_paper_deep(
 
     prompt2 = DEEP_PASS2_PROMPT.format(title=sanitize_llm_input(title, 500), text=method_text)
     try:
-        raw2 = caller(api_key, prompt2, config["model"])
+        raw2 = caller(api_key, prompt2, model)
     except Exception as e:
         print(f"[ERROR] Deep pass 2 failed: {e}", file=sys.stderr)
         raw2 = None
@@ -745,7 +811,7 @@ def analyze_paper_deep(
 
     prompt3 = DEEP_PASS3_PROMPT.format(title=sanitize_llm_input(title, 500), text=results_text)
     try:
-        raw3 = caller(api_key, prompt3, config["model"])
+        raw3 = caller(api_key, prompt3, model)
     except Exception as e:
         print(f"[ERROR] Deep pass 3 failed: {e}", file=sys.stderr)
         raw3 = None
@@ -759,7 +825,7 @@ def analyze_paper_deep(
         pass3=json.dumps(pass3 or {}, indent=2),
     )
     try:
-        raw4 = caller(api_key, prompt4, config["model"])
+        raw4 = caller(api_key, prompt4, model)
     except Exception as e:
         print(f"[ERROR] Deep synthesis failed: {e}", file=sys.stderr)
         raw4 = None
@@ -803,7 +869,8 @@ def analyze_paper_deep(
         ),
         "analysis_type": "deep",
         "provider": provider_id,
-        "model": config["model"],
+        "model": model,
+        "model_route": route_reason,
         "passes": 4,
         "extraction_source": extraction_source,
         "extraction_warnings": extraction_warnings,
