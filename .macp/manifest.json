@@ -2,9 +2,15 @@
   "version": "2.0",
   "schema": "macp-research",
   "created_at": "2026-06-28T06:33:49.913911+00:00",
-  "updated_at": "2026-06-28T08:32:25.307769+00:00",
+  "updated_at": "2026-06-28T23:01:56.577357+00:00",
   "owner": "creator35lwb-web",
-  "papers": {},
+  "papers": {
+    "arxiv:2603.29640": {
+      "title": "ASI-Evolve: AI Accelerates AI",
+      "saved_at": "2026-06-28T23:01:55.022756+00:00",
+      "status": "saved"
+    }
+  },
   "analyses": {
     "arxiv:2602.12430": {
       "consensus": {
