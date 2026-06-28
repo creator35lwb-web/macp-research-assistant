@@ -8,6 +8,6 @@ sqlalchemy==2.0.51
 python-dotenv==1.2.2
 PyJWT==2.13.0
 httpx==0.28.1
-cryptography==46.0.5
+cryptography==49.0.0
 psycopg2-binary==2.9.12
 PyMuPDF==1.27.2.3
