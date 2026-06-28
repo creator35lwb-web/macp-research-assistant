@@ -40,6 +40,7 @@ HF_PAPER_SEARCH_API = "https://huggingface.co/api/papers/search"
 ARXIV_API = "https://export.arxiv.org/api/query"
 HYSTS_DATASET_API = "https://datasets-server.huggingface.co"
 HYSTS_DATASET_NAME = "hysts-bot-data/daily-papers"
+SEMANTIC_SCHOLAR_API = "https://api.semanticscholar.org/graph/v1/paper/search"
 MACP_DIR = ".macp"
 PAPERS_FILE = os.path.join(MACP_DIR, "research_papers.json")
 SCHEMAS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "schemas")
@@ -386,6 +387,57 @@ def fetch_by_id(arxiv_id: str) -> Optional[dict]:
         discovered_by="arxiv_api",
         discovered_date=published if published else None,
     )
+
+
+# ---------------------------------------------------------------------------
+# Pipeline 5: Semantic Scholar (200M+ papers) — corpus breadth
+# ---------------------------------------------------------------------------
+
+def fetch_from_semantic_scholar(query: str, limit: int = 10) -> list[dict]:
+    """Search Semantic Scholar's ~200M-paper corpus.
+
+    Free API (no key required; SEMANTIC_SCHOLAR_API_KEY raises rate limits).
+    Papers carrying an arXiv ID are mapped to `arxiv:<id>` so they flow straight
+    into the existing full-text pipeline; others get an `s2:<paperId>` id and are
+    analyzable at the abstract level (full-text via open-access PDF is a follow-up).
+    """
+    query = validate_query(query)
+    params = {
+        "query": query,
+        "limit": max(1, min(limit, 100)),
+        "fields": "title,abstract,authors,year,externalIds,url,openAccessPdf",
+    }
+    headers = {}
+    key = os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "")
+    if key:
+        headers["x-api-key"] = key
+
+    try:
+        resp = requests.get(SEMANTIC_SCHOLAR_API, params=params, headers=headers, timeout=30)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        print(f"[ERROR] Semantic Scholar search failed: {e}", file=sys.stderr)
+        return []
+
+    papers = []
+    for item in resp.json().get("data", []) or []:
+        if not item.get("title"):
+            continue
+        ext = item.get("externalIds") or {}
+        arxiv = ext.get("ArXiv")
+        paper_id = f"arxiv:{arxiv}" if arxiv else f"s2:{item.get('paperId', '')}"
+        oa = item.get("openAccessPdf") or {}
+        papers.append({
+            "id": paper_id,
+            "title": (item.get("title") or "").strip(),
+            "authors": [a.get("name", "") for a in (item.get("authors") or []) if a.get("name")],
+            "abstract": item.get("abstract") or "",
+            "url": item.get("url") or "",
+            "pdf_url": oa.get("url") or "",
+            "year": item.get("year"),
+            "source": "semanticscholar",
+        })
+    return papers
 
 
 # ---------------------------------------------------------------------------

@@ -28,13 +28,13 @@ export function SearchBar({ onSearch, searching }: SearchBarProps) {
         </button>
       </div>
       <div className="search-filters" style={{ marginTop: 8 }}>
-        {["hysts", "hf", "arxiv"].map((s) => (
+        {["hysts", "hf", "s2", "arxiv"].map((s) => (
           <button
             key={s}
             className={`filter-chip ${source === s ? "active" : ""}`}
             onClick={() => setSource(s)}
           >
-            {s === "hysts" ? "Daily Papers" : s === "hf" ? "HuggingFace" : "arXiv ID"}
+            {s === "hysts" ? "Daily Papers" : s === "hf" ? "HuggingFace" : s === "s2" ? "Semantic Scholar (200M)" : "arXiv ID"}
           </button>
         ))}
       </div>

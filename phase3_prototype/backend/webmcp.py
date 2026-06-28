@@ -33,7 +33,7 @@ from github_storage import get_storage_service
 
 # Add tools dir for imports
 sys.path.insert(0, os.path.abspath(TOOLS_DIR))
-from paper_fetcher import fetch_by_id, fetch_by_query, fetch_from_hysts, download_pdf, extract_text, check_extraction_quality, fetch_arxiv_html
+from paper_fetcher import fetch_by_id, fetch_by_query, fetch_from_hysts, fetch_from_semantic_scholar, download_pdf, extract_text, check_extraction_quality, fetch_arxiv_html
 from llm_providers import (
     analyze_paper as _analyze_paper,
     analyze_paper_deep as _analyze_deep,
@@ -65,7 +65,7 @@ def mcp_response(data, is_error: bool = False):
 class McpSearchRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=200)
     limit: int = Field(default=10, ge=1, le=50)
-    source: str = Field(default="hysts", pattern="^(hf|hysts|arxiv)$")
+    source: str = Field(default="hysts", pattern="^(hf|hysts|arxiv|s2)$")
 
 
 class McpAnalyzeRequest(BaseModel):
@@ -247,6 +247,8 @@ async def mcp_search(
             papers = fetch_from_hysts(req.query, limit=req.limit)
         elif req.source == "hf":
             papers = fetch_by_query(req.query, limit=req.limit)
+        elif req.source == "s2":
+            papers = fetch_from_semantic_scholar(req.query, limit=req.limit)
         elif req.source == "arxiv":
             paper = fetch_by_id(req.query)
             papers = [paper] if paper else []
