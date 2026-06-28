@@ -35,6 +35,22 @@ git rev-list --left-right --count master...origin/master   # left=ahead right=be
   overlaps remote-changed files, back it up (stash + patch to a temp dir) first.
 - If **clean/ahead**: proceed.
 
+**Scan INCOMING commits for hygiene leaks (not just your own).** Other platforms
+(e.g. CSO-R / Manus AI) may push internal coordination docs that violate
+`.macp/PUBLIC_REPO_HYGIENE.md` (operational identifiers, business metrics, internal
+org structure, unpublished-IP status, competitive intel, personal data). Run the
+step-3 scans over the incoming range and review new docs:
+
+```bash
+git log master..origin/master --name-only            # what landed
+git diff master..origin/master | grep -inE "[0-9A-F]{6}-[0-9A-F]{6}-[0-9A-F]{6}|[a-z0-9-]+\.run\.app|WAU|engagement hours|defensive publication|competitive"
+```
+
+If a teammate's commit leaked sensitive content into this public repo, surface it
+to the maintainer; the fix is a normal delete commit (route it to the private hub)
++ an alignment handoff — NOT silently proceeding. Their work is valuable; it's about
+*where* it lives.
+
 ### 2. Verify the work is sound
 
 - Run the project's tests for anything touched, e.g.:

@@ -24,6 +24,14 @@ Deploy is a MANUAL, outward-facing action — confirm scope before pushing to pr
    the whole env set, wiping `GEMINI_API_KEY` (breaks analysis + silently disables
    semantic consensus), `SONAR_API_KEY`, `CORS_ORIGINS`. Image-only deploys
    (no env flags) preserve everything and need no shell secrets.
+5. **If a build or deploy HANGS (~5 min) → check gcloud auth FIRST.** Tokens expire
+   mid-session and gcloud can't re-prompt non-interactively, so `builds submit` /
+   `run deploy` **silently stall** (and a background build's wrapper may even report
+   exit 0 while the inner gcloud failed on reauth). Symptom: command times out at
+   ~5 min, or `builds list` shows the latest successful build is older than expected.
+   Fix: the maintainer runs `! gcloud auth login` (interactive — an agent cannot do
+   it), then re-build and re-deploy. Prod stays up on the prior revision throughout.
+   Verify auth before a deploy: `gcloud config get-value account`.
 
 ## Procedure
 
