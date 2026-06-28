@@ -1,8 +1,8 @@
 # MACP Research Assistant — Project Roadmap
 
-> **Last Updated:** 2026-06-27 | **Author:** FLYWHEEL TEAM (Orchestrator L + CSO R + CTO RNA)
-> **Status:** Living document — updated after each alignment meeting
-> **Version:** v1.0.0 released → v2.0.0 in planning
+> **Last Updated:** 2026-06-28 | **A YSenseAI ecosystem project**
+> **Status:** Living document — updated as the project ships
+> **Version:** v1.0.0 released → **Phase 5 (Recursive Research Engine) in progress**
 
 This roadmap was rewritten on 2026-02-25 following a comprehensive functional audit of the live production system at `macpresearch.ysenseai.org` and a strategic vision alignment meeting. It replaces the 2026-02-22 version with verified endpoint test results, honest feature status, and the complete v2.0.0 architecture plan. Every AI agent working on this project should read this document before making changes.
 
@@ -47,7 +47,23 @@ To keep the record accurate:
 | **Perplexity Sonar** | **Runtime provider + registry entry** — the deep-research API the app calls; *not* a contributing development agent |
 | **Gemini / OpenAI / xAI Grok** | **Runtime LLM providers** (BYOK) — called by the app; *not* contributing agents |
 
-The MACP schema is designed so that *additional* agents (Cursor, Antigravity, Perplexity, etc.) **can** contribute in future via the Agent Submission Layer — but as of this writing, only Manus AI and Claude Code have authored work on the codebase.
+The MACP schema is designed so that *additional* agents (Cursor, Antigravity, Perplexity, etc.) **can** contribute via the Agent Submission Layer.
+
+---
+
+## Progress Update (2026-06-28) — Phase 5 underway
+
+The recursive-research vision was ~30% implemented at v1.0.0. Two of its five core components are now **live**, plus a substantial platform hardening pass:
+
+| Shipped | What |
+|---------|------|
+| ✅ **Agent Submission Layer** (Component 1) | `macp submit` CLI + `POST /api/mcp/submit-analysis` — any agent contributes provenance-tracked analyses with **continuation chains** (auth-gated). Live in prod. |
+| ✅ **Topic Taxonomy** (Component 2) | `macp topic` — a self-growing hierarchical research tree under `.macp/topics/`, auto-classifying papers from their relevance tags. |
+| ✅ **Semantic consensus** | Embedding-based agreement scoring with an auditable per-component breakdown (lexical fallback) — replaced the lexical-only metric. |
+| ✅ **9-provider BYOK** | Added DeepSeek, Mistral, Groq, Qwen; all models **env-configurable** so deprecations are a config change, not a code change. |
+| ✅ **Security/ops hardening** | Rate-limited MCP endpoints, auth on writes, SonarCloud CI-gating, billing budget, Cloudflare origin guard, operational-info hygiene. |
+
+**Estimated vision implementation: ~55%.** Remaining: auto-classify on analysis, research queue (Component 3), continuation `recommended_next` (Component 4), and "go deeper" orchestration (Component 5).
 
 ---
 
@@ -170,7 +186,7 @@ The endpoint returns: `"Deep research failed — check SONAR_API_KEY"`. This is 
 
 ---
 
-## Phase 4 — Current: WebMCP Ecosystem & Knowledge Graph
+## Phase 4 — Complete: Knowledge Graph, Semantic Consensus & 9-Provider BYOK
 
 > **Status:** In Progress | **Owner:** TEAM
 > **Goal:** Extend the platform with visual knowledge exploration and external integrations
@@ -187,7 +203,7 @@ The endpoint returns: `"Deep research failed — check SONAR_API_KEY"`. This is 
 
 ---
 
-## Phase 5 — v2.0.0: Recursive Research Orchestration Platform
+## Phase 5 — Current: Recursive Research Orchestration Platform
 
 > **Status:** Architecture Designed | **Owner:** TEAM
 > **Goal:** Transform the tool from a search-and-analyze assistant into a recursive, multi-agent research orchestration platform
@@ -439,19 +455,19 @@ Phase 1 ✅ → Phase 2 ✅ → Phase 3A ✅ → Phase 3B ✅ → Phase 3C ✅ �
 
                                                                                                         │
                                                                                                         ▼
-                                                                                                  Phase 4 🔧
-                                                                                                  WebMCP
-                                                                                                  Ecosystem &
-                                                                                                  Knowledge Graph
+                                                                                                  Phase 4 ✅
+                                                                                                  Knowledge Graph,
+                                                                                                  Semantic Consensus,
+                                                                                                  9-Provider BYOK
                                                                                                         │
                                                                                                         ▼
-                                                                                              ┌─── Phase 5 📋 ───┐
-                                                                                              │  v2.0.0 Release  │
+                                                                                              ┌─── Phase 5 🔧 ───┐
+                                                                                              │  Recursive       │
                                                                                               │  Research Journey │
                                                                                               │  Engine           │
                                                                                               │                   │
-                                                                                              │  5A: Agent Submit │
-                                                                                              │  5B: Topic Tree   │
+                                                                                              │  5A: Agent Submit ✅│
+                                                                                              │  5B: Topic Tree  ✅│
                                                                                               │  5C: Queue/Chain  │
                                                                                               │  5D: Orchestration│
                                                                                               └───────────────────┘
