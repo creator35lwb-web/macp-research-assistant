@@ -347,7 +347,7 @@ VerifiMind-PEAS v0.5.0
     └── Paper search, multi-agent analysis, consensus, deep research
 ```
 
-The two tool suites create a **research-validation feedback loop**: the Research Engine discovers and analyzes papers to inform validation methodology, while the Validation Engine generates evidence that becomes research material. MCP tool wrappers for VerifiMind-PEAS integration are available in the [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp) repository.
+The two tool suites create a **research-validation feedback loop**: the Research Engine discovers and analyzes papers to inform validation methodology, while the Validation Engine generates evidence that becomes research material.
 
 ### Available MCP Tools for VerifiMind-PEAS
 
@@ -525,12 +525,11 @@ research = requests.post(f"{BASE}/deep-research", json={
 
 ## Ecosystem Alignment
 
-This project is **Tool Suite 2** within the broader **YSenseAI Ecosystem**:
+This project is part of the broader **YSenseAI Ecosystem**:
 
-- **Command Central Hub:** [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp) (PRIVATE)
-- **Unified Ecosystem Roadmap:** [YSenseAI Ecosystem Map & Unified Roadmap](https://github.com/creator35lwb-web/verifimind-genesis-mcp/blob/main/ecosystem/YSenseAIEcosystemMap%26UnifiedRoadmap(Feb2026).md)
+- **Website:** [verifimind.io](https://verifimind.io)
 - **MACP Specification:** [LegacyEvolve](https://github.com/creator35lwb-web/LegacyEvolve) (MACP v2.0 origin)
-- **VerifiMind-PEAS:** [VerifiMind-PEAS](https://github.com/creator35lwb-web/VerifiMind-PEAS) (Tool Suite 1)
+- **VerifiMind-PEAS:** [VerifiMind-PEAS](https://github.com/creator35lwb-web/VerifiMind-PEAS) (ethical-AI verification methodology)
 
 ---
 
@@ -637,8 +636,7 @@ If you use MACP Research Assistant in your research, please cite:
 
 | Project | Description |
 |---------|-------------|
-| [VerifiMind-PEAS](https://github.com/creator35lwb-web/VerifiMind-PEAS) | Ethical AI verification methodology with CS Agent v3.1 (Tool Suite 1) |
-| [verifimind-genesis-mcp](https://github.com/creator35lwb-web/verifimind-genesis-mcp) | Command Central Hub for VerifiMind-PEAS v0.5.0 |
+| [VerifiMind-PEAS](https://github.com/creator35lwb-web/VerifiMind-PEAS) | Ethical AI verification methodology |
 | [GODELAI](https://github.com/creator35lwb-web/godelai) | AI alignment research project |
 | [LegacyEvolve](https://github.com/creator35lwb-web/LegacyEvolve) | MACP v2.0 specification and protocol |
 
