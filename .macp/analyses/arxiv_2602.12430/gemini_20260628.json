@@ -1,0 +1,48 @@
+{
+  "arxiv_id": "arxiv:2602.12430",
+  "paper_id": "arxiv:2602.12430",
+  "title": "Agent Skills for Large Language Models: Architecture, Acquisition, Security, and the Path Forward",
+  "agent_id": "gemini",
+  "provider": "gemini",
+  "type": "abstract",
+  "analysis_type": "abstract",
+  "model": "gemini-3.1-flash-lite",
+  "analyzed_at": "2026-06-28T08:29:03.140580+00:00",
+  "summary": "This paper explores the shift from static language models to modular, skill-based agents that can load specific instructions and tools on demand. It provides a framework for how these agents acquire, manage, and secure new capabilities without requiring expensive model retraining.",
+  "key_findings": [
+    "Agent skills represent a new abstraction layer that allows for dynamic capability extension through composable instructions and code.",
+    "A security analysis revealed that over 26% of community-contributed skills contain vulnerabilities, highlighting the need for rigorous governance.",
+    "The authors propose a four-tier, gate-based permission model to manage skill trust and lifecycle deployment.",
+    "The integration of the Model Context Protocol (MCP) is essential for standardizing how agents interact with external resources."
+  ],
+  "methodology": "The authors conducted a comprehensive survey and empirical analysis of the current agent skill landscape, evaluating existing architectures, acquisition methods, and security vulnerabilities.",
+  "relevance_score": 0.8,
+  "bias_disclaimer": "AI-generated analysis may contain inaccuracies or reflect biases from the underlying model. Always perform critical evaluation.",
+  "analysis": {
+    "summary": "This paper explores the shift from static language models to modular, skill-based agents that can load specific instructions and tools on demand. It provides a framework for how these agents acquire, manage, and secure new capabilities without requiring expensive model retraining.",
+    "key_insights": [
+      "Agent skills represent a new abstraction layer that allows for dynamic capability extension through composable instructions and code.",
+      "A security analysis revealed that over 26% of community-contributed skills contain vulnerabilities, highlighting the need for rigorous governance.",
+      "The authors propose a four-tier, gate-based permission model to manage skill trust and lifecycle deployment.",
+      "The integration of the Model Context Protocol (MCP) is essential for standardizing how agents interact with external resources."
+    ],
+    "methodology": "The authors conducted a comprehensive survey and empirical analysis of the current agent skill landscape, evaluating existing architectures, acquisition methods, and security vulnerabilities.",
+    "relevance_tags": [
+      "large-language-models",
+      "agentic-systems",
+      "ai-security",
+      "software-engineering"
+    ],
+    "research_gaps": [
+      "Lack of cross-platform skill portability",
+      "Need for robust capability-based permission models"
+    ],
+    "strength_score": 8,
+    "_meta": {
+      "bias_disclaimer": "AI-generated analysis may contain inaccuracies or reflect biases from the underlying model. Always perform critical evaluation.",
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "model_route": "abstract->lite"
+    }
+  }
+}
