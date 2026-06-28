@@ -16,6 +16,13 @@ export function AnalysisView({ analysis }: AnalysisViewProps) {
 
   return (
     <div>
+      <div
+        className="source-note source-note-abstract"
+        title="This analysis read only the paper's title and abstract — not the full text. For methodology and results, run Deep Analysis (it reads the full PDF)."
+      >
+        📄 <strong>Abstract-only</strong> — based on the title + abstract, not the full paper.
+        Run <strong>Deep Analysis</strong> to read the full text.
+      </div>
       <div className="analysis-section">
         <h4>Summary</h4>
         <p className="analysis-summary">{analysis.summary}</p>
@@ -104,7 +111,29 @@ export function DeepAnalysisView({ analysis, pageCount, sectionsExtracted }: Dee
         {analysis._meta && (
           <span className="tag">{analysis._meta.passes} LLM passes</span>
         )}
+        {analysis._meta?.extraction_source && (
+          <span
+            className="tag"
+            style={{ background: "var(--color-success)", color: "#fff" }}
+            title={
+              analysis._meta.extraction_source === "html_fallback"
+                ? "Full text read from arXiv HTML (the PDF extraction was insufficient, so it fell back to HTML)"
+                : "Full text read directly from the paper PDF"
+            }
+          >
+            ✓ Read full text ({analysis._meta.extraction_source === "html_fallback" ? "HTML" : "PDF"})
+          </span>
+        )}
       </div>
+
+      {analysis._meta?.extraction_warnings && analysis._meta.extraction_warnings.length > 0 && (
+        <div
+          className="source-note source-note-warning"
+          title="Text extraction had issues — parts of the paper may be missing or garbled, which can affect this analysis."
+        >
+          ⚠️ Extraction warnings: {analysis._meta.extraction_warnings.join("; ")}
+        </div>
+      )}
 
       <div className="analysis-section">
         <h4>Summary</h4>

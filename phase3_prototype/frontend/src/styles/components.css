@@ -670,6 +670,26 @@
   background: var(--color-success);
 }
 
+.source-note {
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-md);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+
+.source-note-abstract {
+  background: var(--bg-hover);
+}
+
+.source-note-warning {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: var(--color-notes);
+  color: var(--text-primary);
+}
+
 .consensus-breakdown {
   display: flex;
   flex-direction: column;
