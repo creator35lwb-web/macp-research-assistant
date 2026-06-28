@@ -2,9 +2,20 @@
   "version": "2.0",
   "schema": "macp-research",
   "created_at": "2026-06-28T06:33:49.913911+00:00",
-  "updated_at": "2026-06-28T06:33:49.913924+00:00",
+  "updated_at": "2026-06-28T08:32:25.307769+00:00",
   "owner": "creator35lwb-web",
   "papers": {},
-  "analyses": {},
+  "analyses": {
+    "arxiv:2602.12430": {
+      "consensus": {
+        "agreement_score": 0.359,
+        "agreement_method": "lexical",
+        "agents": [
+          "gemini"
+        ],
+        "generated_at": "2026-06-28T08:32:21.915655+00:00"
+      }
+    }
+  },
   "notes": {}
 }
