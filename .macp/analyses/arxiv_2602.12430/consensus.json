@@ -1,0 +1,44 @@
+{
+  "arxiv_id": "arxiv:2602.12430",
+  "agents_compared": [
+    "gemini"
+  ],
+  "generated_at": "2026-06-28T08:32:21.915655+00:00",
+  "generated_by": "gemini",
+  "agreement_score": 0.359,
+  "agreement_method": "lexical",
+  "agreement_components": {
+    "key_findings_overlap": 0.076,
+    "relevance_score_alignment": 0.99,
+    "methodology_consistency": 0.104
+  },
+  "synthesized_summary": "This paper outlines the paradigm shift from monolithic, static large language models to modular, skill-based agents capable of dynamic capability extension without retraining. It provides a taxonomic categorization of skill acquisition across six paradigms and analyzes deployment within computer-use agent (CUA) architectures. To address a high security vulnerability rate of approximately 26% and operational failures like tool cascades, the authors propose robust governance frameworks, including gate-based permission models, Model Context Protocol (MCP) integration, and portable, auditable skill artifacts.",
+  "convergence_points": [
+    "The transition from static, monolithic LLMs to modular, skill-based agent architectures that load capabilities dynamically.",
+    "A significant security risk in the current skill ecosystem, with approximately 26% of community-contributed skills containing vulnerabilities.",
+    "The critical need for robust governance, trust frameworks, and lifecycle management to secure and deploy agent skills safely."
+  ],
+  "divergence_points": [
+    {
+      "topic": "Granularity of Skill Acquisition and Deployment Taxonomy",
+      "positions": {
+        "gemini_1": "Focuses broadly on dynamic capability extension and highlights the Model Context Protocol (MCP) and a four-tier gate-based permission model.",
+        "gemini_2": "Provides a highly specific taxonomic breakdown of six acquisition paradigms (e.g., RL, compositional synthesis) and focuses on Computer-Use Agent (CUA) architectures with perception-grounding-action pipelines."
+      },
+      "resolution": "The analyses are complementary; the first agent highlights the governance and integration protocols, while the second provides the detailed taxonomic and architectural categorization."
+    },
+    {
+      "topic": "Scope of System Failures",
+      "positions": {
+        "gemini_1": "Focuses primarily on security vulnerabilities and malicious risks within community skills.",
+        "gemini_2": "Broadens the scope to include non-malicious operational failure modes such as tool cascades and deadlocks."
+      },
+      "resolution": "The second agent's analysis provides a more comprehensive view of system reliability, capturing both security threats and functional execution failures."
+    }
+  ],
+  "recommended_action": "read_full_paper",
+  "bias_cross_check": "The two analyses exhibit complementary focus areas rather than compounding biases. The first agent emphasizes security, protocols (MCP), and permission gates, while the second agent captures taxonomic classifications, CUA architectures, and operational failures. Synthesizing them provides a well-rounded and complete understanding of the paper's contributions.",
+  "confidence_distribution": {
+    "gemini": 0.7
+  }
+}
