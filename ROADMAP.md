@@ -51,6 +51,18 @@ The MACP schema is designed so that *additional* agents (Cursor, Antigravity, Pe
 
 ---
 
+## Competitive Position & Corpus Strategy (2026-06-28)
+
+A scan of the academic-research-AI landscape clarifies where we actually win and where we must invest.
+
+**The moat (validated):** the combination of **9-provider BYOK + open-source + semantic consensus scoring + research-specific provenance** is one no competitor offers together. The closest multi-model platforms are **closed-source, no-BYOK, and general-purpose**; the strongest single-model research tools have large corpora but no multi-agent consensus and no privacy-preserving BYOK. Our edge is the *combination*, not any one feature.
+
+**The gap (to close): corpus breadth.** We index ~12,800 curated papers; discovery leaders index 100M+. Discovery is not where our differentiation lives, so we should not rebuild it — we should *plug into* it. Strategy: integrate **open scholarly APIs (Semantic Scholar ~200M, OpenAlex)** for discovery while keeping our analysis → consensus → provenance layer as the moat. Papers that carry an arXiv ID flow straight into the existing full-text pipeline; others get abstract analysis (full-text via open-access PDF is a follow-up).
+
+**Direction: managed document RAG.** Provider-native document search (e.g. Gemini File Search — multimodal RAG with **page-level citations**) is a candidate both for higher-accuracy full-text reading and for Phase 5C Research Queue. Tracked as a build option.
+
+---
+
 ## Progress Update (2026-06-28) — Phase 5 underway
 
 The recursive-research vision was ~30% implemented at v1.0.0. Two of its five core components are now **live**, plus a substantial platform hardening pass:
