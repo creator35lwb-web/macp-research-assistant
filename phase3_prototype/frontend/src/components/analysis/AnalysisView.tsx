@@ -116,12 +116,12 @@ export function DeepAnalysisView({ analysis, pageCount, sectionsExtracted }: Dee
             className="tag"
             style={{ background: "var(--color-success)", color: "#fff" }}
             title={
-              analysis._meta.extraction_source === "html_fallback"
-                ? "Full text read from arXiv HTML (the PDF extraction was insufficient, so it fell back to HTML)"
+              analysis._meta.extraction_source.includes("html")
+                ? "Full text read from arXiv HTML (clean, structured source — preferred for arXiv papers)"
                 : "Full text read directly from the paper PDF"
             }
           >
-            ✓ Read full text ({analysis._meta.extraction_source === "html_fallback" ? "HTML" : "PDF"})
+            ✓ Read full text ({analysis._meta.extraction_source.includes("html") ? "HTML" : "PDF"})
           </span>
         )}
       </div>

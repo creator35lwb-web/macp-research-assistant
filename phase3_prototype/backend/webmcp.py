@@ -478,47 +478,46 @@ async def mcp_analyze_deep(
         if req.provider not in PROVIDERS:
             return mcp_response(f"Unknown provider: {req.provider}", is_error=True)
 
-        # Extract arXiv ID for PDF download
         arxiv_id = paper.arxiv_id.replace("arxiv:", "")
 
-        # Step 1: Download PDF
-        try:
-            pdf_path = download_pdf(arxiv_id)
-        except (RuntimeError, ImportError) as e:
-            logger.warning("PDF download failed for %s: %s", arxiv_id, e)
-            return mcp_response("PDF download failed. The paper may not have a PDF available.", is_error=True)
+        # HTML-FIRST: arXiv's HTML (ar5iv) is clean, structured text — usually a
+        # better LLM input than rule-based PDF extraction (better sections, math,
+        # fewer artifacts). Try it first; fall back to PDF only if HTML is
+        # unavailable or below the quality gate.
+        extracted = None
+        extraction_source = "pdf"
 
-        # Step 2: Extract text
-        try:
-            extracted = extract_text(pdf_path)
-        except (RuntimeError, ImportError) as e:
-            logger.warning("PDF extraction failed for %s: %s", arxiv_id, e)
-            return mcp_response("PDF text extraction failed.", is_error=True)
+        html_extracted = fetch_arxiv_html(arxiv_id)
+        if html_extracted and check_extraction_quality(html_extracted)["is_sufficient"]:
+            extracted = html_extracted
+            extraction_source = "html"
+            logger.info("HTML-first extraction for %s: %d chars", arxiv_id, len(html_extracted.get("full_text", "")))
 
-        # Quality gate: check if extraction got meaningful text
-        quality = check_extraction_quality(extracted)
-        if not quality["is_sufficient"]:
-            logger.warning(
-                "PDF extraction quality poor for %s: %s — trying HTML fallback",
-                arxiv_id, quality["reason"]
-            )
-            html_extracted = fetch_arxiv_html(arxiv_id)
-            if html_extracted:
+        # PDF fallback (download + extract) when HTML is unavailable/insufficient.
+        if extracted is None:
+            try:
+                pdf_path = download_pdf(arxiv_id)
+                pdf_extracted = extract_text(pdf_path)
+            except (RuntimeError, ImportError) as e:
+                logger.warning("PDF path failed for %s: %s", arxiv_id, e)
+                pdf_extracted = None
+
+            if pdf_extracted is not None:
+                extracted = pdf_extracted
+                extraction_source = "pdf"
+                # If the PDF parse is also poor but we did fetch *some* HTML, prefer HTML.
+                if not check_extraction_quality(pdf_extracted)["is_sufficient"] and html_extracted and html_extracted.get("sections"):
+                    extracted = html_extracted
+                    extraction_source = "html"
+            elif html_extracted and html_extracted.get("sections"):
+                # PDF unavailable but we have below-gate HTML — better than nothing.
                 extracted = html_extracted
-                logger.info(
-                    "HTML fallback succeeded for %s: %d chars",
-                    arxiv_id, len(html_extracted["full_text"])
-                )
-            else:
-                logger.warning(
-                    "HTML fallback also failed for %s — proceeding with limited text", arxiv_id
-                )
+                extraction_source = "html"
+
+        if not extracted or not extracted.get("sections"):
+            return mcp_response("No text could be extracted from this paper (HTML and PDF both unavailable).", is_error=True)
 
         sections = extracted.get("sections", [])
-        if not sections:
-            return mcp_response("No text could be extracted from PDF", is_error=True)
-
-        extraction_source = extracted.get("source", "pdf")
 
         # Step 3: Multi-pass deep analysis
         config = PROVIDERS[req.provider]
