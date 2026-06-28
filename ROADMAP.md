@@ -26,7 +26,7 @@ A deliberate positioning decision, made after observing the 2026 landscape: **th
 
 Instead, MACP Research Assistant is positioned as **two things at once**:
 
-1. **A public flagship showcase** of the FLYWHEEL TEAM and the **MACP protocol** — concrete, deployed proof of multi-agent collaboration with full provenance. Build/deploy decisions optimize for *demonstrability*, not feature parity with the platforms.
+1. **A public flagship showcase** of the YSenseAI ecosystem team and the **MACP protocol** — concrete, deployed proof of multi-agent collaboration with full provenance. Build/deploy decisions optimize for *demonstrability*, not feature parity with the platforms.
 2. **The provenance / memory layer that platform agents *call*** — not a competitor to Claude/Manus/Perplexity deep research, but the substrate they write into. The platforms produce *answers*; MACP captures, attributes, versions, and reconciles those answers across sessions, models, and platforms. This is the complement, not the clone.
 
 ### What is genuinely non-commodity here (the moat)
@@ -481,11 +481,11 @@ Phase 1 ✅ → Phase 2 ✅ → Phase 3A ✅ → Phase 3B ✅ → Phase 3C ✅ �
 
 **For CSO R (Manus AI):** Continue maintaining alignment documentation, updating this roadmap after each sprint, and managing the MACP v2.0 schema evolution. Coordinate Phase 5B (Topic Taxonomy) design with CTO RNA.
 
-**For the Orchestrator:** Review sprint completions before approving the next sprint. Test features in production at `macpresearch.ysenseai.org`. Try the manual Agent-to-Agent workflow described above to refine v2.0.0 requirements. Report issues through the FLYWHEEL TEAM alignment process.
+**For the Orchestrator:** Review sprint completions before approving the next sprint. Test features in production at `macpresearch.ysenseai.org`. Try the manual Agent-to-Agent workflow described above to refine v2.0.0 requirements. Report issues through the YSenseAI ecosystem team alignment process.
 
 **For any new agent joining the project:** Read this file first, then read `.macp/schema.json` to understand the data format, then read the latest handoff in `.macp/handoffs/` for current context.
 
 ---
 
-> *This roadmap is maintained by the FLYWHEEL TEAM as part of the YSenseAI ethical AI ecosystem. It is a living document updated after each alignment meeting.*
+> *This roadmap is maintained by the YSenseAI ecosystem team as part of the YSenseAI ethical AI ecosystem. It is a living document updated after each alignment meeting.*
 > *Last alignment: 2026-02-25 — Functional Audit & v2.0.0 Vision Architecture*
