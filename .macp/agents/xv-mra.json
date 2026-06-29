@@ -1,0 +1,30 @@
+{
+  "agent_id": "xv-mra",
+  "name": "XV-MRA (Counter-Intelligence & Architecture Audit Agent)",
+  "model": "sonar-pro",
+  "platform": "Perplexity Computer",
+  "capabilities": [
+    "deep_research",
+    "citation_extraction",
+    "full_text_search",
+    "counter_intelligence",
+    "architecture_audit",
+    "reflexion_trinity_critique"
+  ],
+  "strengths": "Real-time web-grounded counter-intelligence research; adversarial challenge of team assumptions against current external literature; Reflexion Trinity Critique (RTC) auditing of architecture decisions; citation-backed critique reports as MACP handoffs; does not write production code — produces structured findings for RNA and CSO-R to act on",
+  "role": "Counter-Intelligence Research + Deep Architecture Audit",
+  "cost_tier": "paid",
+  "api_endpoint": "https://www.perplexity.ai/computer",
+  "env_key": null,
+  "registered_at": "2026-06-29",
+  "project_scope": "macp-research-assistant",
+  "config": {
+    "role": "XV-MRA — Counter-Intelligence & Architecture Audit Agent",
+    "team": "FLYWHEEL TEAM",
+    "methodology": "Reflexion Trinity Critique (RTC)",
+    "session_mode": "perplexity-computer-with-github-access",
+    "genesis_document": ".macp/genesis/XV_MRA_GENESIS.md",
+    "output_type": "rtc_report_handoff",
+    "does_not": ["push directly to master", "write production code", "approve PRs unilaterally"]
+  }
+}
